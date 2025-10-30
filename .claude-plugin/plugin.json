@@ -18,9 +18,5 @@
     "codebase-analysis",
     "ai-agents",
     "claude-code"
-  ],
-  "engines": {
-    "claude": ">=1.0.0",
-    "node": ">=18.0.0"
-  }
+  ]
 }
