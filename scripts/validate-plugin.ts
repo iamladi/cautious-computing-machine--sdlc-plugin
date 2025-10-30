@@ -16,10 +16,10 @@ const PluginManifestSchema = z.object({
   repository: z.string().url().optional(),
   license: z.string().optional(),
   keywords: z.array(z.string()).optional(),
-  engines: z.object({
-    claude: z.string().optional(),
-    node: z.string().optional(),
-  }).optional(),
+  commands: z.union([z.string(), z.array(z.string())]).optional(),
+  agents: z.union([z.string(), z.array(z.string())]).optional(),
+  hooks: z.union([z.string(), z.record(z.any())]).optional(),
+  mcpServers: z.union([z.string(), z.record(z.any())]).optional(),
 });
 
 async function validatePlugin() {

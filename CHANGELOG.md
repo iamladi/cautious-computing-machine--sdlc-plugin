@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed directory typo: renamed `.cluade-plugin` to `.claude-plugin`
+- Removed invalid `engines` field from plugin.json (not supported by Claude Code schema)
 
 ### Added
 - GitHub Actions workflow for automated plugin schema validation
-- Validation script using Zod for schema enforcement
+- Validation script using Zod for schema enforcement with proper field validation
 - CI/CD pipeline to validate plugin.json on PRs and pushes
 
 ## [1.0.0] - 2025-10-30
