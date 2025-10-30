@@ -1,0 +1,14 @@
+{
+  "name": "sdlc-plugin",
+  "version": "1.0.1",
+  "description": "Comprehensive SDLC plugin with specialized agents, commands, and integrations",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "bun run scripts/validate-plugin.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "zod": "^3.23.8"
+  }
+}
