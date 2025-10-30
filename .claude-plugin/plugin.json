@@ -1,5 +1,5 @@
 {
-  "name": "sdlc-plugin",
+  "name": "sdlc",
   "version": "1.0.1",
   "description": "Comprehensive SDLC plugin with specialized agents, commands, and integrations for enhanced software development workflow",
   "author": {
