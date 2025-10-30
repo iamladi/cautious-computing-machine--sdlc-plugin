@@ -1,0 +1,26 @@
+{
+  "name": "sdlc-plugin",
+  "version": "1.0.0",
+  "description": "Comprehensive SDLC plugin with specialized agents, commands, and integrations for enhanced software development workflow",
+  "author": {
+    "name": "Ladislav Martincik",
+    "email": "ladislav.martincik@example.com",
+    "url": "https://github.com/iamladi"
+  },
+  "homepage": "https://github.com/iamladi/cautious-computing-machine--sdlc-plugin",
+  "repository": "https://github.com/iamladi/cautious-computing-machine--sdlc-plugin",
+  "license": "MIT",
+  "keywords": [
+    "sdlc",
+    "development",
+    "planning",
+    "research",
+    "codebase-analysis",
+    "ai-agents",
+    "claude-code"
+  ],
+  "engines": {
+    "claude": ">=1.0.0",
+    "node": ">=18.0.0"
+  }
+}
