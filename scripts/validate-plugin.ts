@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 import { z } from 'zod';
-import { readFile } from 'fs/promises';
+import { readFile, readdir } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 
 const PluginManifestSchema = z.object({
   name: z.string(),
@@ -47,4 +48,77 @@ async function validatePlugin() {
   }
 }
 
-validatePlugin();
+async function validateReadmeCommands() {
+  const commandsDir = join(process.cwd(), 'commands');
+  const readmePath = join(process.cwd(), 'README.md');
+
+  if (!existsSync(commandsDir)) {
+    console.log('ℹ️  No commands directory found, skipping README validation');
+    return;
+  }
+
+  if (!existsSync(readmePath)) {
+    console.log('ℹ️  No README.md found, skipping README validation');
+    return;
+  }
+
+  try {
+    // Get actual command files
+    const commandFiles = await readdir(commandsDir);
+    const actualCommands = commandFiles
+      .filter(file => file.endsWith('.md'))
+      .map(file => file.replace('.md', ''))
+      .sort();
+
+    // Parse README to find documented commands
+    const readmeContent = await readFile(readmePath, 'utf-8');
+    // Match both formats: `### /command` and `- **/command**`
+    const commandHeaderRegex = /(?:^### `\/([a-z_-]+)`|^- \*\*\/([a-z_-]+)\*\*)/gm;
+    const documentedCommands: string[] = [];
+    let match;
+
+    while ((match = commandHeaderRegex.exec(readmeContent)) !== null) {
+      // Get whichever capture group matched
+      documentedCommands.push(match[1] || match[2]);
+    }
+
+    documentedCommands.sort();
+
+    // Compare
+    const missingInReadme = actualCommands.filter(cmd => !documentedCommands.includes(cmd));
+    const extraInReadme = documentedCommands.filter(cmd => !actualCommands.includes(cmd));
+
+    let hasErrors = false;
+
+    if (missingInReadme.length > 0) {
+      console.error('❌ Commands exist but not documented in README.md:');
+      missingInReadme.forEach(cmd => console.error(`   - /${cmd}`));
+      hasErrors = true;
+    }
+
+    if (extraInReadme.length > 0) {
+      console.error('❌ Commands documented in README.md but files don\'t exist:');
+      extraInReadme.forEach(cmd => console.error(`   - /${cmd} (missing commands/${cmd}.md)`));
+      hasErrors = true;
+    }
+
+    if (!hasErrors) {
+      console.log(`✅ README.md documents all ${actualCommands.length} commands correctly`);
+    } else {
+      process.exit(1);
+    }
+
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('❌ Error validating README commands:', error.message);
+    }
+    process.exit(1);
+  }
+}
+
+async function main() {
+  await validatePlugin();
+  await validateReadmeCommands();
+}
+
+main();
