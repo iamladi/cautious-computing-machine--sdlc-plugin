@@ -1,8 +1,3 @@
----
-description: Explore ideas or research topic
-model: sonnet
----
-
 # Idea Exploration and Deep Research
 
 Research and analyze the `Idea` within the context of the current codebase. Follow the `Instructions` to prepare a comprehensive discussion framework.
