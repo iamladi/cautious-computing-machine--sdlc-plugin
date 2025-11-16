@@ -10,7 +10,9 @@ Follow the `Instructions` to submit/commit the `Plan` as PR to Github and then `
 
 ### 4. Process `Plan`
 - Read the plan fully so you understand it
-- If the plan is not yet on Github as an Issue, please create new Issue and remember the number
+- Extract Issue number from plan frontmatter: `issue: 123`
+- If no Issue number found, error: "Issue not created. Run `/github:create-issue-from-plan` first"
+- Verify Issue exists: `gh issue view #123` (will error if not found)
 
 ### 3. Read the git status
 - Run `git diff origin/main...HEAD --stat` to see a summary of changed files
@@ -27,7 +29,9 @@ Follow the `Instructions` to submit/commit the `Plan` as PR to Github and then `
 
 ### 5. Commit and create PR
 - Commit the changes with SlashCommand dedicated for commit
-- Submit PR to Github by using the SlashCommand for PR
+- Submit PR to Github using SlashCommand: `/github:create-pr <issue_number> <plan_file_path>`
+  - Example: `/github:create-pr 123 plans/add-oauth2-auth.md`
+  - This will create PR with title `feat: #123 - Title` and body linking both Issue and plan
 
 ## Plan
 $ARGUMENTS
