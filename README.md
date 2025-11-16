@@ -65,6 +65,89 @@ export PERPLEXITY_MODEL="llama-3.1-sonar-small-128k-online"  # or your preferred
 
 ## Usage
 
+### Complete Workflow: Research → Plan → Issue → Implementation → PR
+
+This plugin implements a comprehensive SDLC workflow with proper separation of concerns:
+
+```
+Research (Documentation)      → Plan (Specification)     → Issue (Execution)     → Code (Implementation)
+research/*.md (committed)       plans/*.md (committed)     #123 (GitHub)          Branch + PR
+```
+
+#### 1. Research Phase
+
+```bash
+/research "How does Next.js handle server-side rendering?"
+```
+
+Creates: `research/[topic].md` (committed to git)
+
+- Gathers current state knowledge
+- Documents existing patterns and architecture
+- Becomes permanent knowledge base for the project
+- Referenced from plans when relevant
+
+#### 2. Planning Phase
+
+```bash
+/plan "Add user authentication with OAuth2"
+```
+
+Creates: `plans/[feature].md` with YAML frontmatter
+
+Generates comprehensive PRD including:
+- Problem statement and goals
+- User stories with acceptance criteria
+- Functional and non-functional requirements
+- **5 Implementation phases** with complexity ratings
+- Testing strategy and validation commands
+- Risk assessment and rollback plan
+- Links to related research files (in frontmatter)
+
+**What happens next:**
+```bash
+/github:create-issue-from-plan plans/oauth-authentication.md
+```
+
+Creates: GitHub Issue #123 with implementation checklist
+Updates: Plan frontmatter with `issue: 123`
+
+#### 3. Implementation Phase
+
+```bash
+/implement #123          # Using Issue number
+# OR
+/implement plans/oauth-authentication.md  # Using plan file
+```
+
+**Key differences from old workflow:**
+- Plan file is **immutable spec** (never modified during implementation)
+- Issue **tracks progress** via checkboxes updated during work
+- Use `gh issue edit` to update Issue body with progress
+- Reference plan for requirements, reference Issue for progress
+
+#### 4. Submission Phase
+
+```bash
+/submit plans/oauth-authentication.md
+```
+
+- Verifies implementation against plan requirements
+- Extracts Issue number from plan frontmatter
+- Commits changes with conventional commits
+- Creates PR via:
+
+```bash
+/github:create-pr #123 plans/oauth-authentication.md
+```
+
+PR automatically includes:
+- Title: `feat: #123 - Add OAuth2 authentication`
+- Summary from plan Overview
+- Link to plan file + research files
+- Review focus highlighting key decisions
+- Closes #123 reference
+
 ### Commands
 
 #### Planning
@@ -73,18 +156,12 @@ export PERPLEXITY_MODEL="llama-3.1-sonar-small-128k-online"  # or your preferred
 /plan "Add user authentication with OAuth2"
 ```
 
-Generates a comprehensive PRD with:
-- Problem statement and goals
-- User stories with acceptance criteria
-- Functional and non-functional requirements
-- Implementation phases with complexity ratings
-- Testing strategy and validation commands
-- Risk assessment and rollback plan
+Generates a comprehensive PRD with phases, complexity analysis, and validation steps.
 
 #### Research
 
 ```bash
-/research "How does Next.js handle server-side rendering?"
+/research "How does authentication work in our API?"
 ```
 
 Performs AI-powered research using project context and web search.
@@ -92,10 +169,70 @@ Performs AI-powered research using project context and web search.
 #### Implementation
 
 ```bash
+/implement #123
+```
+
+OR
+
+```bash
 /implement plans/oauth-authentication.md
 ```
 
-Executes the implementation plan with guided steps.
+Executes the implementation plan with guided steps. Updates GitHub Issue checkboxes during work.
+
+### Plan Frontmatter Reference
+
+Every plan file includes YAML frontmatter for metadata and linking:
+
+```yaml
+---
+title: "Add OAuth2 Authentication"
+type: Feature
+issue: null              # Set to Issue #123 after creating Issue
+research:               # Links to research files
+  - research/auth-flow.md
+  - research/api-architecture.md
+status: Draft           # Draft | In Progress | Implemented
+created: 2024-11-16
+---
+```
+
+**Fields:**
+- `title`: Plan title (matches document heading)
+- `type`: Bug | Feature | Chore | Refactor | Enhancement | Documentation
+- `issue`: GitHub Issue number (populated by `/github:create-issue-from-plan`)
+- `research`: List of related research file paths
+- `status`: Current status of the plan
+- `created`: ISO date when plan was created
+
+### GitHub Integration Commands
+
+#### Create Issue from Plan
+
+```bash
+/github:create-issue-from-plan plans/oauth-authentication.md
+```
+
+Converts plan into GitHub Issue:
+- Creates Issue with plan Overview as summary
+- Extracts Implementation Phases as checklist items
+- Adds Validation Commands section
+- Links related research files
+- Updates plan frontmatter with Issue number
+- Returns Issue URL
+
+#### Create PR with Plan Reference
+
+```bash
+/github:create-pr #123 plans/oauth-authentication.md
+```
+
+Creates PR with proper documentation:
+- Extracts plan type for PR label
+- Links issue with `Closes #123`
+- Includes plan file + research links
+- Summarizes key decisions from Implementation Plan
+- References testing and validation criteria
 
 ### Agents
 
