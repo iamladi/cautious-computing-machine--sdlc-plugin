@@ -5,6 +5,50 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2024-11-16
+
+### Added
+- **GitHub Issue integration** - Plans now create GitHub Issues with implementation checklists
+  - New workflow: `/plan` → `/github:create-issue-from-plan` → `/implement #issue` → `/submit`
+  - Automatic Issue creation from plan Overview and Implementation Phases
+  - Plan frontmatter linking with Issue numbers
+
+- **Enhanced `/implement` command** - Supports both Issue numbers and plan file paths
+  - Accept Issue number input: `/implement #123`
+  - Accept plan file input: `/implement plans/feature.md`
+  - Updates Issue checkboxes during implementation (not plan files)
+  - Plan stays immutable as specification
+
+- **Enhanced `/submit` command** - Expects Issues created before submission
+  - Validates Issue number in plan frontmatter
+  - Better error messaging for missing Issues
+  - Passes Issue number to PR creation
+
+- **Plan frontmatter metadata** - Structured YAML for traceability
+  - `title` - Plan title
+  - `type` - Bug|Feature|Chore|Refactor|Enhancement|Documentation
+  - `issue` - GitHub Issue number (populated after creation)
+  - `research` - Array of related research file paths
+  - `status` - Draft|In Progress|Implemented
+  - `created` - ISO date of plan creation
+
+- **Comprehensive documentation** - Complete Plan → Issue → PR workflow
+  - Visual workflow diagram
+  - Phase-by-phase usage examples
+  - Plan frontmatter reference guide
+  - GitHub integration command documentation
+
+### Changed
+- Plan format now includes YAML frontmatter for metadata
+- `/implement` no longer updates plan file checkboxes (moved to Issue)
+- Progress tracking separated: Plan = spec, Issue = execution
+
+### Benefits
+- Single source of truth for implementation progress
+- Cleaner git history (no checkpoint commits)
+- Better team collaboration via GitHub Issues
+- Full traceability chain: Research → Plan → Issue → PR → Code
+
 ## [1.0.1] - 2025-10-30
 
 ### Fixed
