@@ -1,6 +1,6 @@
 {
   "name": "sdlc",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Comprehensive SDLC plugin with specialized agents, commands, and integrations for enhanced software development workflow",
   "author": {
     "name": "Ladislav Martincik",
