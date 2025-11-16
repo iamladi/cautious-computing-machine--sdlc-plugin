@@ -10,15 +10,28 @@ Follow the `Instructions` to implement the `Plan` with `Feedback loops` then `Re
 
 ### 2. Read the `Plan`
 
-When given a plan path:
-- Read the plan completely and check for any existing checkmarks (- [x])
-- Read the original plan and all files mentioned in the plan
+**Input can be:**
+- **Issue number**: `/implement #123` - Fetch plan from GitHub Issue, use for reading spec
+- **Plan file path**: `/implement plans/file.md` - Read plan from file
+
+**Process:**
+1. If Issue number provided:
+   - Fetch Issue via `gh issue view #123 --json body,number,title`
+   - Issue body should contain plan path reference
+   - Read the plan file from `plans/` directory
+2. If plan file provided:
+   - Read plan frontmatter to get Issue number
+   - If no Issue number, error: "Issue not created yet. Run `/github:create-issue-from-plan` first"
+   - Fetch the Issue for current progress state
+
+**When reading plan:**
+- Read the plan completely (understand full spec)
+- Check Issue body for existing checkmarks (progress tracking)
+- Read all files mentioned in the plan
 - **Read files fully** - never use limit/offset parameters, you need complete context
 - Think deeply about how the pieces fit together
 - Create a todo list to track your progress
 - Start implementing if you understand what needs to be done
-
-If no plan path provided, ask for one.
 
 ### 3. Implementation Philosophy
 
@@ -50,8 +63,11 @@ After implementing a phase:
 - Run the success criteria checks plus any health repo commands or agents
 - Run codereview with Codex and Gemini skills grounded with websearch with parallel sub-agents
 - Analyze the codereviews and fix any issues before proceeding (don't be lazy)
-- Update your progress in both the plan and your todos
-- Check off completed items in the plan file itself using Edit
+- Update your progress in your todos
+- **Update Issue checkboxes via GitHub API**: `gh issue edit #123 --body "...updated body with checkmarks..."`
+  - Never modify plan file during implementation (it's the immutable spec)
+  - Plan file stays clean, Issue tracking shows progress
+- Update todo list with completed items
 
 If instructed to execute multiple phases consecutively, skip the pause until the last phase.
 Otherwise, assume you are just doing one phase.

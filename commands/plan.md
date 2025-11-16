@@ -8,7 +8,7 @@ Create a new plan in plans/*.md to resolve the `Plan` using the exact specified 
 - IMPORTANT: The `Plan` describes the problem that will be resolved but remember we're not resolving the task, we're creating the plan that will be used to resolve the task based on the `Plan Format` below.
 - You're writing a plan to resolve a task, it should be thorough and precise so we fix the root cause and prevent regressions.
 - Create the plan in the `plans/*.md` file. Name it appropriately based on the `Plan`.
-- Use the plan format below to create the plan. 
+- Use the plan format below to create the plan.
 - Research the codebase to understand the task, reproduce it, and put together a plan to fix it.
 - IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to fix the task.
 - Use your reasoning model: THINK HARD about the task, its root cause, and the steps to fix it properly.
@@ -19,9 +19,28 @@ Create a new plan in plans/*.md to resolve the `Plan` using the exact specified 
 - If you need a new library, use whatever bundler is prefered and be sure to report it in the `Notes` section of the `Plan Format`.
 - Start your research by reading the `README.md` file.
 
+## After Creating the Plan
+
+1. Commit the plan file to a new branch: `plan/feature-name`
+2. Create a GitHub Issue from the plan using: `/github:create-issue-from-plan plans/feature-name.md`
+3. This will:
+   - Create GitHub Issue with plan summary + implementation phases as checklist
+   - Update plan frontmatter with `issue: <number>`
+   - Return both plan path and Issue URL
+4. Push branch and optionally create plan review PR, or merge directly if no review needed
+
 ## Plan Format
 
 ```md
+---
+title: "<descriptive title>"
+type: <Bug | Feature | Chore | Refactor | Enhancement | Documentation>
+issue: null
+research: []
+status: Draft
+created: <YYYY-MM-DD>
+---
+
 # PRD: <descriptive title>
 
 ## Metadata
