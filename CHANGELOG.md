@@ -5,6 +5,38 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2024-11-16
+
+### Added
+- **Validation gate in `/verify`** - Catches plugin schema errors before PR creation
+  - Automatically runs `bun run validate` (if exists in package.json)
+  - Prevents CI failures from validation issues locally
+  - Clear error messages with fix instructions
+
+- **Auto-verification in `/submit`** - Quality gate before PR creation
+  - `/submit` automatically runs `/verify` if not already done
+  - Ensures no PRs are created with validation errors
+  - User can skip if already verified in conversation context
+
+- **Plugin validation checklist in plan template**
+  - Phase 4 now includes plugin-specific validation tasks
+  - Commands documented in README.md
+  - Plugin.json schema valid
+  - Validation script passes
+
+### Enhanced
+- **Documentation improvements**
+  - New "Recommended Workflow" section with visualization
+  - Plugin validation examples showing real error scenarios
+  - Build validation examples for regular projects
+  - Clear explanation of quality gates
+
+### Benefits
+- Catch issues locally before submitting to CI
+- Prevents broken PRs from reaching GitHub
+- Explicit validation requirements in planning
+- Better developer experience with clear error messages
+
 ## [1.1.0] - 2024-11-16
 
 ### Added

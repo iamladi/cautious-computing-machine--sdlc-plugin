@@ -53,7 +53,13 @@ After implementing a phase:
 
 2) Verify that the implementation is right
 - Run production build to catch any build-time errors
-- If build succeeds, run the app as background process with Bash command 
+  - If build fails: STOP and report errors
+- **Check if package has validation script:**
+  - Run: `cat package.json | grep -q '"validate"'`
+  - If exists: Run `bun run validate`
+  - If validation fails: STOP and report errors with fix instructions
+  - If validation passes: Continue to next step
+- If build succeeds, run the app as background process with Bash command
 - Run the success criteria checks via running @agent-repo-health-checker
 - Run codereview with Codex and Gemini
 - Analyze the feedback and fix any issues before proceeding

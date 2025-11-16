@@ -265,6 +265,10 @@ For **Chores**: Include maintenance rationale
 - [ ] API documentation
 - [ ] User documentation
 - [ ] Update README if needed
+- [ ] Plugin validation (if applicable):
+  - [ ] Commands documented in README.md
+  - [ ] Plugin.json schema valid
+  - [ ] Run `bun run validate` successfully
 
 ### Phase 5: Validation
 **Complexity**: <1-10> | **Priority**: <High|Medium|Low>
