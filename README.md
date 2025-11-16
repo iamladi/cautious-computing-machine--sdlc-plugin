@@ -180,6 +180,86 @@ OR
 
 Executes the implementation plan with guided steps. Updates GitHub Issue checkboxes during work.
 
+#### Verification
+
+```bash
+/verify plans/oauth-authentication.md
+```
+
+Comprehensive validation before submission:
+- Compares implementation to plan requirements
+- Runs production build
+- **Runs `bun run validate` (if exists)** - Catches plugin schema errors, missing README docs, etc.
+- Launches app and runs health checks
+- Executes code review with Codex and Gemini
+- Reports all issues that need fixing before submission
+
+#### Submission
+
+```bash
+/submit plans/oauth-authentication.md
+```
+
+Prepares and submits PR:
+- **Automatically runs `/verify` if not already done** - Quality gate before PR
+- Validates Issue exists and is linked
+- Creates commits and PR
+- Returns PR URL
+
+### Recommended Workflow
+
+```
+/research          # Understand current implementation
+    ↓
+/plan              # Create comprehensive plan
+    ↓
+/implement #123    # Execute the plan
+    ↓
+/verify            # Validate before submission (build, tests, validation, code review)
+    ↓
+/submit            # Create PR (auto-runs /verify if needed)
+    ↓
+GitHub             # Review and merge
+```
+
+**Key feature:** `/submit` automatically runs `/verify` if you haven't already, ensuring no PRs are created with validation errors.
+
+### Validation Examples
+
+#### Plugin Validation
+
+When working on plugins, `/verify` will catch issues like:
+
+```bash
+$ /verify plans/add-new-command.md
+
+✅ Production build passed
+🔍 Running plugin validation...
+❌ Validation failed:
+   - Commands exist but not documented in README.md:
+     - /my-new-command
+
+Fix: Add command documentation to README.md
+
+[Verification stops here - fix issues before running /submit]
+```
+
+#### Build Validation
+
+For regular projects:
+
+```bash
+$ /verify plans/refactor-auth.md
+
+✅ Production build passed
+✅ Plugin validation skipped (not a plugin)
+✅ App launched successfully
+✅ Health checks passed
+✅ Code review passed
+
+All validations passed! Ready for submission.
+```
+
 ### Plan Frontmatter Reference
 
 Every plan file includes YAML frontmatter for metadata and linking:
