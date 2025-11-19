@@ -9,11 +9,10 @@
 ```
 
 **HAL will ask:**
-- Which model? (gpt-5-codex or gpt-5)
 - Reasoning effort? (high, medium, low)
 
-**Example selection:**
-- Model: gpt-5-codex
+**Default configuration:**
+- Model: gpt-5.1-codex (automatic default)
 - Effort: high
 - Sandbox: read-only (default for analysis)
 
@@ -23,9 +22,9 @@
 "Use codex to refactor the API client with high reasoning effort"
 ```
 
-**HAL will ask for model selection, then run:**
+**HAL will run:**
 ```bash
-codex exec --skip-git-repo-check -m gpt-5-codex --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
+codex exec --skip-git-repo-check -m gpt-5.1-codex --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
 ```
 
 ## Reasoning Effort Levels
@@ -243,31 +242,58 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 ## Model Selection Guide
 
-### gpt-5-codex
+### gpt-5.1-codex ⭐ (Default)
 
 **Best for:**
+- Software engineering (76.3% SWE-bench)
 - Code refactoring
 - Architecture changes
 - Complex transformations
-- Automated edits
+- Agentic coding workflows
 
 **Characteristics:**
 - Optimized for code
-- Fast execution
-- Reliable edits
+- 30% faster than GPT-5
+- Adaptive reasoning
+- Better tool handling
+- Reduced hallucinations
 
-### gpt-5
+**Specs:**
+- Context: 400K input / 128K output
+- Pricing: $1.25/$10.00 per 1M tokens
+- 90% cache discount
+
+### gpt-5.1-codex-mini
 
 **Best for:**
-- Security analysis
-- Code review
-- Documentation
-- Explanations
+- Cost-sensitive projects
+- High-volume tasks
+- Standard refactoring
 
 **Characteristics:**
-- Broader context
-- Detailed reasoning
-- Better explanations
+- 4x more usage allowance
+- Near state-of-the-art performance
+- Slight capability tradeoff
+
+**Specs:**
+- Context: 400K input / 128K output
+- Pricing: $0.25/$2.00 per 1M tokens
+
+### gpt-5.1-thinking
+
+**Best for:**
+- Ultra-complex reasoning
+- Deep problem analysis
+- Critical security audits
+
+**Characteristics:**
+- Adaptive thinking depth
+- Runs 2x slower on hardest tasks
+- 2x faster on simple tasks
+
+**Specs:**
+- Context: 400K input / 128K output
+- Pricing: $1.25/$10.00 per 1M tokens
 
 ## Tips for Effective Codex Usage
 
@@ -287,11 +313,12 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 | Task Type | Model | Reasoning | Sandbox |
 |-----------|-------|-----------|---------|
-| Security audit | gpt-5 | high | read-only |
-| Simple refactor | gpt-5-codex | medium | workspace-write |
-| Complex migration | gpt-5-codex | high | workspace-write |
-| Add types | gpt-5-codex | low | workspace-write |
-| Install deps | gpt-5-codex | medium | danger-full-access |
+| Security audit | gpt-5.1-thinking | high | read-only |
+| Simple refactor | gpt-5.1-codex | medium | workspace-write |
+| Complex migration | gpt-5.1-codex | high | workspace-write |
+| Add types | gpt-5.1-codex | low | workspace-write |
+| Install deps | gpt-5.1-codex | medium | danger-full-access |
+| High-volume tasks | gpt-5.1-codex-mini | medium | workspace-write |
 
 ### Use Session Continuity
 
