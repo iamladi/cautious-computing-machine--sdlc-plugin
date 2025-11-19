@@ -1,6 +1,6 @@
 ---
 name: gemini
-description: Use when the user asks to run Gemini CLI for code review, plan review, or big context (>200k) processing. Ideal for comprehensive analysis requiring large context windows.
+description: Use when the user asks to run Gemini CLI for code review, plan review, or big context (>200k) processing. Ideal for comprehensive analysis requiring large context windows. Uses Gemini 3 Pro by default for state-of-the-art reasoning and coding.
 ---
 
 # Gemini Skill Guide
@@ -13,10 +13,12 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 
 ## Running a Task
 
-1. Ask the user (via `AskUserQuestion`) which model to use in a **single prompt**. Latest models (all support thinking):
-   - `gemini-2.5-pro` (state-of-the-art, best for complex reasoning in code/math/STEM)
-   - `gemini-2.5-flash` (best price-performance, recommended for most tasks)
-   - `gemini-2.5-flash-lite` (fastest, most cost-efficient, high throughput)
+1. Ask the user (via `AskUserQuestion`) which model to use in a **single prompt**. Available models:
+   - `gemini-3-pro-preview` ⭐ (flagship model, best for coding & complex reasoning, 35% better at software engineering than 2.5 Pro)
+   - `gemini-3-flash` (sub-second latency, distilled from 3 Pro, best for speed-critical tasks)
+   - `gemini-2.5-pro` (legacy option, strong all-around performance)
+   - `gemini-2.5-flash` (legacy option, cost-efficient with thinking capabilities)
+   - `gemini-2.5-flash-lite` (legacy option, fastest processing)
 
 2. Select the approval mode based on the task:
    - `default`: Prompt for approval (safest, for read-only analysis)
@@ -35,12 +37,12 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 
 5. Run the command and capture the output. For non-interactive mode, use positional arguments:
    ```bash
-   gemini -m gemini-2.5-flash --approval-mode default "Review this codebase for security issues"
+   gemini -m gemini-3-pro-preview --approval-mode default "Review this codebase for security issues"
    ```
 
 6. For interactive sessions with an initial prompt:
    ```bash
-   gemini -m gemini-2.5-flash -i "Review the authentication system" --approval-mode auto_edit
+   gemini -m gemini-3-pro-preview -i "Review the authentication system" --approval-mode auto_edit
    ```
 
 7. **After Gemini completes**, inform the user: "The Gemini analysis is complete. You can start a new Gemini session for follow-up analysis or continue exploring the findings."
@@ -49,30 +51,35 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 
 | Use case | Approval mode | Key flags |
 | --- | --- | --- |
-| Code review (read-only) | `default` | `-m gemini-2.5-flash --approval-mode default` |
-| Code review with suggestions | `auto_edit` | `-m gemini-2.5-flash --approval-mode auto_edit` |
-| Big context analysis | `default` | `-m gemini-2.5-pro --approval-mode default` |
-| Plan/architecture review | `default` | `-m gemini-2.5-pro --approval-mode default` |
-| Automated refactoring | `yolo` or `-y` | `-m gemini-2.5-flash --approval-mode yolo` |
-| High-throughput tasks | `default` | `-m gemini-2.5-flash-lite --approval-mode default` |
+| Code review (read-only) | `default` | `-m gemini-3-pro-preview --approval-mode default` |
+| Code review with suggestions | `auto_edit` | `-m gemini-3-pro-preview --approval-mode auto_edit` |
+| Big context analysis | `default` | `-m gemini-3-pro-preview --approval-mode default` |
+| Plan/architecture review | `default` | `-m gemini-3-pro-preview --approval-mode default` |
+| Automated refactoring | `yolo` or `-y` | `-m gemini-3-pro-preview --approval-mode yolo` |
+| Speed-critical tasks | `default` | `-m gemini-3-flash --approval-mode default` |
+| Cost-optimized tasks | `default` | `-m gemini-2.5-flash --approval-mode default` |
 | Multi-directory analysis | Depends on task | `--include-directories <DIR1> --include-directories <DIR2>` |
 | Interactive with initial prompt | Match task needs | `-i "prompt" --approval-mode <mode>` |
 
 ### Model Selection Guide
 
-| Model | Best for | Context window |
-| --- | --- | --- |
-| `gemini-2.5-pro` | State-of-the-art reasoning, complex code/math/STEM problems | 1M input / 65k output |
-| `gemini-2.5-flash` | Best price-performance, large-scale processing, agentic tasks | 1M input / 65k output |
-| `gemini-2.5-flash-lite` | Fastest & most cost-efficient, high throughput | 1M input / 65k output |
+| Model | Best for | Context window | Key features |
+| --- | --- | --- | --- |
+| `gemini-3-pro-preview` ⭐ | **Flagship model**: Complex reasoning, coding, agentic tasks | 1M input / 64k output | Vibe coding, 76.2% SWE-bench, $2-4/M input |
+| `gemini-3-flash` | Sub-second latency, speed-critical applications | 1M input / 64k output | Distilled from 3 Pro, TPU-optimized |
+| `gemini-2.5-pro` | Legacy: Strong all-around performance | 1M input / 65k output | Thinking mode, mature stability |
+| `gemini-2.5-flash` | Legacy: Cost-efficient, high-volume tasks | 1M input / 65k output | Best price ($0.15/M), thinking mode |
+| `gemini-2.5-flash-lite` | Legacy: Fastest processing, high throughput | 1M input / 65k output | Maximum speed, minimal latency |
 
-**All Gemini 2.5 models support thinking capabilities** for enhanced reasoning and accuracy.
+**Gemini 3 Advantages**: 35% higher accuracy in software engineering, state-of-the-art on SWE-bench (76.2%), GPQA Diamond (91.9%), and WebDev Arena (1487 Elo). Knowledge cutoff: January 2025.
+
+**Coming Soon**: `gemini-3-deep-think` for ultra-complex reasoning with enhanced thinking capabilities.
 
 ## Common Use Cases
 
 ### Code Review
 ```bash
-gemini -m gemini-2.5-flash --approval-mode default \
+gemini -m gemini-3-pro-preview --approval-mode default \
   "Perform a comprehensive code review focusing on:
    1. Security vulnerabilities
    2. Performance issues
@@ -82,7 +89,7 @@ gemini -m gemini-2.5-flash --approval-mode default \
 
 ### Plan Review
 ```bash
-gemini -m gemini-2.5-pro --approval-mode default \
+gemini -m gemini-3-pro-preview --approval-mode default \
   "Review this architectural plan for:
    1. Scalability concerns
    2. Missing components
@@ -92,7 +99,7 @@ gemini -m gemini-2.5-pro --approval-mode default \
 
 ### Big Context Analysis
 ```bash
-gemini -m gemini-2.5-pro --approval-mode default \
+gemini -m gemini-3-pro-preview --approval-mode default \
   "Analyze the entire codebase to understand:
    1. Overall architecture
    2. Key patterns and conventions
@@ -119,9 +126,13 @@ gemini -m gemini-2.5-pro --approval-mode default \
 1. **Be specific**: Provide clear, structured prompts for what to analyze
 2. **Use include-directories**: Explicitly specify all relevant directories
 3. **Choose the right model**:
-   - Use `gemini-2.5-pro` for complex reasoning and maximum analysis depth
-   - Use `gemini-2.5-flash` for most code reviews (best price-performance)
-   - Use `gemini-2.5-flash-lite` for high-volume, fast processing
-4. **Leverage thinking capabilities**: All 2.5 models have built-in thinking for better reasoning
+   - Use `gemini-3-pro-preview` for complex reasoning, coding tasks, and maximum analysis quality (recommended default)
+   - Use `gemini-3-flash` for speed-critical tasks requiring sub-second response times
+   - Use `gemini-2.5-flash` for cost-optimized high-volume processing
+4. **Leverage Gemini 3's strengths**: 35% better at software engineering tasks, exceptional at agentic workflows and vibe coding
 5. **Break down complex tasks**: Even with large context, structured analysis is more effective
 6. **Save findings**: Ask Gemini to output structured reports that can be saved for reference
+
+## CLI Version
+
+Requires Gemini CLI v0.16.0 or later for Gemini 3 model support. Check version: `gemini --version`
