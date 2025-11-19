@@ -5,6 +5,52 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-11-19
+
+### Added
+- **GPT-5.1 model support** - Updated Codex skill with latest OpenAI models
+  - `gpt-5.1-codex` as new flagship default model
+  - `gpt-5.1-codex-mini` for cost-efficient workflows (4x more usage at $0.25/$2.00)
+  - `gpt-5.1-thinking` for ultra-complex reasoning tasks
+  - 76.3% SWE-bench performance (vs 72.8% GPT-5)
+  - 30% faster on average tasks with adaptive reasoning
+  - Enhanced capabilities: better tool handling, reduced hallucinations, improved code quality
+  - Context: 400K input / 128K output with 90% cache discount
+
+### Changed
+- **Default Codex model** set to `gpt-5.1-codex` (previously required user selection)
+- Removed GPT-5 models, replaced with GPT-5.1 variants
+- Updated all Codex skill examples and documentation to use GPT-5.1 models
+- Simplified model selection: no longer asks user, defaults to gpt-5.1-codex
+
+### Enhanced
+- **Model selection guide** with detailed GPT-5.1 specs and benchmark comparisons
+- **Examples documentation** updated with GPT-5.1 use cases and recommendations
+- Added CLI version requirement (v0.57.0+) and configuration notes
+- Expanded cost optimization guidance with codex-mini variant
+
+## [1.2.0] - 2025-11-19
+
+### Added
+- **Gemini 3 model support** - Updated Gemini skill with latest Google AI models
+  - `gemini-3-pro-preview` as new flagship default model
+  - `gemini-3-flash` for sub-second latency tasks
+  - 35% higher accuracy on software engineering benchmarks vs Gemini 2.5 Pro
+  - State-of-the-art performance: 76.2% SWE-bench, 91.9% GPQA Diamond
+  - Enhanced capabilities: vibe coding, agentic workflows, multimodal understanding
+  - Knowledge cutoff: January 2025
+
+### Changed
+- **Default Gemini model** changed from `gemini-2.5-flash` to `gemini-3-pro-preview`
+- Updated all Gemini skill examples and documentation to use Gemini 3 models
+- Legacy Gemini 2.5 models still available for cost-optimized workflows
+
+### Enhanced
+- **Model selection guide** with detailed specs and benchmark comparisons
+- **Quick reference table** updated with Gemini 3 use cases
+- Added note about upcoming `gemini-3-deep-think` for ultra-complex reasoning
+- CLI version requirement documented (v0.16.0+)
+
 ## [1.1.1] - 2024-11-16
 
 ### Added
