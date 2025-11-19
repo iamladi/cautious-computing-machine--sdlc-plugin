@@ -21,8 +21,8 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 
 ### 🎯 Skills
 
-- **codex** - OpenAI Codex integration for advanced code analysis and automated editing
-- **gemini** - Google Gemini integration for additional AI capabilities
+- **codex** - OpenAI GPT-5.1-Codex integration for advanced code analysis, refactoring, and automated editing
+- **gemini** - Google Gemini 3 Pro integration for code review, plan analysis, and big context (>200k) processing
 
 ### 🔌 Integrations
 
