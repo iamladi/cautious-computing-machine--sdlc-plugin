@@ -11,6 +11,29 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 - **Big Context Processing**: Tasks requiring >200k tokens of context (entire codebases, documentation sets)
 - **Multi-file Analysis**: Understanding relationships and patterns across many files
 
+## ⚠️ Critical: Background/Non-Interactive Mode Warning
+
+**NEVER use `--approval-mode default` in background or non-interactive shells** (like Claude Code tool calls). It will hang indefinitely waiting for approval prompts that cannot be provided.
+
+**For automated/background reviews:**
+- ✅ Use `--approval-mode yolo` for fully automated execution
+- ✅ OR wrap with timeout: `timeout 300 gemini ...`
+- ❌ NEVER use `--approval-mode default` without interactive terminal
+
+**Symptoms of hung Gemini:**
+- Process running 20+ minutes with 0% CPU usage
+- No network activity
+- Process state shows 'S' (sleeping)
+
+**Fix hung process:**
+```bash
+# Check if hung
+ps aux | grep gemini | grep -v grep
+
+# Kill if necessary
+pkill -9 -f "gemini.*gemini-3-pro-preview"
+```
+
 ## Running a Task
 
 1. Ask the user (via `AskUserQuestion`) which model to use in a **single prompt**. Available models:
@@ -21,9 +44,9 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
    - `gemini-2.5-flash-lite` (legacy option, fastest processing)
 
 2. Select the approval mode based on the task:
-   - `default`: Prompt for approval (safest, for read-only analysis)
+   - `default`: Prompt for approval (⚠️ ONLY for interactive terminal sessions)
    - `auto_edit`: Auto-approve edit tools only (for code reviews with suggestions)
-   - `yolo`: Auto-approve all tools (for trusted automated changes)
+   - `yolo`: Auto-approve all tools (✅ REQUIRED for background/automated tasks)
 
 3. Assemble the command with appropriate options:
    - `-m, --model <MODEL>` - Model selection
@@ -33,11 +56,15 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
    - `--include-directories <DIR>` - Additional directories to include in workspace
    - `-s, --sandbox` - Run in sandbox mode for isolation
 
-4. **Default to `--approval-mode default`** for read-only analysis tasks unless edits are necessary.
+4. **For background/automated tasks, ALWAYS use `--approval-mode yolo`** or add timeout wrapper. NEVER use `default` in non-interactive shells.
 
-5. Run the command and capture the output. For non-interactive mode, use positional arguments:
+5. Run the command and capture the output. For background/automated mode:
    ```bash
-   gemini -m gemini-3-pro-preview --approval-mode default "Review this codebase for security issues"
+   # Recommended: Use yolo for background tasks
+   gemini -m gemini-3-pro-preview --approval-mode yolo "Review this codebase for security issues"
+
+   # Or with timeout (5 min limit)
+   timeout 300 gemini -m gemini-3-pro-preview --approval-mode yolo "Review this codebase"
    ```
 
 6. For interactive sessions with an initial prompt:
@@ -51,15 +78,16 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 
 | Use case | Approval mode | Key flags |
 | --- | --- | --- |
-| Code review (read-only) | `default` | `-m gemini-3-pro-preview --approval-mode default` |
-| Code review with suggestions | `auto_edit` | `-m gemini-3-pro-preview --approval-mode auto_edit` |
-| Big context analysis | `default` | `-m gemini-3-pro-preview --approval-mode default` |
-| Plan/architecture review | `default` | `-m gemini-3-pro-preview --approval-mode default` |
-| Automated refactoring | `yolo` or `-y` | `-m gemini-3-pro-preview --approval-mode yolo` |
-| Speed-critical tasks | `default` | `-m gemini-3-flash --approval-mode default` |
-| Cost-optimized tasks | `default` | `-m gemini-2.5-flash --approval-mode default` |
-| Multi-directory analysis | Depends on task | `--include-directories <DIR1> --include-directories <DIR2>` |
-| Interactive with initial prompt | Match task needs | `-i "prompt" --approval-mode <mode>` |
+| Background code review | `yolo` ✅ | `-m gemini-3-pro-preview --approval-mode yolo` |
+| Background analysis | `yolo` ✅ | `-m gemini-3-pro-preview --approval-mode yolo` |
+| Background with timeout | `yolo` ✅ | `timeout 300 gemini -m gemini-3-pro-preview --approval-mode yolo` |
+| Interactive code review | `default` | `-m gemini-3-pro-preview --approval-mode default` (interactive terminal only) |
+| Code review with auto-edits | `auto_edit` | `-m gemini-3-pro-preview --approval-mode auto_edit` |
+| Automated refactoring | `yolo` | `-m gemini-3-pro-preview --approval-mode yolo` |
+| Speed-critical background | `yolo` ✅ | `-m gemini-3-flash --approval-mode yolo` |
+| Cost-optimized background | `yolo` ✅ | `-m gemini-2.5-flash --approval-mode yolo` |
+| Multi-directory analysis | `yolo` (if background) | `--include-directories <DIR1> --include-directories <DIR2>` |
+| Interactive with prompt | `auto_edit` or `default` | `-i "prompt" --approval-mode <mode>` |
 
 ### Model Selection Guide
 
@@ -77,19 +105,25 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 
 ## Common Use Cases
 
-### Code Review
+### Code Review (Background/Automated)
 ```bash
-gemini -m gemini-3-pro-preview --approval-mode default \
+# For background execution (Claude Code, CI/CD, etc.)
+gemini -m gemini-3-pro-preview --approval-mode yolo \
   "Perform a comprehensive code review focusing on:
    1. Security vulnerabilities
    2. Performance issues
    3. Code quality and maintainability
    4. Best practices violations"
+
+# With timeout safety (5 minutes)
+timeout 300 gemini -m gemini-3-pro-preview --approval-mode yolo \
+  "Perform a comprehensive code review..."
 ```
 
-### Plan Review
+### Plan Review (Background/Automated)
 ```bash
-gemini -m gemini-3-pro-preview --approval-mode default \
+# For background execution
+gemini -m gemini-3-pro-preview --approval-mode yolo \
   "Review this architectural plan for:
    1. Scalability concerns
    2. Missing components
@@ -97,14 +131,22 @@ gemini -m gemini-3-pro-preview --approval-mode default \
    4. Alternative approaches"
 ```
 
-### Big Context Analysis
+### Big Context Analysis (Background/Automated)
 ```bash
-gemini -m gemini-3-pro-preview --approval-mode default \
+# For background execution
+gemini -m gemini-3-pro-preview --approval-mode yolo \
   "Analyze the entire codebase to understand:
    1. Overall architecture
    2. Key patterns and conventions
    3. Potential technical debt
    4. Refactoring opportunities"
+```
+
+### Interactive Code Review (Terminal Only)
+```bash
+# ONLY use default mode in interactive terminal
+gemini -m gemini-3-pro-preview --approval-mode default \
+  "Review the authentication flow for security issues"
 ```
 
 ## Following Up
@@ -120,6 +162,48 @@ gemini -m gemini-3-pro-preview --approval-mode default \
 - Request direction before retrying failed commands.
 - Before using high-impact flags (`--approval-mode yolo`, `-y`, `--sandbox`), ask the user for permission using `AskUserQuestion` unless already granted.
 - When output includes warnings or partial results, summarize them and ask how to adjust using `AskUserQuestion`.
+
+## Troubleshooting Hung Gemini Processes
+
+### Detection
+```bash
+# Check for hung processes
+ps aux | grep -E "gemini.*gemini-3" | grep -v grep
+
+# Look for these symptoms:
+# - Process running 20+ minutes
+# - CPU usage at 0%
+# - Process state 'S' (sleeping)
+# - No network connections
+```
+
+### Diagnosis
+```bash
+# Get detailed process info
+ps -o pid,etime,pcpu,stat,command -p <PID>
+
+# Check network activity
+lsof -p <PID> 2>/dev/null | grep -E "(TCP|ESTABLISHED)" | wc -l
+# If result is 0, process is hung
+```
+
+### Resolution
+```bash
+# Kill hung Gemini processes
+pkill -9 -f "gemini.*gemini-3-pro-preview"
+
+# Or kill specific PID
+kill -9 <PID>
+
+# Verify cleanup
+ps aux | grep gemini | grep -v grep
+```
+
+### Prevention
+- **ALWAYS use `--approval-mode yolo` for background/automated tasks**
+- Add timeout wrapper for safety: `timeout 300 gemini ...`
+- Never use `--approval-mode default` in non-interactive shells
+- Monitor first run with `ps` to ensure process completes
 
 ## Tips for Large Context Processing
 
