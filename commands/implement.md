@@ -41,6 +41,7 @@ Plans are carefully designed, but reality can be messy. Your job is to:
 - Verify if your work makes sense in the broader codebase context
 - Update checkboxes in the plan as you complete sections
 - Use feedback loops to verify your code does what's expected 
+- Self-reflect on your solution while you're implementing it to avoid any bugs or issues
 
 When things don't match the plan exactly, think about why and communicate clearly.
 The plan is your guide, but your judgment matters too.
