@@ -5,6 +5,24 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-12-23
+
+### Added
+- Version synchronization enforcement across package.json, plugin.json, and CHANGELOG.md
+- New `validate-versions.ts` script to check version consistency
+- New `release.ts` script for atomic version bumps across all 3 files
+- New npm scripts: `validate:versions`, `release:patch`, `release:minor`, `release:major`
+- Self-reflection guidance during implementation (from 1.3.2)
+- Session naming and ultrathink to SDLC commands (from 1.3.2)
+
+### Changed
+- CI workflow now triggers on all pushes (removed paths filter) to catch version mismatches
+- `validate-plugin.ts` now checks version synchronization before other validations
+
+### Fixed
+- Version mismatch: CHANGELOG was behind (1.3.0 vs package.json/plugin.json 1.3.2)
+- Gemini CLI hanging on interactive prompts (from 1.3.1)
+
 ## [1.3.0] - 2025-11-19
 
 ### Added
