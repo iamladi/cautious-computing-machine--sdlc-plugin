@@ -2,6 +2,12 @@
 
 Create a new plan in plans/*.md to resolve the `Plan` using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan use the `Relevant Files` to focus on the right files.
 
+## Session Naming
+
+Before starting, rename this session for clarity:
+- If `$ARGUMENTS` provided: `/rename "Plan: $ARGUMENTS"`
+- Otherwise infer from context and run `/rename "Plan: {feature-name}"`
+
 ## Instructions
 
 - IMPORTANT: You're writing a plan to resolve a task based on the `Plan` that will add value to the application.
@@ -11,7 +17,7 @@ Create a new plan in plans/*.md to resolve the `Plan` using the exact specified 
 - Use the plan format below to create the plan.
 - Research the codebase to understand the task, reproduce it, and put together a plan to fix it.
 - IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to fix the task.
-- Use your reasoning model: THINK HARD about the task, its root cause, and the steps to fix it properly.
+- Use your reasoning model: ultrathink about the task, its root cause, and the steps to fix it properly.
 - IMPORTANT: For all phases that have high complexity must be split into sub-tasks that are low or medium complexity. High complexity tasks will have more tasks to work on, but not more than 5.
 - IMPORTANT: Be surgical with your fix, solve the task at hand and don't fall off track.
 - IMPORTANT: We want the minimal number of changes that will fix and address the task.

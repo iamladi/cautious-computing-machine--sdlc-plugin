@@ -2,6 +2,12 @@
 
 Research and analyze the `Idea` within the context of the current codebase. Follow the `Instructions` to prepare a comprehensive discussion framework.
 
+## Session Naming
+
+Before starting, rename this session for clarity:
+- If `$ARGUMENTS` provided: `/rename "Research: $ARGUMENTS"`
+- Otherwise wait for the research topic, then run `/rename "Research: {topic}"`
+
 ## CRITICAL: YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY
 - DO NOT suggest improvements or changes unless the user explicitly asks for them
 - DO NOT perform root cause analysis unless the user explicitly asks for them
