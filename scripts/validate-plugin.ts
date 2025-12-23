@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { readFile, readdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { validateVersions } from './validate-versions';
 
 const PluginManifestSchema = z.object({
   name: z.string(),
@@ -117,6 +118,20 @@ async function validateReadmeCommands() {
 }
 
 async function main() {
+  // Version synchronization check (run first)
+  const versionResult = await validateVersions();
+  if (!versionResult.success) {
+    console.error('❌ Version synchronization failed!\n');
+    console.error(versionResult.mismatchDetails);
+    console.error('\nAll three files must have the same version:');
+    console.error('  1. package.json (version field)');
+    console.error('  2. .claude-plugin/plugin.json (version field)');
+    console.error('  3. CHANGELOG.md (latest ## [X.Y.Z] header)');
+    process.exit(1);
+  }
+  const version = versionResult.versions.find((v) => v.version)?.version;
+  console.log(`✅ Versions synchronized: ${version}`);
+
   await validatePlugin();
   await validateReadmeCommands();
 }
