@@ -5,6 +5,30 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-12-29
+
+### Added
+- **`/review` command** - Parallel code review with GPT-5.2-Codex and Gemini 3 Pro
+  - Reviews git diff (staged + unstaged changes by default)
+  - Runs both reviewers concurrently for speed
+  - Consolidates findings with deduplication
+  - Priority-based organization (P0-P3)
+  - Consensus flagging when both reviewers agree
+  - Unified markdown report with overall verdict
+
+- **GPT-5.2-Codex support** - New flagship model for code review
+  - `gpt-5.2-codex` added to Codex skill model options
+  - 79% SWE-bench Pro performance
+  - Optimized for xhigh reasoning effort
+
+- **`xhigh` reasoning effort** - Maximum quality setting for Codex
+  - Best for code review, security analysis, architecture review
+  - Requires `gpt-5.2-codex` model
+
+### Enhanced
+- **Codex skill** - Added Code Review Mode section with review command pattern and output format
+- **README** - Documented new `/review` command with usage examples
+
 ## [1.4.0] - 2025-12-23
 
 ### Added
