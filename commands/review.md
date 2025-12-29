@@ -1,0 +1,210 @@
+# Parallel Code Review with Codex and Gemini
+
+Run comprehensive code reviews using GPT-5.2-Codex and Gemini 3 Pro in parallel, then consolidate findings into a unified report.
+
+## Session Naming
+
+Before starting, rename this session for clarity:
+- If `$ARGUMENTS` provided: `/rename "Review: $ARGUMENTS"`
+- Otherwise: `/rename "Review: Current Changes"`
+
+## Instructions
+
+### 1. Get the Diff to Review
+
+Capture the changes to review:
+
+```bash
+# Default: all staged + unstaged changes
+git diff HEAD
+
+# If $ARGUMENTS specifies a commit range (e.g., "origin/main...HEAD"), use that instead
+```
+
+If `$ARGUMENTS` contains a commit range or file paths, use those. Otherwise default to `git diff HEAD`.
+
+Store the diff output for both reviewers.
+
+### 2. Spawn Parallel Review Agents
+
+Create two Task agents to run reviews concurrently. **IMPORTANT**: Spawn both agents in a single message to run them in parallel.
+
+#### Codex Review Agent
+
+Use the `codex` skill with these settings:
+- Model: `gpt-5.2-codex`
+- Sandbox: `read-only`
+- Reasoning effort: `xhigh`
+- Full auto mode
+
+**Codex command:**
+```bash
+codex exec --skip-git-repo-check \
+  -m gpt-5.2-codex \
+  -c model_reasoning_effort="xhigh" \
+  --sandbox read-only \
+  --full-auto \
+  "You are a code reviewer. Review the following git diff for issues.
+
+Focus on:
+- Correctness and logic errors
+- Performance implications
+- Security vulnerabilities
+- Maintainability concerns
+
+Flag only actionable issues INTRODUCED by this change. Skip trivial nits.
+
+For each finding, provide:
+### [TITLE] (P{0-3}, confidence: {0.0-1.0})
+**File**: \`path/to/file\` lines {start}-{end}
+{explanation}
+
+Priority levels:
+- P0: Critical (security, data loss, crashes)
+- P1: High (logic errors, significant bugs)
+- P2: Medium (code quality, maintainability)
+- P3: Low (style, minor suggestions)
+
+End with:
+## Overall Verdict
+**Assessment**: [patch is correct / patch is incorrect]
+**Confidence**: {0.0-1.0}
+**Justification**: {brief explanation}
+
+---
+GIT DIFF:
+$(git diff HEAD)" 2>/dev/null
+```
+
+#### Gemini Review Agent
+
+Use the `gemini` skill with these settings:
+- Model: `gemini-3-pro-preview`
+- Approval mode: `yolo` (required for background execution)
+- Timeout: 300s safety wrapper
+
+**Gemini command:**
+```bash
+timeout 300 gemini -m gemini-3-pro-preview --approval-mode yolo \
+  "You are a code reviewer. Review the following git diff for issues.
+
+Focus on:
+- Correctness and logic errors
+- Performance implications
+- Security vulnerabilities
+- Maintainability concerns
+
+Flag only actionable issues INTRODUCED by this change. Skip trivial nits.
+
+For each finding, provide:
+### [TITLE] (P{0-3}, confidence: {0.0-1.0})
+**File**: \`path/to/file\` lines {start}-{end}
+{explanation}
+
+Priority levels:
+- P0: Critical (security, data loss, crashes)
+- P1: High (logic errors, significant bugs)
+- P2: Medium (code quality, maintainability)
+- P3: Low (style, minor suggestions)
+
+End with:
+## Overall Verdict
+**Assessment**: [APPROVE / REQUEST_CHANGES]
+**Confidence**: {0.0-1.0}
+**Justification**: {brief explanation}
+
+---
+GIT DIFF:
+$(git diff HEAD)"
+```
+
+### 3. Wait for Both Reviews
+
+**CRITICAL**: Wait for ALL review agents to complete before proceeding. Do not start consolidation until both have returned.
+
+### 4. Consolidate Findings
+
+Merge the two review outputs:
+
+1. **Parse findings** from each reviewer (look for `### [TITLE]` pattern)
+2. **Deduplicate** overlapping issues:
+   - Same file + overlapping line ranges + similar issue = merge into one
+   - Note which reviewers flagged it
+3. **Flag consensus**: When both reviewers identify the same issue, mark as "consensus" (higher confidence)
+4. **Sort by priority**: P0 first, then P1, P2, P3
+5. **Within priority**: Sort by confidence score (highest first)
+
+### 5. Generate Consolidated Report
+
+Output the final report in this format:
+
+```markdown
+# Code Review Report
+
+**Scope**: `git diff HEAD` (or specified range)
+**Date**: [current timestamp]
+**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
+
+## Summary
+
+| Priority | Count | Description |
+|----------|-------|-------------|
+| P0 | X | Critical issues requiring immediate attention |
+| P1 | X | High priority issues |
+| P2 | X | Medium priority issues |
+| P3 | X | Low priority / suggestions |
+
+**Overall Verdict**:
+- Codex: [patch is correct/incorrect] (confidence: X.XX)
+- Gemini: [APPROVE/REQUEST_CHANGES] (confidence: X.XX)
+- **Consensus**: [APPROVE / REQUEST_CHANGES / MIXED]
+
+## Critical Issues (P0)
+
+### [Title]
+**File**: `path/to/file.ts` lines 45-52
+**Flagged by**: Codex, Gemini (consensus)
+**Confidence**: 0.95
+
+[Detailed explanation merging insights from both reviewers]
+
+---
+
+## High Priority (P1)
+
+[findings...]
+
+## Medium Priority (P2)
+
+[findings...]
+
+## Low Priority (P3)
+
+[findings...]
+
+## Reviewer Disagreements
+
+[Any findings where reviewers had significantly different assessments - one flagged, one didn't, or different priorities]
+
+---
+*Generated by /sdlc:review using GPT-5.2-Codex and Gemini 3 Pro*
+```
+
+### 6. Present Results
+
+After generating the report:
+- Display the full consolidated report
+- Highlight any P0/P1 issues that need immediate attention
+- If no issues found: "No significant issues found. Code looks good to proceed."
+
+## Scope
+
+$ARGUMENTS
+
+## Notes
+
+- If the diff is empty, inform the user: "No changes to review. Stage some changes or specify a commit range."
+- For very large diffs (>10k lines), consider reviewing in chunks or warning the user about token limits
+- Both reviewers run in read-only mode - they cannot modify files
+- Codex uses xhigh reasoning for maximum review quality
+- Gemini uses yolo mode for background execution (will not hang)

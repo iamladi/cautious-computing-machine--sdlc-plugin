@@ -16,12 +16,13 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **/plan** - Generate detailed implementation plans with phases, complexity analysis, and validation steps
 - **/research** - AI-powered research with project context
 - **/implement** - Execute implementation based on generated plans
+- **/review** - Parallel code review with GPT-5.2-Codex and Gemini 3 Pro, consolidated findings
 - **/submit** - Prepare and submit work for review
 - **/verify** - Validate implementation against acceptance criteria
 
 ### 🎯 Skills
 
-- **codex** - OpenAI GPT-5.1-Codex integration for advanced code analysis, refactoring, and automated editing
+- **codex** - OpenAI Codex integration (GPT-5.1/5.2) for code analysis, review, refactoring, and automated editing
 - **gemini** - Google Gemini 3 Pro integration for code review, plan analysis, and big context (>200k) processing
 
 ### 🔌 Integrations
@@ -179,6 +180,19 @@ OR
 ```
 
 Executes the implementation plan with guided steps. Updates GitHub Issue checkboxes during work.
+
+#### Code Review
+
+```bash
+/review                      # Review current changes (staged + unstaged)
+/review origin/main...HEAD   # Review all commits on branch
+```
+
+Runs parallel code reviews with GPT-5.2-Codex (xhigh reasoning) and Gemini 3 Pro:
+- Analyzes git diff for correctness, performance, security, maintainability
+- Deduplicates findings when both reviewers flag the same issue
+- Prioritizes by severity (P0-P3)
+- Consolidates into unified markdown report with overall verdict
 
 #### Verification
 
@@ -398,6 +412,7 @@ sdlc-plugin/
 │   ├── plan.md
 │   ├── research.md
 │   ├── implement.md
+│   ├── review.md
 │   ├── submit.md
 │   └── verify.md
 ├── skills/
