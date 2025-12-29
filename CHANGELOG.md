@@ -5,6 +5,25 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-12-29
+
+### Added
+- **`/interview` skill** - Deep interviews about any topic using Opus model
+  - Works on files (plans, code) or topics/ideas
+  - Iterative questioning with AskUserQuestion
+  - Non-obvious questions that dig deep
+  - Updates files in-place or summarizes insights
+
+- **Smart interview phase for `/plan`** - Asks questions only when genuinely ambiguous
+  - Detects ambiguities before generating plan content
+  - Asks focused questions about architecture, scope, tradeoffs
+  - Skips obvious questions that can be inferred
+  - References `/interview` for deeper follow-up
+
+### Enhanced
+- **`/plan` command** - Now includes "Phase 0: Ambiguity Detection" before planning
+- **README** - Added interview skill documentation and usage examples
+
 ## [1.5.0] - 2025-12-29
 
 ### Added

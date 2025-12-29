@@ -24,6 +24,7 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 
 - **codex** - OpenAI Codex integration (GPT-5.1/5.2) for code analysis, review, refactoring, and automated editing
 - **gemini** - Google Gemini 3 Pro integration for code review, plan analysis, and big context (>200k) processing
+- **interview** - Deep interviews about any topic with iterative questioning (uses Opus)
 
 ### 🔌 Integrations
 
@@ -353,6 +354,11 @@ Skills are invoked when you reference their capabilities:
 
 # Gemini
 "Use gemini to analyze this architecture"
+
+# Interview
+/interview plans/my-feature.md           # Interview about a plan file
+/interview "authentication system"       # Interview about a concept
+/interview src/auth/login.ts             # Interview about existing code
 ```
 
 ## Configuration
@@ -417,7 +423,8 @@ sdlc-plugin/
 │   └── verify.md
 ├── skills/
 │   ├── codex/SKILL.md
-│   └── gemini/SKILL.md
+│   ├── gemini/SKILL.md
+│   └── interview/SKILL.md
 ├── utils/
 │   └── perplexity-mcp/
 │       └── index.js         # Perplexity MCP server
