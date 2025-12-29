@@ -10,6 +10,38 @@ Before starting, rename this session for clarity:
 
 ## Instructions
 
+### Phase 0: Ambiguity Detection (BEFORE planning)
+
+Before generating any plan content, analyze the task for genuine ambiguities:
+
+1. **Identify ambiguous areas** that meaningfully affect the plan:
+   - Multiple valid architecture approaches
+   - Unclear scope boundaries (what's in/out)
+   - Technology choices with real tradeoffs
+   - User intent that could be interpreted differently
+   - Priority decisions (performance vs simplicity, etc.)
+
+2. **If ambiguities exist**: Use `AskUserQuestion` to clarify BEFORE filling the template
+   - Ask 1-4 focused questions using multi-choice options
+   - Only ask questions that meaningfully affect the implementation
+   - Skip obvious questions - don't ask what you can reasonably infer
+
+3. **If the request is clear and specific**: Skip to planning phase
+
+**Example ambiguities worth asking about:**
+- "Should this run synchronously or in background?"
+- "Is offline support needed in first version?"
+- "Should errors be user-facing or logged silently?"
+
+**DON'T ask:**
+- "Do you want tests?" (always yes)
+- "What should we name it?" (can infer from context)
+- "Should we use TypeScript?" (check existing codebase)
+
+For complex plans requiring deeper exploration, recommend the user run `/interview` on the plan after creation.
+
+### Phase 1: Planning
+
 - IMPORTANT: You're writing a plan to resolve a task based on the `Plan` that will add value to the application.
 - IMPORTANT: The `Plan` describes the problem that will be resolved but remember we're not resolving the task, we're creating the plan that will be used to resolve the task based on the `Plan Format` below.
 - You're writing a plan to resolve a task, it should be thorough and precise so we fix the root cause and prevent regressions.
