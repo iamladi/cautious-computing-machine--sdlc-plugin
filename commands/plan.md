@@ -25,6 +25,9 @@ Before generating any plan content, analyze the task for genuine ambiguities:
    - Ask 1-4 focused questions using multi-choice options
    - Only ask questions that meaningfully affect the implementation
    - Skip obvious questions - don't ask what you can reasonably infer
+   - Mark one option as "(Recommended)" when you have a strong preference
+   - Include "Not sure - you decide" as an option for lower-stakes questions
+   - Add footer: "Reply: `1a 2b` or `defaults` to accept recommendations"
 
 3. **If the request is clear and specific**: Skip to planning phase
 
