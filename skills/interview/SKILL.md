@@ -47,28 +47,38 @@ Interview iteratively - one round of questions at a time:
 
 **DON'T ask:**
 - Obvious things ("Do you want tests?")
-- Things you can infer ("What language should we use?" when codebase is TypeScript)
+- Things you can infer ("What language?" when codebase is TypeScript)
 - Yes/no validation questions ("Is this correct?")
 - Surface-level stuff ("What's the feature name?")
+- Questions answerable by quick code discovery (read configs/existing patterns first)
+- Open-ended questions when multiple-choice would eliminate branches faster
 
 ### Question Format
 
-Always use `AskUserQuestion` with multiple choice options when possible:
+Always use `AskUserQuestion` with multiple choice options. Optimize for fast responses:
 
+**Standard format:**
 ```
 AskUserQuestion:
   questions:
     - question: "How should the system handle API failures?"
-      header: "Error handling"
+      header: "Errors"
       options:
-        - label: "Retry with backoff"
+        - label: "Retry with backoff (Recommended)"
           description: "Automatically retry failed requests with exponential backoff"
         - label: "Fail fast"
           description: "Return error immediately, let caller decide"
-        - label: "Queue for later"
-          description: "Store failed requests and retry in background"
+        - label: "Not sure - you decide"
+          description: "Let me pick based on codebase patterns"
       multiSelect: false
 ```
+
+**For power users:** When asking multiple questions, add this footer:
+> Reply format: `1a 2b` or `defaults` to accept all recommended options
+
+**Always include:**
+- One clearly marked "(Recommended)" option when you have a strong opinion
+- A "Not sure - you decide" escape hatch for low-stakes decisions
 
 ### Interview Categories
 
