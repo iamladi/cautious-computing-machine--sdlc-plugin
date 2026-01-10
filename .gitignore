@@ -84,8 +84,9 @@ dist/
 build/
 out/
 
-# Plans (user-generated, may contain sensitive data)
+# Local working files (not for production)
 plans/
+research/
 *.plan.md
 
 # Test outputs
