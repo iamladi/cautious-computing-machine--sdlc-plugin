@@ -5,6 +5,30 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-01-10
+
+### Added
+- **`/test` skill** - Write, review, and convert tests following Kent C. Dodds principles
+  - **Write mode** (default): Generate flat tests with setup functions for source files
+  - **Review mode**: Scan test files for anti-patterns with specific fix suggestions
+  - **Convert mode**: Transform nested tests to flat structure with disposables
+  - Framework detection (Vitest, Bun test, recommends Vitest for Jest)
+  - Templates for unit, integration, and API tests
+  - Disposable fixtures with `using` keyword for automatic cleanup
+
+- **`test-writer` agent** - Auto-spawns for test-related tasks
+  - Enforces flat structure (max 1 describe level)
+  - Composable setup() functions instead of beforeEach
+  - Disposable fixtures with Symbol.asyncDispose
+  - AHA principle (Avoid Hasty Abstractions)
+
+### Enhanced
+- **Testing philosophy** - Kent C. Dodds principles baked into tooling
+  - No nested describes
+  - No beforeEach for test data
+  - No shared mutable state
+  - Explicit over implicit
+
 ## [1.7.0] - 2026-01-07
 
 ### Improved
