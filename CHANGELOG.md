@@ -5,6 +5,43 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-01-25
+
+### Added
+- **Subagent-Driven Development** - `/implement` now dispatches fresh agents per task with two-stage review
+  - **`implementer` agent** - Fresh-context task implementation, TDD-aware, self-reviews, commits changes
+  - **`spec-reviewer` agent** - Verifies implementation matches spec exactly (nothing missing, nothing extra)
+  - **`code-quality-reviewer` agent** - Quick sanity check for obvious bugs, code smells, security issues
+  - Controller answers subagent questions from context, escalates to human if unsure
+  - Review loops with max 3 iterations before escalating
+
+- **`/tdd` skill** - TDD enforcement during implementation
+  - `strict` mode: Test-first required with human escape hatch for prototyping
+  - `soft` mode: Warnings for missing tests without blocking
+  - `off` mode: No TDD checks (default)
+  - Reads `tdd:` setting from project's CLAUDE.md
+
+- **`/finish-branch` skill** - Post-merge cleanup workflow
+  - Detects PR merge status
+  - Switches to main, pulls latest
+  - Runs test suite to verify
+  - Removes worktree if exists
+  - Safe cleanup with checks to prevent data loss
+
+### Enhanced
+- **`/implement` command** - Major update to subagent workflow
+  - Pre-flight TDD mode check
+  - Per-task agent dispatch (implementer → spec-reviewer → code-quality-reviewer)
+  - Question handling: controller answers from context, escalates if unsure
+  - Review loops with convergence limits
+  - Issue checkbox updates per-phase
+  - Backward compatible: trivial tasks can skip subagent overhead
+
+### Philosophy
+- Fresh context per task prevents drift from plan
+- Two-stage review (spec + quality) catches issues early
+- Controller orchestrates without context pollution
+
 ## [1.8.0] - 2026-01-10
 
 ### Added
