@@ -43,7 +43,7 @@ Before generating any plan content, analyze the task for genuine ambiguities:
 
 For complex plans requiring deeper exploration, recommend the user run `/interview` on the plan after creation.
 
-### Phase 1: Planning
+### Phase 1: Planning (Draft)
 
 - IMPORTANT: You're writing a plan to resolve a task based on the `Plan` that will add value to the application.
 - IMPORTANT: The `Plan` describes the problem that will be resolved but remember we're not resolving the task, we're creating the plan that will be used to resolve the task based on the `Plan Format` below.
@@ -60,15 +60,148 @@ For complex plans requiring deeper exploration, recommend the user run `/intervi
 - If you need a new library, use whatever bundler is prefered and be sure to report it in the `Notes` section of the `Plan Format`.
 - Start your research by reading the `README.md` file.
 
-## After Creating the Plan
+### Phase 2: Multi-LLM Blindspot Review
 
-1. Commit the plan file to a new branch: `plan/feature-name`
-2. Create a GitHub Issue from the plan using: `/github:create-issue-from-plan plans/feature-name.md`
-3. This will:
+After creating the draft plan, run it through Codex and Gemini in parallel to uncover blindspots.
+
+**IMPORTANT**: Spawn both review agents in a single message to run them in parallel.
+
+#### Codex Plan Critic
+
+```bash
+codex exec --skip-git-repo-check \
+  -m gpt-5.2-codex \
+  -c model_reasoning_effort="xhigh" \
+  --sandbox read-only \
+  --full-auto \
+  "You are a plan critic. Review this implementation plan for blindspots and gaps.
+
+Focus on finding what the plan author may have MISSED:
+- Missing edge cases (error states, timeouts, rate limits, auth failures)
+- Unclear or ambiguous requirements that could cause confusion
+- Dependency gaps (things that need to exist before a step can work)
+- Risk underestimation (migrations without rollback, breaking changes unmarked)
+- Scope creep signals (does this touch more than intended?)
+- Testing gaps (untested paths, missing integration scenarios)
+- Sequence issues (steps in wrong order, missing prerequisites)
+
+DO NOT:
+- Suggest general improvements or best practices
+- Critique writing style
+- Add nice-to-haves not related to plan correctness
+
+For each finding, provide:
+### [TITLE] (Severity: Critical/High/Medium/Low, Confidence: {0.0-1.0})
+**Section**: [which plan section is affected]
+**Issue**: [what's missing or wrong]
+**Recommendation**: [specific fix]
+
+End with:
+## Overall Assessment
+**Plan Readiness**: [Ready / Needs Revision / Major Gaps]
+**Confidence**: {0.0-1.0}
+**Key Blindspots Found**: {count}
+
+---
+PLAN TO REVIEW:
+$(cat plans/[plan-file].md)" 2>/dev/null
+```
+
+#### Gemini Plan Critic
+
+```bash
+timeout 300 gemini -m gemini-3-pro-preview --approval-mode yolo \
+  "You are a plan critic. Review this implementation plan for blindspots and gaps.
+
+Focus on finding what the plan author may have MISSED:
+- Missing edge cases (error states, timeouts, rate limits, auth failures)
+- Unclear or ambiguous requirements that could cause confusion
+- Dependency gaps (things that need to exist before a step can work)
+- Risk underestimation (migrations without rollback, breaking changes unmarked)
+- Scope creep signals (does this touch more than intended?)
+- Testing gaps (untested paths, missing integration scenarios)
+- Sequence issues (steps in wrong order, missing prerequisites)
+
+DO NOT:
+- Suggest general improvements or best practices
+- Critique writing style
+- Add nice-to-haves not related to plan correctness
+
+For each finding, provide:
+### [TITLE] (Severity: Critical/High/Medium/Low, Confidence: {0.0-1.0})
+**Section**: [which plan section is affected]
+**Issue**: [what's missing or wrong]
+**Recommendation**: [specific fix]
+
+End with:
+## Overall Assessment
+**Plan Readiness**: [Ready / Needs Revision / Major Gaps]
+**Confidence**: {0.0-1.0}
+**Key Blindspots Found**: {count}
+
+---
+PLAN TO REVIEW:
+$(cat plans/[plan-file].md)"
+```
+
+#### Wait and Consolidate
+
+**CRITICAL**: Wait for BOTH critics to complete before proceeding.
+
+Consolidate their feedback:
+1. **Parse findings** from each critic
+2. **Deduplicate** overlapping concerns (same section + similar issue = merge)
+3. **Flag consensus**: When both critics identify the same issue, mark as `[Consensus]` (high confidence)
+4. **Flag unique**: When only one critic found it, mark as `[Codex]` or `[Gemini]`
+5. **Sort by severity**: Critical > High > Medium > Low
+
+### Phase 3: Plan Refinement
+
+Review the consolidated feedback and update the plan:
+
+1. **Critical/High + Consensus**: Must address these. Update the plan.
+2. **Critical/High + Single reviewer**: Evaluate carefully. Address if valid.
+3. **Medium + Consensus**: Should address. Update if straightforward.
+4. **Medium/Low + Single reviewer**: Optional. Use judgment.
+
+For each addressed concern, add a comment in the relevant plan section:
+```
+<!-- Addressed: [brief description of what was added/changed] -->
+```
+
+Add a new section to the plan after `## Notes & Context`:
+
+```markdown
+## Blindspot Review
+
+**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
+**Date**: [timestamp]
+
+### Addressed Concerns
+- [Consensus] Missing rollback strategy for database migration → Added to Phase 1
+- [Codex] No timeout handling for external API calls → Added NFR-3
+- [Gemini] Test coverage gap for error states → Added to Testing Strategy
+
+### Acknowledged but Deferred
+- [Low] Could add more logging → Out of scope for MVP
+
+### Dismissed
+- [Codex, Low] Suggested caching layer → Not needed for current scale
+```
+
+## After Multi-LLM Review
+
+1. Update plan frontmatter:
+   - Set `reviewed: true`
+   - Set `reviewers: ["codex", "gemini"]`
+   - Update `status: Ready for Implementation` (if no major gaps)
+2. Commit the plan file to a new branch: `plan/feature-name`
+3. Create a GitHub Issue from the plan using: `/github:create-issue-from-plan plans/feature-name.md`
+4. This will:
    - Create GitHub Issue with plan summary + implementation phases as checklist
    - Update plan frontmatter with `issue: <number>`
    - Return both plan path and Issue URL
-4. Push branch and optionally create plan review PR, or merge directly if no review needed
+5. Push branch and optionally create plan review PR, or merge directly if no review needed
 
 ## Plan Format
 
@@ -79,6 +212,8 @@ type: <Bug | Feature | Chore | Refactor | Enhancement | Documentation>
 issue: null
 research: []
 status: Draft
+reviewed: false
+reviewers: []
 created: <YYYY-MM-DD>
 ---
 
@@ -478,6 +613,27 @@ Define clear, testable success criteria:
 
 - [ ] Question 1?
 - [ ] Question 2?
+
+## Blindspot Review
+
+**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
+**Date**: <YYYY-MM-DD>
+**Plan Readiness**: <Ready | Needs Revision | Major Gaps>
+
+### Addressed Concerns
+<concerns from multi-LLM review that were incorporated into the plan>
+
+- [Consensus/Codex/Gemini] <issue> → <where addressed in plan>
+
+### Acknowledged but Deferred
+<valid concerns intentionally deferred>
+
+- [Source, Severity] <concern> → <reason for deferral>
+
+### Dismissed
+<concerns that were evaluated but not applicable>
+
+- [Source, Severity] <concern> → <reason for dismissal>
 ```
 
 ## Task
