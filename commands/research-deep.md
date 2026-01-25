@@ -1,6 +1,6 @@
-# Deep Research with Parallel Synthesis
+# Multi-LLM Deep Research
 
-Run 3 independent research instances on the same topic, then merge their findings into one comprehensive document. This approach uncovers more ground by letting each instance take different search paths.
+Run a 3-phase research approach using multiple LLMs (Claude, Gemini, Codex) for diverse analysis perspectives, then synthesize findings with attribution.
 
 ## Session Naming
 
@@ -18,117 +18,211 @@ Before starting, rename this session for clarity:
 
 When this command is invoked, and the `Topic` section below is empty, respond with:
 ```
-I'm ready to run deep parallel research. Please provide your research question, and I'll spawn 3 independent research instances to thoroughly explore it from multiple angles.
+I'm ready to run multi-LLM deep research. Please provide your research question, and I'll gather context with Claude, then analyze it with Claude + Gemini + Codex in parallel for diverse perspectives.
 ```
 
 Then wait for the user's research query.
 
-### Steps to follow after receiving the research query:
+### Phase 1: Discovery (Claude Only)
+
+**Why Claude only:** Gemini and Codex CLI tools can't read local files - they need context embedded in the prompt.
 
 1. **Read any directly mentioned files first:**
    - If the user mentions specific files, read them FULLY first
-   - This ensures you have context before spawning research instances
+   - This ensures you have context before spawning the discovery agent
 
-2. **Create the research tracking structure:**
-   - Create a temp directory for this research session: `research/.deep-research-[timestamp]/`
-   - This will hold the 3 individual research reports before synthesis
-
-3. **Spawn 3 parallel research agents:**
-
-   Launch exactly 3 Task agents simultaneously, each running an independent research flow. Each agent should:
-   - Have a slightly different research emphasis to maximize coverage
-   - Use the existing research agents (codebase-locator, codebase-analyzer, codebase-pattern-finder, web-search-researcher)
-   - Save their findings to the temp directory as `instance-1.md`, `instance-2.md`, `instance-3.md`
-
-   **Instance 1 - Breadth Focus:**
-   - Emphasize finding all relevant files and locations
-   - Cast a wide net across the codebase
-   - Prioritize discovering all entry points and related components
-
-   **Instance 2 - Depth Focus:**
-   - Emphasize deep analysis of core components
-   - Trace data flow and implementation details thoroughly
-   - Focus on understanding how things work internally
-
-   **Instance 3 - Pattern Focus:**
-   - Emphasize finding similar patterns and examples elsewhere in the codebase
-   - Look for related implementations and analogous code
-   - Search for edge cases and alternative code paths
-
-   **Agent Prompt Template:**
+2. **Create the research directory:**
+   ```bash
+   mkdir -p research/.deep-research-$(date +%Y%m%d-%H%M%S)
    ```
-   You are Research Instance [N] investigating: "[RESEARCH QUESTION]"
+   Store the timestamp path for later steps.
 
-   Your focus: [BREADTH/DEPTH/PATTERNS as described above]
+3. **Spawn a single Discovery agent:**
 
-   Instructions:
-   1. Use codebase-locator to find relevant files (emphasize [your focus])
-   2. Use codebase-analyzer to understand how code works
-   3. Use codebase-pattern-finder if looking for similar implementations
-   4. Document ALL file:line references you discover
-   5. Save your complete findings (in markdown) as your final output
+   Use the Task tool with a general-purpose agent that leverages:
+   - `codebase-locator` to find ALL relevant files
+   - `codebase-analyzer` to understand how code works
+   - `codebase-pattern-finder` to find similar implementations
 
-   Remember: You are a documentarian. Describe what exists, don't suggest improvements.
+   **Discovery Agent Prompt:**
+   ```
+   You are a codebase discovery agent. Your job is to find and extract ALL relevant context for the research question: "[RESEARCH QUESTION]"
 
-   Research the following: [RESEARCH QUESTION]
+   ## Your Task
+
+   1. Use codebase-locator to find ALL files related to this topic
+   2. Use codebase-analyzer to understand key components
+   3. Use codebase-pattern-finder for related patterns
+
+   ## Output Format
+
+   Create a context document with this structure:
+
+   ### Context Summary
+   Brief overview of what you found and the scope of the research.
+
+   ### Core Files (Full Snippets)
+   For the 3-5 most important files, include:
+   - File path
+   - Key code snippets (the actual code, not just descriptions)
+   - Brief explanation of what each snippet does
+
+   ### Related Files (Key Functions)
+   For 5-10 related files, include:
+   - File path
+   - Function/class names and signatures
+   - One-liner description
+
+   ### Test Files (Paths Only)
+   - Just list paths to relevant test files
+
+   ### Architecture Notes
+   - Data flow
+   - Key relationships between components
+   - Entry points
+
+   ## CRITICAL CONSTRAINTS
+   - Target <50K characters total (CLI-friendly for external LLMs)
+   - Prioritize code snippets over descriptions
+   - Include actual code, not just explanations
+   - Be comprehensive but concise
+   - You are a documentarian - describe what exists, don't suggest improvements
    ```
 
-4. **Wait for ALL 3 instances to complete:**
-   - Do NOT proceed until all 3 have finished
-   - Each will return their findings
+4. **Save discovery output:**
+   - Write the discovery agent's output to `research/.deep-research-[timestamp]/context.md`
 
-5. **Save individual instance reports:**
-   - Write each instance's findings to the temp directory
-   - `research/.deep-research-[timestamp]/instance-1.md`
-   - `research/.deep-research-[timestamp]/instance-2.md`
-   - `research/.deep-research-[timestamp]/instance-3.md`
+### Phase 2: Analysis (3 LLMs in Parallel)
 
-6. **Spawn the synthesis agent:**
-   - Use the **research-synthesizer** agent
-   - Pass it the paths to all 3 instance reports
-   - It will merge them into one comprehensive document
+Read the `context.md` content and embed it in prompts for each LLM.
+
+**Analysis Prompt Template (used by all 3):**
+```
+You are analyzing a codebase to answer: "[RESEARCH QUESTION]"
+
+## Codebase Context
+
+[CONTENT OF context.md EMBEDDED HERE]
+
+## Your Analysis Task
+
+Based on the context above, provide a comprehensive analysis:
+
+1. **Direct Answer**: Answer the research question based on the code
+2. **Key Components**: List the main files and their roles
+3. **Implementation Details**: How does this actually work?
+4. **Data Flow**: How does data move through the system?
+5. **Patterns Used**: What design patterns or conventions are evident?
+6. **Edge Cases**: What edge cases or special handling exists?
+7. **Dependencies**: What does this depend on? What depends on it?
+
+## Output Format
+
+Use markdown with clear headings. Include file:line references where applicable.
+Be thorough but focused. You are documenting, not critiquing.
+```
+
+**Launch all 3 analyses in parallel using the Task tool and Bash:**
+
+1. **Claude Analysis (Task agent):**
+   ```
+   Task(subagent_type="general-purpose", run_in_background=true):
+   "[Analysis prompt with context.md content]"
+   Save output to: claude-analysis.md
+   ```
+
+2. **Gemini Analysis (Bash, background):**
+   ```bash
+   echo "[ANALYSIS_PROMPT_WITH_CONTEXT]" | timeout 600 gemini -m gemini-3-pro-preview \
+     --approval-mode yolo > research/.deep-research-[timestamp]/gemini-analysis.md 2>/dev/null
+   ```
+
+3. **Codex Analysis (Bash, background):**
+   ```bash
+   echo "[ANALYSIS_PROMPT_WITH_CONTEXT]" | timeout 600 codex exec --skip-git-repo-check \
+     -m gpt-5.2-codex --config model_reasoning_effort="xhigh" \
+     --sandbox read-only > research/.deep-research-[timestamp]/codex-analysis.md 2>/dev/null
+   ```
+
+**IMPORTANT:** Launch all 3 in the same message using multiple tool calls (Task + 2 Bash with run_in_background=true).
+
+### Phase 3: Wait and Collect Results
+
+1. **Wait for all 3 analyses to complete:**
+   - Check background task outputs
+   - 10-minute timeout per external LLM
+
+2. **Handle failures gracefully:**
+   - If Gemini fails: Log it, continue with Claude + Codex
+   - If Codex fails: Log it, continue with Claude + Gemini
+   - If both external LLMs fail: Continue with Claude-only analysis
+   - Minimum requirement: At least Claude analysis must succeed
+
+3. **Verify analysis files exist:**
+   - Check each file has content (not empty)
+   - Note which LLMs contributed in the synthesis step
+
+### Phase 4: Synthesis
+
+1. **Spawn the research-synthesizer agent:**
 
    **Synthesis Prompt:**
    ```
-   Merge these 3 research reports into one comprehensive document:
-   - research/.deep-research-[timestamp]/instance-1.md
-   - research/.deep-research-[timestamp]/instance-2.md
-   - research/.deep-research-[timestamp]/instance-3.md
+   Merge these multi-LLM research reports into one comprehensive document:
+   - research/.deep-research-[timestamp]/claude-analysis.md (Claude)
+   - research/.deep-research-[timestamp]/gemini-analysis.md (Gemini)
+   - research/.deep-research-[timestamp]/codex-analysis.md (Codex)
 
+   Original context: research/.deep-research-[timestamp]/context.md
    Research topic: [RESEARCH QUESTION]
 
-   Create a synthesis that:
-   - Identifies findings that appeared in multiple reports (consensus)
-   - Preserves unique discoveries from each instance
-   - Combines all file:line references
-   - Notes any conflicts between reports
+   IMPORTANT: Use LLM attribution in your synthesis:
+   - [Consensus: 3/3] for findings all 3 LLMs identified
+   - [Consensus: 2/3] for findings 2 LLMs agreed on
+   - [Claude] for Claude-unique findings
+   - [Gemini] for Gemini-unique findings
+   - [Codex] for Codex-unique findings
+
+   The value of multi-LLM is diverse perspectives - highlight where they agree AND where they found unique insights.
    ```
 
-7. **Save the final synthesized document:**
+2. **Save the final document:**
    - Save to `research/research-[topic-kebab-case]-deep.md`
    - Include YAML frontmatter with:
-     - `synthesis_method: parallel-3-instance`
-     - `synthesis_sources: 3`
-   - Clean up the temp directory (optional, or keep for reference)
+     - `synthesis_method: multi-llm`
+     - `llms_used: [list which LLMs contributed]`
+     - `synthesis_sources: [number of successful analyses]`
 
-8. **Add GitHub permalinks (if applicable):**
-   - Same as regular research command
+3. **Add GitHub permalinks (if applicable):**
    - Generate permalinks for all file references
 
-9. **Report completion:**
-   - Summarize what was found
-   - Note the coverage improvement from using 3 instances
-   - Provide the path to the final research document
+4. **Report completion:**
+   - Summarize key findings
+   - Note which LLMs contributed
+   - Highlight consensus vs unique discoveries
+   - Provide path to final research document
+
+## Storage Structure
+
+```
+research/.deep-research-[timestamp]/
+├── context.md          # Phase 1: Discovery output
+├── claude-analysis.md  # Phase 2: Claude's analysis
+├── gemini-analysis.md  # Phase 2: Gemini's analysis
+└── codex-analysis.md   # Phase 2: Codex's analysis
+```
 
 ## Topic
 $ARGUMENTS
 
 ## Important Notes
 
-- **Parallel execution is key** - spawn all 3 instances at once, don't run them sequentially
-- **Different emphases matter** - each instance having a different focus ensures diverse coverage
-- **Synthesis is crucial** - the research-synthesizer agent does the heavy lifting of merging
-- **All findings preserved** - no file:line reference should be lost in synthesis
-- **Consensus = confidence** - findings from multiple instances are more reliable
-- **Unique discoveries = value** - the whole point is to find things single runs miss
-- **No improvements** - all agents are documentarians, not critics
+- **Multi-LLM diversity** - Different models notice different things
+- **Single discovery phase** - One Claude agent gathers all context (external LLMs can't read files)
+- **Context size limit** - Discovery targets <50K chars for CLI compatibility
+- **Parallel analysis** - All 3 LLMs run simultaneously
+- **Graceful degradation** - Synthesis works with 1-3 LLMs
+- **LLM attribution** - Final document shows which LLM found what
+- **Consensus = confidence** - Findings from multiple LLMs are more reliable
+- **Unique discoveries = value** - Each LLM may catch what others miss
+- **No improvements** - All analysis is documentation, not critique
