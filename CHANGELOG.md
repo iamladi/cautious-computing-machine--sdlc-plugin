@@ -5,6 +5,22 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-01-25
+
+### Added
+- **`/research-deep` command** - Parallel research with synthesis
+  - Runs 3 independent research instances simultaneously
+  - Instance 1 (Breadth): Finds all relevant files, casts wide net
+  - Instance 2 (Depth): Deep analysis, traces data flow
+  - Instance 3 (Patterns): Finds similar patterns, edge cases
+  - Merges findings into comprehensive document with consensus tracking
+
+- **`research-synthesizer` agent** - Merges parallel research reports
+  - Identifies consensus findings (high confidence)
+  - Preserves unique discoveries from each instance
+  - Flags conflicts between reports
+  - Coverage analysis with file reference deduplication
+
 ## [1.9.0] - 2026-01-25
 
 ### Added
