@@ -1,6 +1,6 @@
 # Implement the following plan
 
-Follow the `Instructions` to implement the `Plan` with `Feedback loops` then `Report` the completed work.
+Execute the plan using **subagent-driven development**: dispatch fresh agents per task with two-stage review (spec compliance + code quality).
 
 ## Session Naming
 
@@ -11,100 +11,234 @@ Before starting, rename this session for clarity:
 
 ## Instructions
 
-### 1. Check if we're on work branch not main
-- Run `git branch --show-current` to check if we're on main branch.
-- If so, use SlashCommand(/p:generate_branch) with the issue class, and plan file to create new branch
+### 1. Pre-Flight Checks
 
-### 2. Read the `Plan`
+#### Check TDD Mode
+Read the project's CLAUDE.md and extract the `tdd:` setting:
+- `strict`: Test-first required, human escape hatch for prototyping
+- `soft`: Warnings for missing tests, no blocking
+- `off` (default): No TDD enforcement
 
-**Input can be:**
-- **Issue number**: `/implement #123` - Fetch plan from GitHub Issue, use for reading spec
-- **Plan file path**: `/implement plans/file.md` - Read plan from file
+Store this for passing to implementer agents.
+
+#### Check Branch
+Run `git branch --show-current` to verify we're not on main.
+If on main, use SlashCommand(/p:generate_branch) to create a work branch.
+
+### 2. Read and Parse the Plan
+
+**Input formats:**
+- **Issue number**: `/implement #123` - Fetch plan path from Issue
+- **Plan file**: `/implement plans/file.md` - Read directly
 
 **Process:**
-1. If Issue number provided:
-   - Fetch Issue via `gh issue view #123 --json body,number,title`
-   - Issue body should contain plan path reference
-   - Read the plan file from `plans/` directory
-2. If plan file provided:
-   - Read plan frontmatter to get Issue number
-   - If no Issue number, error: "Issue not created yet. Run `/github:create-issue-from-plan` first"
-   - Fetch the Issue for current progress state
+1. If Issue number: `gh issue view #123 --json body,number,title`
+   - Extract plan file path from Issue body
+   - Read plan file
+2. If plan file: Read frontmatter for Issue number
+   - If no Issue: error "Run `/github:create-issue-from-plan` first"
+   - Fetch Issue for progress state
 
 **When reading plan:**
-- Read the plan completely (understand full spec)
-- Check Issue body for existing checkmarks (progress tracking)
-- Read all files mentioned in the plan
-- **Read files fully** - never use limit/offset parameters, you need complete context
-- Ultrathink about how the pieces fit together
-- Create a todo list to track your progress
-- Start implementing if you understand what needs to be done
+- Read completely, understand full spec
+- Check Issue body for existing checkmarks (progress)
+- Read all files mentioned in plan (fully, no limit/offset)
+- **Extract tasks**: Parse Implementation Plan phases and their checkbox items
+- Ultrathink: how do the pieces connect?
 
-### 3. Implementation Philosophy
+### 3. Subagent-Driven Implementation
 
-Plans are carefully designed, but reality can be messy. Your job is to:
-- Follow the plan's intent while adapting to what you find
-- Implement each phase fully before moving to the next
-- Verify if your work makes sense in the broader codebase context
-- Update checkboxes in the plan as you complete sections
-- Use feedback loops to verify your code does what's expected 
-- Self-reflect on your solution while you're implementing it to avoid any bugs or issues
+For each **task** in the plan (checkbox items within phases):
 
-When things don't match the plan exactly, think about why and communicate clearly.
-The plan is your guide, but your judgment matters too.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CONTROLLER (YOU)                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  For each task:                                             │
+│                                                             │
+│  1. Dispatch IMPLEMENTER agent                              │
+│     └─→ Fresh context, TDD-aware, implements task           │
+│     └─→ Can ask questions → controller answers              │
+│     └─→ Self-reviews, commits changes                       │
+│                                                             │
+│  2. Dispatch SPEC-REVIEWER agent                            │
+│     └─→ Verifies: nothing missing, nothing extra            │
+│     └─→ Returns: PASS or list of issues                     │
+│     └─→ If FAIL: implementer fixes → re-review (max 3)      │
+│                                                             │
+│  3. Dispatch CODE-QUALITY-REVIEWER agent                    │
+│     └─→ Quick sanity check for obvious issues               │
+│     └─→ Returns: PASS or list of obvious issues             │
+│     └─→ If FAIL: implementer fixes → re-review (max 3)      │
+│                                                             │
+│  4. Mark task complete in todo list                         │
+│                                                             │
+│  After phase complete:                                      │
+│  → Update Issue checkboxes via GitHub API                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
-If you encounter a mismatch:
-- STOP and ultrathink about why the plan can't be followed
-- Present the issue clearly:
-  ```text
-  Issue in Phase [N]:
-  Expected: [what the plan says]
-  Found: [actual situation]
-  Why this matters: [explanation]
-  ```
-- Finish the task as failed and do not continue
+#### Dispatching Implementer Agent
 
-### Verification Approach
+Use the Task tool with `subagent_type: "implementer"`:
 
-After implementing a phase:
-- Run the app as background process with SlashCommand dedicated for starting the app
-- Run the success criteria checks plus any health repo commands or agents
-- Run codereview with Codex and Gemini skills grounded with websearch with parallel sub-agents
-- Analyze the codereviews and fix any issues before proceeding (don't be lazy)
-- Update your progress in your todos
-- **Update Issue checkboxes via GitHub API**: `gh issue edit #123 --body "...updated body with checkmarks..."`
-  - Never modify plan file during implementation (it's the immutable spec)
-  - Plan file stays clean, Issue tracking shows progress
-- Update todo list with completed items
+```markdown
+## Task
+[Task description from plan]
 
-If instructed to execute multiple phases consecutively, skip the pause until the last phase.
-Otherwise, assume you are just doing one phase.
+## Spec
+[Detailed requirements - copy relevant section from plan]
 
-### If You Get Stuck
+## TDD Mode
+[strict|soft|off]
 
-When something isn't working as expected:
-- First, make sure you've read and understood all the relevant code
-- Consider if the codebase has evolved since the plan was written
-- Present the mismatch clearly and ask for guidance
+## Context
+[Relevant patterns, files to follow, codebase conventions]
 
-Use sub-tasks sparingly - mainly for targeted debugging or exploring unfamiliar territory.
+## Files to Reference
+[List key files the implementer should read]
+```
 
-### Resuming Work
+#### Handling Implementer Questions
 
-If the plan has existing checkmarks:
-- Trust that completed work is done
-- Pick up from the first unchecked item
-- Verify previous work only if something seems off
+When implementer asks a question:
+1. **Try to answer from context first**
+   - Check the plan, related files, codebase patterns
+   - If confident: provide answer
+2. **If unsure: escalate to human**
+   - Use `AskUserQuestion` to get clarification
+   - Pass answer back to implementer (may need to re-dispatch)
 
-Remember: You're implementing a solution, not just checking boxes. Keep the end goal in mind and maintain forward momentum.
+#### Dispatching Spec Reviewer
 
-## Feedback loops
+After implementer completes, use Task tool with `subagent_type: "spec-reviewer"`:
 
-Read `FEEDBACK_LOOPS.md` file in the repo. This file gives you tools and places to use for feedback on your implementation.
+```markdown
+## Task Spec
+[Original task requirements]
+
+## Implementation
+[Files changed by implementer]
+
+## Review
+Verify implementation matches spec exactly:
+- Nothing missing
+- Nothing extra
+- Behavior as specified
+```
+
+**Review Loop (max 3 iterations):**
+1. If PASS: proceed to code quality review
+2. If FAIL: dispatch implementer to fix issues, then re-review
+3. After 3 failures: escalate to human
+
+#### Dispatching Code Quality Reviewer
+
+After spec review passes, use Task tool with `subagent_type: "code-quality-reviewer"`:
+
+```markdown
+## Changed Files
+[List of files from implementation]
+
+## Quick Review
+Check for obvious issues only:
+- Clear bugs
+- Code smells
+- Security red flags
+- Anti-patterns
+```
+
+**Review Loop (max 3 iterations):**
+Same pattern as spec review.
+
+### 4. Progress Tracking
+
+#### Todo List
+Create and maintain a todo list for tracking:
+- Each phase as a high-level item
+- Each task within phases
+- Mark in_progress when dispatching implementer
+- Mark completed after both reviews pass
+
+#### Issue Updates
+After completing a **phase** (not each task):
+- Update Issue body with checkmarks: `gh issue edit #123 --body "..."`
+- Plan file stays immutable (it's the spec)
+- Issue tracks progress
+
+### 5. Phase Completion
+
+After each phase:
+- Verify all tasks in phase complete
+- Update Issue checkboxes for the phase
+- Brief status update to user
+
+If multiple phases requested: continue to next phase.
+Otherwise: pause for user confirmation.
+
+### 6. Final Steps
+
+After all requested work complete:
+- Summary of what was implemented
+- Recommend: "Run `/review` for thorough code analysis before submission"
+- Report files changed with `git diff --stat`
+
+## Controller Responsibilities
+
+As the controller, you:
+
+1. **Orchestrate** - Dispatch agents, manage flow
+2. **Provide Context** - Give agents what they need
+3. **Answer Questions** - From plan knowledge first, then human
+4. **Track Progress** - Todos and Issue updates
+5. **Enforce Limits** - Max 3 review iterations
+6. **Escalate** - When review loops don't converge
+
+## Error Handling
+
+### Implementer Gets Stuck
+- If asking questions: try to answer from context
+- If blocked: report clearly, ask human for guidance
+
+### Review Loop Doesn't Converge
+After 3 iterations without PASS:
+```
+Review loop not converging after 3 attempts.
+
+Last issues:
+[list from reviewer]
+
+Options:
+1. Try one more fix attempt
+2. Skip this review and proceed (not recommended)
+3. Stop and address manually
+```
+
+### Spec Mismatch Found
+If the plan can't be followed as written:
+```
+Issue in Phase [N]:
+Expected: [what plan says]
+Found: [actual situation]
+Why this matters: [explanation]
+
+Stopping for guidance.
+```
+
+## Backward Compatibility
+
+The new workflow is the default. For simple tasks where subagent overhead isn't worth it:
+- Very small changes (single line fixes)
+- Controller can implement directly without dispatching
+
+Use judgment: if the task is trivial, just do it. Subagents are for non-trivial tasks.
 
 ## Plan
 $ARGUMENTS
 
 ## Report
-- Summarize the work you've just done in a concise bullet point list.
-- Report the files and total lines changed with `git diff --stat`
+- Summarize work done in concise bullet points
+- Note any review iterations needed
+- Report files and lines changed with `git diff --stat`

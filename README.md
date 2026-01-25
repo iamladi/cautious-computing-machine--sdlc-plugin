@@ -10,6 +10,9 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **codebase-locator** - Fast component location and discovery across your codebase
 - **codebase-pattern-finder** - Pattern detection and architectural understanding
 - **web-search-researcher** - Real-time research capabilities via web search
+- **implementer** - Fresh-context task implementer for subagent workflow (TDD-aware, self-reviews)
+- **spec-reviewer** - Verifies implementation matches spec exactly (nothing missing, nothing extra)
+- **code-quality-reviewer** - Quick sanity check for obvious bugs and code smells
 
 ### ⚡ Commands
 
@@ -25,6 +28,8 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **codex** - OpenAI Codex integration (GPT-5.1/5.2) for code analysis, review, refactoring, and automated editing
 - **gemini** - Google Gemini 3 Pro integration for code review, plan analysis, and big context (>200k) processing
 - **interview** - Deep interviews about any topic with iterative questioning (uses Opus)
+- **tdd** - TDD enforcement during implementation (strict/soft/off modes via CLAUDE.md)
+- **finish-branch** - Post-merge cleanup: switches to main, pulls, runs tests, removes worktree
 
 ### 🔌 Integrations
 
@@ -413,18 +418,25 @@ sdlc-plugin/
 │   ├── codebase-analyzer.md
 │   ├── codebase-locator.md
 │   ├── codebase-pattern-finder.md
+│   ├── code-quality-reviewer.md  # Quick quality sanity check
+│   ├── implementer.md            # Fresh-context task implementer
+│   ├── spec-reviewer.md          # Spec compliance reviewer
+│   ├── test-writer.md
 │   └── web-search-researcher.md
 ├── commands/
 │   ├── plan.md
 │   ├── research.md
-│   ├── implement.md
+│   ├── implement.md         # Subagent-driven workflow
 │   ├── review.md
 │   ├── submit.md
 │   └── verify.md
 ├── skills/
 │   ├── codex/SKILL.md
+│   ├── finish-branch/SKILL.md   # Post-merge cleanup
 │   ├── gemini/SKILL.md
-│   └── interview/SKILL.md
+│   ├── interview/SKILL.md
+│   ├── tdd/SKILL.md             # TDD enforcement
+│   └── test/SKILL.md
 ├── utils/
 │   └── perplexity-mcp/
 │       └── index.js         # Perplexity MCP server
@@ -476,6 +488,42 @@ Pattern and architecture analysis:
 ```
 Use codebase-pattern-finder to identify repository patterns
 ```
+
+### implementer
+
+Subagent for implementing individual tasks from a plan:
+
+- Operates with fresh context per task
+- TDD-aware (respects project's tdd: setting)
+- Self-reviews before handoff
+- Commits atomic changes
+- Can ask questions when unclear
+
+**Invoked by:** `/implement` controller, not directly
+
+### spec-reviewer
+
+Verifies implementation matches specification exactly:
+
+- Nothing missing from spec
+- Nothing extra beyond spec
+- Returns PASS or list of issues
+- Binary verdict for clean feedback
+
+**Invoked by:** `/implement` controller after implementer completes
+
+### code-quality-reviewer
+
+Quick sanity check for obvious issues:
+
+- Clear bugs (null access, off-by-one)
+- Code smells (massive functions, deep nesting)
+- Security red flags (hardcoded secrets, injection)
+- Anti-patterns
+
+Not exhaustive - use `/review` for thorough analysis.
+
+**Invoked by:** `/implement` controller after spec review passes
 
 ## Development
 
