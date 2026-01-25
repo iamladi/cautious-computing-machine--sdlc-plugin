@@ -5,6 +5,17 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-01-25
+
+### Added
+- **Multi-LLM Blindspot Review** for `/plan` command
+  - Phase 2: Codex and Gemini run in parallel as plan critics
+  - Phase 3: Claude incorporates valid feedback into the plan
+  - Critics look for missing edge cases, dependency gaps, risk underestimation, testing gaps
+  - Consensus markers: `[Consensus]`, `[Codex]`, `[Gemini]` for attribution
+  - New plan template section: `## Blindspot Review` with addressed/deferred/dismissed concerns
+  - New frontmatter fields: `reviewed`, `reviewers`
+
 ## [1.10.0] - 2026-01-25
 
 ### Added
