@@ -13,11 +13,13 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **implementer** - Fresh-context task implementer for subagent workflow (TDD-aware, self-reviews)
 - **spec-reviewer** - Verifies implementation matches spec exactly (nothing missing, nothing extra)
 - **code-quality-reviewer** - Quick sanity check for obvious bugs and code smells
+- **research-synthesizer** - Merges multiple research reports into comprehensive document with consensus tracking
 
 ### ⚡ Commands
 
 - **/plan** - Generate detailed implementation plans with phases, complexity analysis, and validation steps
 - **/research** - AI-powered research with project context
+- **/research-deep** - Parallel research with 3 instances and synthesis for comprehensive coverage
 - **/implement** - Execute implementation based on generated plans
 - **/review** - Parallel code review with GPT-5.2-Codex and Gemini 3 Pro, consolidated findings
 - **/submit** - Prepare and submit work for review
@@ -172,6 +174,24 @@ Generates a comprehensive PRD with phases, complexity analysis, and validation s
 ```
 
 Performs AI-powered research using project context and web search.
+
+#### Deep Research (Parallel with Synthesis)
+
+```bash
+/research-deep "How does the authentication system work?"
+```
+
+Runs **3 independent research instances** in parallel, then merges findings:
+- **Instance 1 (Breadth)**: Casts wide net, finds all relevant files and entry points
+- **Instance 2 (Depth)**: Deep analysis of core components, traces data flow
+- **Instance 3 (Patterns)**: Finds similar patterns elsewhere, discovers edge cases
+
+The synthesis identifies:
+- **Consensus findings** (discovered by multiple instances = high confidence)
+- **Unique discoveries** (found by only one instance = valuable additions)
+- Any conflicts between research reports
+
+Use when a single research run might miss important aspects of complex codebases.
 
 #### Implementation
 
