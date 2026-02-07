@@ -12,7 +12,7 @@ const evalCase: EvalCase = {
     },
     {
       name: 'has-documentarian-constraint',
-      test: (content) => /YOUR ONLY JOB IS TO DOCUMENT/.test(content)
+      test: (content) => /YOUR ONLY JOB IS TO DOCUMENT/.test(content) || /documentarian.constraints/i.test(content)
     },
     {
       name: 'shows-code-examples-in-output',

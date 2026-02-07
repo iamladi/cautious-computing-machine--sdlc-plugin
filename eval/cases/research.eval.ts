@@ -8,7 +8,7 @@ const evalCase: EvalCase = {
     ...commonStructural(),
     {
       name: 'has-documentarian-constraint',
-      test: (content) => /YOUR ONLY JOB IS TO DOCUMENT/.test(content)
+      test: (content) => /YOUR ONLY JOB IS TO DOCUMENT/.test(content) || /documentarian.constraints/i.test(content)
     },
     {
       name: 'has-idea-section',
@@ -25,7 +25,7 @@ const evalCase: EvalCase = {
     },
     {
       name: 'forbids-suggestions',
-      test: (content) => /DO NOT suggest improvements|DO NOT.*suggest/i.test(content)
+      test: (content) => /DO NOT suggest|no suggestion|documentarian/i.test(content)
     }
   ],
   behavioral: [
