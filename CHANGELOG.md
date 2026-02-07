@@ -5,6 +5,20 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-02-07
+
+### Changed
+- **Declarative cleanup of all 22 prompt files** — 74% line reduction (4,530 → 1,166 lines)
+  - Rewrote 7 commands, 6 skills, 9 agents from imperative to 5-layer declarative structure
+  - Extracted 6 reference files (PRD template, blindspot protocol, documentarian constraints, test patterns, Gemini/Codex CLI refs)
+  - Deduplicated shared documentarian constraints into single reference file
+  - Removed casual language and urgency marker stacking
+
+### Added
+- **Eval harness** (`eval/`) — 157 structural assertions across all 22 prompts for regression testing
+  - `bun run eval` for structural checks, `bun run eval:llm` for behavioral (API-based)
+  - Baseline captured for future comparison
+
 ## [1.11.0] - 2026-01-25
 
 ### Added

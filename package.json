@@ -1,10 +1,14 @@
 {
   "name": "sdlc-plugin",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Comprehensive SDLC plugin with specialized agents, commands, and integrations",
   "private": true,
   "type": "module",
   "scripts": {
+    "eval": "bun run eval/run-eval.ts --mode structural",
+    "eval:llm": "bun run eval/run-eval.ts --mode all",
+    "eval:baseline": "bun run eval/run-eval.ts --mode structural && cp eval/results/$(ls -t eval/results/ | head -1) eval/results/baseline/structural-baseline.json",
+    "eval:test": "bun run eval/eval.test.ts",
     "validate": "bun run scripts/validate-plugin.ts",
     "validate:versions": "bun run scripts/validate-versions.ts",
     "release:patch": "bun run scripts/release.ts patch",
@@ -12,6 +16,7 @@
     "release:major": "bun run scripts/release.ts major"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@types/bun": "latest",
     "zod": "^3.23.8"
   }

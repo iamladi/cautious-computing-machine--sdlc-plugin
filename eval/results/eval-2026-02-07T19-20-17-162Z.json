@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-02-07T19:20:17.162Z",
+  "mode": "structural",
+  "totalCases": 1,
+  "totalAssertions": 8,
+  "passed": 5,
+  "failed": 3,
+  "skipped": 0,
+  "estimatedCost": 0,
+  "results": [
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "has-priorities-section",
+      "passed": false,
+      "details": "Assertion failed"
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "no-important-stacking",
+      "passed": false,
+      "details": "Assertion failed"
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "no-casual-language",
+      "passed": false,
+      "details": "Assertion failed"
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "has-session-naming-section",
+      "passed": true
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "has-plan-format-section",
+      "passed": true
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "has-instructions-section",
+      "passed": true
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "has-multi-llm-review",
+      "passed": true
+    },
+    {
+      "promptFile": "commands/plan.md",
+      "description": "Tests the /plan command prompt structure and behavior",
+      "mode": "structural",
+      "assertion": "mentions-codex-and-gemini",
+      "passed": true
+    }
+  ]
+}

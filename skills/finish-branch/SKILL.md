@@ -6,222 +6,43 @@ argument-hint: [PR-number] | [branch-name]
 
 # Finish Branch Skill
 
-Clean up after a feature branch has been merged. This skill handles the post-merge workflow to keep your repository tidy.
+## Priorities
 
-## When to Use
+Safety > Completeness > Speed
 
-- After a PR has been merged to main
-- When you want to clean up a completed feature branch
-- After confirming work is integrated and no longer needed locally
+## Goal
+
+Clean up local and worktree branches after PR merge. Verify merge status via gh pr view or git branch --merged, switch to main, pull latest, run tests, delete branch using safe delete, and remove associated worktree if present. Maintain repository hygiene without losing work.
+
+## Constraints
+
+- Check merge detection: use gh pr view for PR numbers, git branch -r --merged for branch names
+- Never delete unmerged: use git branch -d (safe delete), never -D
+- Verify clean state: check git status before switching branches
+- Confirm worktree cleanup: git worktree remove only after verifying path
+- Stop if PR not merged or branch has unmerged commits
+- Warn on test failures but continue cleanup
 
 ## Workflow
 
-### 1. Detect Merge Status
-
-First, verify the PR/branch has been merged:
-
-```bash
-# If PR number provided
-gh pr view [PR-number] --json state,mergedAt
-
-# If branch name provided, check if it exists on remote and was merged
-git fetch origin
-git branch -r --merged origin/main | grep [branch-name]
-```
-
-**If not merged**: Stop and inform user. Don't clean up unmerged work.
-
-### 2. Stash or Verify Clean State
-
-Before switching branches, ensure no uncommitted work:
-
-```bash
-# Check for uncommitted changes
-git status --porcelain
-
-# If changes exist, warn user
-# Offer to stash or abort
-```
-
-### 3. Switch to Main
-
-```bash
-git checkout main
-```
-
-### 4. Pull Latest
-
-```bash
-git pull origin main
-```
-
-### 5. Run Test Suite
-
-Verify the merged code works:
-
-```bash
-# Detect and run appropriate test command
-# Check package.json for test script
-bun run test
-# or
-npm test
-# or appropriate command for the project
-```
-
-**If tests fail**: Warn user but continue cleanup. The merged code may have issues that need addressing separately.
-
-### 6. Delete Local Branch
-
-```bash
-git branch -d [branch-name]
-```
-
-Use `-d` (safe delete) not `-D`. If branch has unmerged commits, git will warn us.
-
-### 7. Clean Up Worktree (if exists)
-
-If the branch used a git worktree:
-
-```bash
-# List worktrees
-git worktree list
-
-# If worktree exists for the branch
-git worktree remove [worktree-path]
-```
-
-### 8. Optional: Prune Remote Tracking
-
-```bash
-git remote prune origin
-```
-
-## Arguments
-
-Parse `$ARGUMENTS`:
-
-- **PR number**: `finish-branch #123` or `finish-branch 123`
-  - Fetch PR details to get branch name
-  - Verify PR is merged
-
-- **Branch name**: `finish-branch feat/my-feature`
-  - Verify branch was merged to main
-  - Proceed with cleanup
-
-- **No argument**: Detect from current branch
-  - Get current branch name
-  - Find associated PR if any
-  - Verify merged status
-
-## Output Format
-
-### Success
-
-```markdown
-## Branch Cleanup Complete
-
-### PR/Branch
-- PR: #123 (merged [date])
-- Branch: feat/my-feature
-
-### Actions Taken
-- [x] Switched to main
-- [x] Pulled latest (now at [commit])
-- [x] Tests passed
-- [x] Deleted local branch
-- [x] Removed worktree: /path/to/worktree
-
-### Status
-Clean! Ready for next task.
-```
-
-### Partial Success
-
-```markdown
-## Branch Cleanup Partial
-
-### PR/Branch
-- PR: #123 (merged [date])
-- Branch: feat/my-feature
-
-### Actions Taken
-- [x] Switched to main
-- [x] Pulled latest
-- [ ] Tests FAILED (see below)
-- [x] Deleted local branch
-
-### Test Failures
-[test output]
-
-### Note
-Branch cleaned up but tests are failing on main.
-This may need separate investigation.
-```
-
-### Blocked
-
-```markdown
-## Branch Cleanup Blocked
-
-### Reason
-PR #123 is not merged yet.
-
-### Current State
-- PR Status: Open
-- Branch: feat/my-feature
-- Uncommitted changes: [yes/no]
-
-### Next Steps
-1. Complete PR review and merge
-2. Then run `/finish-branch #123` again
-```
+1. Parse arguments: PR number, branch name, or detect from current branch
+2. Verify merge status: gh pr view or git branch --merged check
+3. Check uncommitted changes: git status --porcelain, warn if dirty
+4. Switch to main: git checkout main
+5. Pull latest: git pull origin main
+6. Run tests: detect and execute appropriate test command
+7. Delete branch: git branch -d [name]
+8. Clean worktree: git worktree list, then git worktree remove if exists
+9. Prune remotes: git remote prune origin
 
 ## Safety Checks
 
-1. **Never delete unmerged branches**: Always verify merge status first
-2. **Never force delete**: Use `git branch -d` not `-D`
-3. **Check for uncommitted work**: Don't lose user's changes
-4. **Verify we're not on the branch**: Can't delete checked-out branch
-5. **Confirm worktree path**: Don't remove wrong directory
+- PR merge detection: always verify before cleanup
+- Safe delete only: never force delete with -D
+- Check before switch: confirm no uncommitted work
+- Worktree path confirmation: verify worktree path before removal
+- Stop on unmerged: halt cleanup if branch not merged to main
 
-## Error Handling
+## Arguments
 
-### PR Not Found
-```
-Error: PR #123 not found. Check the number and try again.
-```
-
-### Branch Not Found
-```
-Error: Branch 'feat/my-feature' not found locally.
-Already cleaned up or never existed.
-```
-
-### Unmerged Work
-```
-Warning: Branch has commits not in main.
-Cannot safely delete. Use 'git branch -D' manually if intentional.
-```
-
-### Worktree Issues
-```
-Warning: Could not remove worktree at /path.
-Manual cleanup may be needed: git worktree remove /path
-```
-
-## Integration with Workflow
-
-Typical flow after PR merge:
-
-```
-1. PR merged on GitHub
-2. User runs: /finish-branch #123
-3. Skill verifies merge, cleans up
-4. User starts next task with clean state
-```
-
-## Related Skills
-
-- `/implement` - Implementation that creates branches
-- `/submit` - Creates PRs that eventually need cleanup
-- `primitives:worktree` - Worktree management (if available)
+$ARGUMENTS
