@@ -279,6 +279,47 @@ Research before making architectural decisions:
 /research "Add authentication to our Next.js app" --includeProjectTree
 ```
 
+## Swarm Mode (Agent Teams)
+
+Swarm mode uses Claude Code's experimental agent teams to spawn multiple teammates that explore the codebase in parallel and communicate findings with each other.
+
+**Prerequisite**: Set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in your environment or Claude Code settings.json.
+
+### Codebase Exploration
+
+```bash
+/research "How does the authentication system work in this codebase" --swarm
+```
+
+**What happens:**
+- Creates an agent team with 3 teammates (locator, analyzer, pattern-finder)
+- Teammates explore the codebase in parallel and share discoveries
+- Team lead synthesizes findings into a standard research document
+- Team is cleaned up automatically after completion
+
+### Deep Research with Swarm Discovery
+
+```bash
+/research-deep "How does the event processing pipeline work" --swarm
+```
+
+**What happens:**
+- Phase 1 (Discovery): Agent team explores codebase in parallel instead of a single subagent
+- Phase 2 (Analysis): Claude + Gemini + Codex analyze the team's findings (unchanged)
+- Phase 3 (Synthesis): Merges all findings with both team and LLM attribution
+
+### When to Use --swarm
+
+Use `--swarm` when:
+- The topic spans multiple subsystems or directories
+- You want teammates to cross-pollinate findings (e.g., locator finds files → analyzer traces them)
+- The codebase is large enough to benefit from parallel exploration
+
+Skip `--swarm` when:
+- The topic is narrowly scoped (single file or function)
+- You want faster, lower-token-cost results
+- Agent teams feature is not enabled
+
 ## Research + Implementation Workflow
 
 ```bash
