@@ -1,7 +1,7 @@
 ---
 title: "Add --swarm flag to /research and /research-deep commands"
 type: Feature
-issue: null
+issue: https://github.com/iamladi/cautious-computing-machine--sdlc-plugin/issues/25
 research: []
 status: Ready for Implementation
 reviewed: true
