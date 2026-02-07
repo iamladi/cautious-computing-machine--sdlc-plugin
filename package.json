@@ -12,6 +12,7 @@
     "release:major": "bun run scripts/release.ts major"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@types/bun": "latest",
     "zod": "^3.23.8"
   }
