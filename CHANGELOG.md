@@ -5,6 +5,17 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-02-07
+
+### Added
+- **`--swarm` flag for `/research` and `/research-deep`** — opt-in agent team-based parallel research
+  - Spawns 3 teammates (locator, analyzer, pattern-finder) that explore the codebase in parallel and communicate findings
+  - `/research-deep --swarm` uses team for Discovery phase; Analysis (multi-LLM) and Synthesis unchanged
+  - Feature flag validation with graceful fallback to subagent mode
+  - Unique timestamped team names, 10-minute timeout, always-run cleanup
+  - Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+- Swarm mode examples in `examples/research-examples.md`
+
 ## [1.12.0] - 2026-02-07
 
 ### Changed
