@@ -1,7 +1,7 @@
 // Configuration for the eval harness
 export const config = {
   // Anthropic API - reads from ANTHROPIC_API_KEY env var
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
+  apiKey: Bun.env.ANTHROPIC_API_KEY ?? '',
   model: 'claude-sonnet-4-5-20250929', // cheap + fast for eval
   maxTokens: 4096,
 

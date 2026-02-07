@@ -3,7 +3,7 @@
  * Verifies that structural assertions work correctly on mock prompts
  */
 
-import type { StructuralAssertion, EvalCase } from './eval.types.ts'
+import type { StructuralAssertion } from './eval.types.ts'
 import { commonStructural } from './shared-assertions.ts'
 
 // Mock prompt content for testing

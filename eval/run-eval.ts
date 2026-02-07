@@ -306,7 +306,8 @@ async function runEval() {
   await mkdir(RESULTS_DIR, { recursive: true })
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const reportPath = join(RESULTS_DIR, `eval-${timestamp}.json`)
-  await Bun.write(reportPath, JSON.stringify(report, null, 2))
+  const { writeFile } = await import('fs/promises')
+  await writeFile(reportPath, JSON.stringify(report, null, 2))
 
   // Print summary
   console.log('=== Summary ===')
