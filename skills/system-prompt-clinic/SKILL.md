@@ -151,7 +151,7 @@ Don't guess about domain constraints.
 
 ## References
 
-Read `/Users/iamladi/Projects/claude-code-plugins/sdlc-plugin/skills/system-prompt-clinic/references/transformation-patterns.md` before starting. This contains:
+Read `references/transformation-patterns.md` before starting. This contains:
 - The 6 core transformation patterns with before/after examples
 - The scoring rubric for diagnosis
 - Anti-patterns to avoid

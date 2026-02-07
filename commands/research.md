@@ -67,10 +67,6 @@ Wait for all subagents to complete their investigation. Integrate their findings
 
 An alternative approach using agent teams for research that benefits from dynamic collaboration between teammates. This works well when the research question requires teammates to share discoveries in real-time rather than working in isolation.
 
-### Why Teams Work Better for Research
-
-Parallel research with independent perspectives produces more complete results than sequential investigation. When a locator finds a file the analyzer should examine, or an analyzer discovers a pattern the pattern finder should trace, immediate coordination prevents duplicate work and missed connections. The team structure provides a shared task list and messaging channel that enables this coordination without rigid orchestration.
-
 ### Team Prerequisites and Fallback
 
 Attempt to create the agent team using `TeamCreate` with a unique timestamped name: `research-{topic-kebab}-{YYYYMMDD-HHMMSS}` and description: "Research: {topic}".
@@ -100,25 +96,17 @@ Your role is to find ALL files, directories, and components relevant to "{topic}
 
 Approach this with multiple search strategies — don't rely on a single grep pattern. Try different naming conventions, file extensions, and related concepts. Categorize what you find (implementation, tests, config, types, docs) so teammates know what matters most.
 
-When you discover files that teammates should examine, tell them via SendMessage. If you notice directory patterns or file counts that suggest scale or organization, share that too.
-
-When you've achieved comprehensive coverage of the codebase locations, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE" to signal you're done.
-
-All findings must include full file paths. Don't read file contents in depth — your value is breadth of coverage.
+When you discover files that teammates should examine, tell them via SendMessage. When you've achieved comprehensive coverage, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE". All findings must include full file paths.
 
 **Teammate 2: Analyzer**
 
 Your role is to understand HOW "{topic}" works — trace the actual execution paths, data flow, and component interactions. Success means the team understands the implementation mechanics, not just the surface API.
 
-Read files thoroughly before making statements. Follow the code paths to see what actually happens, don't assume based on names or structure. Every claim you make should cite file:line references that prove it.
+Read files thoroughly before making statements. Follow the code paths to see what actually happens. Every claim you make should cite file:line references that prove it.
 
 Focus on the "how" questions: Where are the entry points? What's the core logic? How does data flow through? What error handling exists? How do components interact?
 
-When you discover patterns worth documenting (for Pattern Finder) or realize files are missing from the team's awareness (for Locator), share those observations via SendMessage.
-
-When you've achieved sufficient depth of understanding to explain the implementation, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE" to signal you're done.
-
-Document your findings in these categories: Entry Points, Core Implementation, Data Flow, Key Patterns, Configuration, Error Handling.
+When you discover patterns worth documenting or realize files are missing from the team's awareness, share via SendMessage. When you've achieved sufficient depth to explain the implementation, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE".
 
 **Teammate 3: Pattern Finder**
 
@@ -126,9 +114,7 @@ Your role is to find similar implementations, usage examples, and existing patte
 
 Show actual working code examples with file:line references, not just snippets. When multiple variations exist, show them — the differences often reveal important context. Categorize patterns by type: API patterns, data patterns, component patterns, testing patterns.
 
-When you find patterns the Analyzer should trace or files the Locator missed, share via SendMessage. Test patterns alongside implementation patterns provide valuable context.
-
-When you've achieved sufficient breadth to show the patterns and conventions, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE" to signal you're done.
+When you find patterns the Analyzer should trace or files the Locator missed, share via SendMessage. When you've achieved sufficient breadth to show the patterns and conventions, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE".
 
 ### Optional Web Research
 
@@ -136,9 +122,7 @@ If the user explicitly requested web research, spawn a `web-search-researcher` s
 
 ### Completion Criteria and Convergence
 
-Teammates signal completion by sending "RESEARCH COMPLETE" messages. This means they've achieved their role's success criteria (coverage, depth, or breadth respectively), not that they've exhausted all possibilities.
-
-**Timeout guardrails**: Wait up to 10 minutes from teammate spawn time for all three to complete. If a teammate hasn't signaled completion by timeout, proceed with available findings and note which teammates timed out in the output. Research quality matters more than mechanical completeness — partial results from timed-out teammates are still valuable.
+Teammates signal completion by sending "RESEARCH COMPLETE" messages. Wait up to 10 minutes from teammate spawn time for all three to complete. If a teammate hasn't signaled completion by timeout, proceed with available findings and note which teammates timed out in the output.
 
 **Web research timing**: If the optional web-search-researcher is still running when all three teammates complete, wait up to 2 additional minutes. If it hasn't finished, proceed without it. Web research is supplementary, not blocking.
 
@@ -148,11 +132,9 @@ Teammates signal completion by sending "RESEARCH COMPLETE" messages. This means 
 
 As team lead, your job is to integrate teammate findings into a coherent answer to the research question, not mechanically merge their outputs.
 
-**Quality checkpoint**: Before starting synthesis, assess whether you have enough information to answer the research question. If critical gaps remain and you're within time budget, consider targeted follow-up investigation rather than forcing synthesis from incomplete data.
+**Attribution strategy**: Use team attribution markers in body sections: `[Locator]`, `[Analyzer]`, `[Pattern Finder]`. Mark independently confirmed findings `[Consensus]`.
 
-**Attribution strategy**: Use team attribution markers in body sections to show which teammate discovered what: `[Locator]`, `[Analyzer]`, `[Pattern Finder]`. When multiple teammates independently discovered the same finding, mark it `[Consensus]` — these are high-confidence results.
-
-**Preserve provenance**: All file:line references from teammates must appear in the final document. These citations enable verification and are more valuable than summary statements.
+**Preserve provenance**: All file:line references from teammates must appear in the final document.
 
 **Output format**: The research document structure is identical to Standard Workflow output (same YAML frontmatter schema, same required sections). In the Summary section, briefly note team composition and which teammates contributed. Attribution markers belong in body sections, NOT in YAML frontmatter.
 

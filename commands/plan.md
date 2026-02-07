@@ -17,28 +17,28 @@ Create a comprehensive PRD in `plans/*.md` that resolves the given task. The pla
 ## Constraints
 
 **Research codebase first (start with README.md, then relevant files)**
-Plans based on assumptions rather than actual code state lead to mismatched implementations. Reading the README establishes architecture patterns and conventions. Reading relevant files reveals existing abstractions, naming patterns, and integration points that the plan must align with.
+Plans based on assumptions rather than actual code state lead to mismatched implementations.
 
 **Detect genuine ambiguities before planning**
-Early ambiguity detection is cheaper than replanning after implementation starts. Use `AskUserQuestion` for decisions that affect implementation (architecture approaches, scope boundaries, technology choices, user intent, priority tradeoffs). Clarifying upfront prevents wasted implementation cycles.
+Early ambiguity detection is cheaper than replanning after implementation starts.
 
 **Fill every section of the PRD template completely**
-Incomplete plans cause implementation ambiguity and require mid-task clarifications that break flow. Each template section prevents a specific class of error: missing Impact Analysis causes unexpected breakage, missing Root Cause Analysis fixes symptoms instead of causes, missing Rollback Strategy creates deployment risk. Replace all `<placeholder>` tags with specific values.
+Incomplete plans cause implementation ambiguity and require mid-task clarifications that break flow.
 
 **Split phases with complexity >5 into sub-tasks (max 5 tasks per phase)**
-Agent context windows can't reliably hold large tasks without dropping requirements or losing track of dependencies. Splitting high-complexity phases into sub-tasks keeps each implementation unit small enough to fit in working memory, preventing silent omissions.
+Agent context windows can't reliably hold large tasks without dropping requirements or losing track of dependencies.
 
 **No decorators - keep implementation simple**
-Decorators add abstraction complexity that conflicts with the "Minimality" priority. They make debugging harder (stack traces are less direct), increase cognitive load for future maintainers, and often hide side effects. Explicit code aligns better with surgical changes.
+Decorators add abstraction complexity that conflicts with the "Minimality" priority.
 
 **Report new library needs in the Notes section**
-New dependencies need human approval for security audits, maintenance burden assessment, licensing compatibility checks, and bundle size impact review. Documenting these in Notes ensures they get evaluated before implementation rather than discovered during code review.
+New dependencies need human approval for security audits, maintenance burden assessment, licensing compatibility checks, and bundle size impact review.
 
 **Run multi-LLM blindspot review after draft**
-Different models have different blind spots - Codex catches API misuse, Gemini catches architectural inconsistencies. Running both in parallel provides broader coverage than single-model review. Load the blindspot review protocol for consolidation and refinement rules.
+Different models have different blind spots - Codex catches API misuse, Gemini catches architectural inconsistencies.
 
 **Update frontmatter after review, then commit and create issue**
-Marking `reviewed: true` signals the plan is ready for implementation. Committing to a feature branch creates an audit trail. Creating a GitHub Issue via `/github:create-issue-from-plan` makes the work trackable and prevents plans from being forgotten in the repository.
+Marking `reviewed: true` signals the plan is ready for implementation.
 
 ## Plan Format
 
@@ -91,19 +91,19 @@ Load these files before proceeding (use Glob with path `~/.claude/plugins`):
 ## Workflow
 
 **Ambiguity Detection Checkpoint**
-Analyze the task for genuine ambiguities (architecture approaches, scope boundaries, technology choices, user intent, priority tradeoffs). Detecting these early is cheaper than replanning mid-implementation - clarifying upfront prevents wasted cycles. If ambiguities exist, use `AskUserQuestion` with 1-4 focused questions. Only proceed to research once the task is unambiguous.
+Analyze for genuine ambiguities (architecture, scope, technology, intent). If found, use `AskUserQuestion` with 1-4 focused questions.
 
 **Research Checkpoint**
-Read README.md to understand architecture patterns and conventions, then explore relevant codebase files to map existing abstractions and integration points. Plans grounded in actual code state avoid mismatched implementations. This checkpoint ensures the plan aligns with what exists rather than what you assume exists.
+Read README.md to understand architecture patterns and conventions, then explore relevant codebase files to map existing abstractions and integration points. Plans grounded in actual code state avoid mismatched implementations.
 
 **Draft Plan Checkpoint**
-Load the PRD template and fill every section completely. Each section prevents a specific failure mode: incomplete Impact Analysis causes unexpected breakage, missing Root Cause Analysis fixes symptoms instead of causes, missing Testing Strategy creates untestable code. Save to `plans/<name>.md`. The template structure ensures completeness by making gaps visible.
+Load the PRD template and fill every section completely. Save to `plans/<name>.md`.
 
 **Blindspot Review Checkpoint**
-Load the blindspot review protocol, then run Codex and Gemini critics in parallel. Different models catch different issues - Codex finds API misuse, Gemini finds architectural inconsistencies. Consolidate their feedback (deduplicate, flag consensus issues, sort by severity), then refine the plan by addressing, deferring, or dismissing each concern with justification. Multi-LLM review catches blind spots that single-model review misses.
+Load the blindspot review protocol, then run Codex and Gemini critics in parallel. Consolidate their feedback (deduplicate, flag consensus issues, sort by severity), then refine the plan by addressing, deferring, or dismissing each concern with justification.
 
 **Finalization Checkpoint**
-Update frontmatter to mark `reviewed: true`, add `reviewers: ["codex", "gemini"]`, and set `status: Ready for Implementation`. This signals the plan passed review and is implementation-ready. Commit to branch `plan/feature-name` to create an audit trail, then run `/github:create-issue-from-plan plans/<name>.md` to make the work trackable. Plans without tracking get forgotten; GitHub Issues ensure visibility and accountability.
+Update frontmatter to mark `reviewed: true`, add `reviewers: ["codex", "gemini"]`, and set `status: Ready for Implementation`. Commit to branch `plan/feature-name` to create an audit trail, then run `/github:create-issue-from-plan plans/<name>.md` to make the work trackable.
 
 ## Task
 
