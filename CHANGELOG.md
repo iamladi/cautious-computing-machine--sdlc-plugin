@@ -5,6 +5,21 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-02-07
+
+### Added
+- `constitution-compliance-review` skill — scoring rubric for Constitution alignment (5 dimensions, 1-10 scale)
+- `system-prompt-clinic` skill — diagnoses and transforms prompts from rule-based to reasoning-based
+- `judgment-eval` skill — evaluates agent judgment through edge-case scenarios
+
+### Changed
+- Rewrote `review.md` from rigid format prescription to judgment-driven multi-model synthesis
+- Rewrote `research.md` from state-machine swarm workflow to coordination principles with convergence guardrails
+- Rewrote `plan.md` from constraint bullet lists to reasoning-based checkpoints
+- Rewrote `implementer.md` from checklist to dimension-based self-review with scope discipline reasoning
+- Rewrote `tdd/SKILL.md` from state machine modes to concise principles with escape criteria
+- Fixed hardcoded absolute path in system-prompt-clinic (P0)
+
 ## [1.13.0] - 2026-02-07
 
 ### Added
