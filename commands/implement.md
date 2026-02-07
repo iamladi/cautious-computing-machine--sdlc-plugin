@@ -1,21 +1,19 @@
 # Implement the following plan
 
-## Layer 1: Priorities
+## Priorities
 
-```
 Correctness (spec compliance) > Progress (forward momentum) > Efficiency (minimal context use)
-```
 
-## Layer 2: Goal
+## Goal
 
-Execute plan using **subagent-driven development**: dispatch fresh implementer agents per task, validate with two-stage review (spec-reviewer → code-quality-reviewer), track progress, update Issue checkboxes.
+Execute plan using **subagent-driven development**: dispatch fresh implementer agents per task, validate with two-stage review (spec-reviewer → code-quality-reviewer), progress tracking via todo list, update Issue checkboxes.
 
-## Layer 3: Constraints
+## Constraints
 
 ### Pre-flight
 Rename session: `/rename "Implement: #$ARGUMENTS"` or `/rename "Implement: {plan-name}"`.
 
-Read CLAUDE.md for `tdd:` (strict/soft/off). Pass to implementer agents.
+Check TDD Mode: Read CLAUDE.md for `tdd:` (strict/soft/off). Pass to implementer agents.
 
 Check branch: `git branch --show-current`. If main, SlashCommand(/p:generate_branch).
 
@@ -33,21 +31,19 @@ You orchestrate; implementer agents execute. Per task:
 3. **Dispatch spec-reviewer** (`subagent_type: "spec-reviewer"`): original spec + implementation → verify nothing missing/extra, behavior matches
 4. **Dispatch code-quality-reviewer** (`subagent_type: "code-quality-reviewer"`): changed files → check bugs/smells/security/anti-patterns
 5. **Review loops**: Max 3 iterations. FAIL → re-dispatch implementer → re-review. After 3, escalate
-6. **Mark complete**: Update todo after both reviews pass
+6. **Mark complete**: Update todo list after both reviews pass
 
 Trivial tasks (single-line): skip subagents, implement directly.
 
-### Progress
-Create todo: phases (high-level), tasks (nested). Mark in_progress (dispatch) → completed (reviews pass).
+### Progress Tracking
+Create todo list: phases (high-level), tasks (nested). Mark in_progress (dispatch) → completed (reviews pass).
 
 After **phase**: `gh issue edit #123 --body "..."` to update checkboxes. Plan immutable; Issue tracks progress.
 
-## Layer 4: Output
+## Output
 
 ### Per Phase
-Verify tasks complete, update Issue checkboxes, status update.
-
-Continue if multiple phases, else pause.
+Verify tasks complete, update Issue checkboxes, status update. Continue if multiple phases, else pause.
 
 ### Final
 - Summary (bullets)
@@ -55,22 +51,13 @@ Continue if multiple phases, else pause.
 - `git diff --stat`
 - "Run `/review` for thorough analysis"
 
-### Errors
+## Error Handling
+
 **Stuck**: Answer from context or report blockage.
 
-**Review loop** (3 fails):
-```
-Review not converging after 3 attempts.
-Last issues: [list]
-Options: 1) Try once more, 2) Skip (not recommended), 3) Stop
-```
+**Review loop not converging** (3 fails): Report last issues, offer options (try once more / skip / stop).
 
-**Spec mismatch**:
-```
-Phase [N]: Expected [plan], Found [actual], Why [explanation]. Stopping.
-```
+**Spec mismatch**: Report expected vs found vs why, then stop.
 
-## Layer 5: References
-
-Plan:
+## Plan
 $ARGUMENTS

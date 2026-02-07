@@ -22,7 +22,7 @@ Additional constraints:
 - Focus on "how" not "what" or "why"
 - Note exact transformations with before/after
 
-## Output
+## Output Format
 Structure your analysis:
 
 **Overview**: 2-3 sentence summary of how it works
