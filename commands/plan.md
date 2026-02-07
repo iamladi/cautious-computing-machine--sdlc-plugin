@@ -1,644 +1,96 @@
-# Creating plan
-
-Create a new plan in plans/*.md to resolve the `Plan` using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan use the `Relevant Files` to focus on the right files.
+# Create Implementation Plan
 
 ## Session Naming
 
 Before starting, rename this session for clarity:
 - If `$ARGUMENTS` provided: `/rename "Plan: $ARGUMENTS"`
-- Otherwise infer from context and run `/rename "Plan: {feature-name}"`
+- Otherwise infer from context: `/rename "Plan: {feature-name}"`
 
-## Instructions
+## Priorities
 
-### Phase 0: Ambiguity Detection (BEFORE planning)
+Completeness (root cause addressed) > Minimality (surgical changes) > Clarity (readable plan)
 
-Before generating any plan content, analyze the task for genuine ambiguities:
+## Goal
 
-1. **Identify ambiguous areas** that meaningfully affect the plan:
-   - Multiple valid architecture approaches
-   - Unclear scope boundaries (what's in/out)
-   - Technology choices with real tradeoffs
-   - User intent that could be interpreted differently
-   - Priority decisions (performance vs simplicity, etc.)
+Create a comprehensive PRD in `plans/*.md` that resolves the given task. The plan must be thorough enough to fix the root cause and prevent regressions, while containing only the minimal changes necessary to address the task.
 
-2. **If ambiguities exist**: Use `AskUserQuestion` to clarify BEFORE filling the template
-   - Ask 1-4 focused questions using multi-choice options
-   - Only ask questions that meaningfully affect the implementation
-   - Skip obvious questions - don't ask what you can reasonably infer
-   - Mark one option as "(Recommended)" when you have a strong preference
-   - Include "Not sure - you decide" as an option for lower-stakes questions
-   - Add footer: "Reply: `1a 2b` or `defaults` to accept recommendations"
+## Constraints
 
-3. **If the request is clear and specific**: Skip to planning phase
-
-**Example ambiguities worth asking about:**
-- "Should this run synchronously or in background?"
-- "Is offline support needed in first version?"
-- "Should errors be user-facing or logged silently?"
-
-**DON'T ask:**
-- "Do you want tests?" (always yes)
-- "What should we name it?" (can infer from context)
-- "Should we use TypeScript?" (check existing codebase)
-
-For complex plans requiring deeper exploration, recommend the user run `/interview` on the plan after creation.
-
-### Phase 1: Planning (Draft)
-
-- IMPORTANT: You're writing a plan to resolve a task based on the `Plan` that will add value to the application.
-- IMPORTANT: The `Plan` describes the problem that will be resolved but remember we're not resolving the task, we're creating the plan that will be used to resolve the task based on the `Plan Format` below.
-- You're writing a plan to resolve a task, it should be thorough and precise so we fix the root cause and prevent regressions.
-- Create the plan in the `plans/*.md` file. Name it appropriately based on the `Plan`.
-- Use the plan format below to create the plan.
-- Research the codebase to understand the task, reproduce it, and put together a plan to fix it.
-- IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to fix the task.
-- Use your reasoning model: ultrathink about the task, its root cause, and the steps to fix it properly.
-- IMPORTANT: For all phases that have high complexity must be split into sub-tasks that are low or medium complexity. High complexity tasks will have more tasks to work on, but not more than 5.
-- IMPORTANT: Be surgical with your fix, solve the task at hand and don't fall off track.
-- IMPORTANT: We want the minimal number of changes that will fix and address the task.
-- Don't use decorators. Keep it simple.
-- If you need a new library, use whatever bundler is prefered and be sure to report it in the `Notes` section of the `Plan Format`.
-- Start your research by reading the `README.md` file.
-
-### Phase 2: Multi-LLM Blindspot Review
-
-After creating the draft plan, run it through Codex and Gemini in parallel to uncover blindspots.
-
-**IMPORTANT**: Spawn both review agents in a single message to run them in parallel.
-
-#### Codex Plan Critic
-
-```bash
-codex exec --skip-git-repo-check \
-  -m gpt-5.2-codex \
-  -c model_reasoning_effort="xhigh" \
-  --sandbox read-only \
-  --full-auto \
-  "You are a plan critic. Review this implementation plan for blindspots and gaps.
-
-Focus on finding what the plan author may have MISSED:
-- Missing edge cases (error states, timeouts, rate limits, auth failures)
-- Unclear or ambiguous requirements that could cause confusion
-- Dependency gaps (things that need to exist before a step can work)
-- Risk underestimation (migrations without rollback, breaking changes unmarked)
-- Scope creep signals (does this touch more than intended?)
-- Testing gaps (untested paths, missing integration scenarios)
-- Sequence issues (steps in wrong order, missing prerequisites)
-
-DO NOT:
-- Suggest general improvements or best practices
-- Critique writing style
-- Add nice-to-haves not related to plan correctness
-
-For each finding, provide:
-### [TITLE] (Severity: Critical/High/Medium/Low, Confidence: {0.0-1.0})
-**Section**: [which plan section is affected]
-**Issue**: [what's missing or wrong]
-**Recommendation**: [specific fix]
-
-End with:
-## Overall Assessment
-**Plan Readiness**: [Ready / Needs Revision / Major Gaps]
-**Confidence**: {0.0-1.0}
-**Key Blindspots Found**: {count}
-
----
-PLAN TO REVIEW:
-$(cat plans/[plan-file].md)" 2>/dev/null
-```
-
-#### Gemini Plan Critic
-
-```bash
-timeout 300 gemini -m gemini-3-pro-preview --approval-mode yolo \
-  "You are a plan critic. Review this implementation plan for blindspots and gaps.
-
-Focus on finding what the plan author may have MISSED:
-- Missing edge cases (error states, timeouts, rate limits, auth failures)
-- Unclear or ambiguous requirements that could cause confusion
-- Dependency gaps (things that need to exist before a step can work)
-- Risk underestimation (migrations without rollback, breaking changes unmarked)
-- Scope creep signals (does this touch more than intended?)
-- Testing gaps (untested paths, missing integration scenarios)
-- Sequence issues (steps in wrong order, missing prerequisites)
-
-DO NOT:
-- Suggest general improvements or best practices
-- Critique writing style
-- Add nice-to-haves not related to plan correctness
-
-For each finding, provide:
-### [TITLE] (Severity: Critical/High/Medium/Low, Confidence: {0.0-1.0})
-**Section**: [which plan section is affected]
-**Issue**: [what's missing or wrong]
-**Recommendation**: [specific fix]
-
-End with:
-## Overall Assessment
-**Plan Readiness**: [Ready / Needs Revision / Major Gaps]
-**Confidence**: {0.0-1.0}
-**Key Blindspots Found**: {count}
-
----
-PLAN TO REVIEW:
-$(cat plans/[plan-file].md)"
-```
-
-#### Wait and Consolidate
-
-**CRITICAL**: Wait for BOTH critics to complete before proceeding.
-
-Consolidate their feedback:
-1. **Parse findings** from each critic
-2. **Deduplicate** overlapping concerns (same section + similar issue = merge)
-3. **Flag consensus**: When both critics identify the same issue, mark as `[Consensus]` (high confidence)
-4. **Flag unique**: When only one critic found it, mark as `[Codex]` or `[Gemini]`
-5. **Sort by severity**: Critical > High > Medium > Low
-
-### Phase 3: Plan Refinement
-
-Review the consolidated feedback and update the plan:
-
-1. **Critical/High + Consensus**: Must address these. Update the plan.
-2. **Critical/High + Single reviewer**: Evaluate carefully. Address if valid.
-3. **Medium + Consensus**: Should address. Update if straightforward.
-4. **Medium/Low + Single reviewer**: Optional. Use judgment.
-
-For each addressed concern, add a comment in the relevant plan section:
-```
-<!-- Addressed: [brief description of what was added/changed] -->
-```
-
-Add a new section to the plan after `## Notes & Context`:
-
-```markdown
-## Blindspot Review
-
-**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
-**Date**: [timestamp]
-
-### Addressed Concerns
-- [Consensus] Missing rollback strategy for database migration → Added to Phase 1
-- [Codex] No timeout handling for external API calls → Added NFR-3
-- [Gemini] Test coverage gap for error states → Added to Testing Strategy
-
-### Acknowledged but Deferred
-- [Low] Could add more logging → Out of scope for MVP
-
-### Dismissed
-- [Codex, Low] Suggested caching layer → Not needed for current scale
-```
-
-## After Multi-LLM Review
-
-1. Update plan frontmatter:
-   - Set `reviewed: true`
-   - Set `reviewers: ["codex", "gemini"]`
-   - Update `status: Ready for Implementation` (if no major gaps)
-2. Commit the plan file to a new branch: `plan/feature-name`
-3. Create a GitHub Issue from the plan using: `/github:create-issue-from-plan plans/feature-name.md`
-4. This will:
-   - Create GitHub Issue with plan summary + implementation phases as checklist
-   - Update plan frontmatter with `issue: <number>`
-   - Return both plan path and Issue URL
-5. Push branch and optionally create plan review PR, or merge directly if no review needed
+- Research codebase first (start with README.md, then relevant files)
+- Detect genuine ambiguities before planning - use `AskUserQuestion` for decisions that affect implementation
+- Fill every section of the PRD template - replace all `<placeholder>` tags with specific values
+- Split phases with complexity >5 into sub-tasks (max 5 tasks per phase)
+- No decorators - keep implementation simple
+- Report new library needs in the Notes section
+- After draft: run multi-LLM blindspot review (Codex + Gemini in parallel)
+- After review: update frontmatter (`reviewed: true`, add `reviewers`, update `status`)
+- Commit plan to new branch, then create GitHub Issue via `/github:create-issue-from-plan`
 
 ## Plan Format
 
-```md
----
-title: "<descriptive title>"
-type: <Bug | Feature | Chore | Refactor | Enhancement | Documentation>
-issue: null
-research: []
-status: Draft
-reviewed: false
-reviewers: []
-created: <YYYY-MM-DD>
----
-
-# PRD: <descriptive title>
-
-## Metadata
-- **Type**: <Bug | Feature | Chore | Refactor | Enhancement | Documentation>
-- **Priority**: <Critical | High | Medium | Low>
-- **Severity**: <Blocker | Major | Minor | Trivial> (for Bugs)
-- **Estimated Complexity**: <1-10 scale>
-- **Created**: <YYYY-MM-DD>
-- **Status**: <Draft | Ready for Implementation | In Progress | Completed>
-
-## Overview
-
-### Problem Statement
-<clearly define the specific problem that needs to be solved - what pain point are we addressing?>
-
-For **Bugs**: Include expected vs actual behavior
-For **Features**: Include user story and business value
-For **Refactors**: Include current pain points and technical debt being addressed
-For **Chores**: Include maintenance rationale
-
-### Goals & Objectives
-<what are we trying to achieve? List 3-5 clear, measurable goals>
-
-1.
-2.
-3.
-
-### Success Metrics
-<how will we measure success?>
-
-- **Primary Metric**:
-- **Secondary Metrics**:
-- **Quality Gates**:
-
-## User Stories
-
-<describe user personas and their needs - format: "As a [persona], I want [goal] so that [benefit]">
-
-### Story 1: <title>
-- **As a**: <user persona>
-- **I want**: <capability>
-- **So that**: <benefit>
-- **Acceptance Criteria**:
-  - [ ] <criterion 1>
-  - [ ] <criterion 2>
-
-### Story 2: <title>
-- **As a**: <user persona>
-- **I want**: <capability>
-- **So that**: <benefit>
-- **Acceptance Criteria**:
-  - [ ] <criterion 1>
-  - [ ] <criterion 2>
-
-## Requirements
-
-### Functional Requirements
-<what must the solution do? Be specific and testable>
-
-1. **FR-1**: <requirement>
-   - Details:
-   - Priority: <Must Have | Should Have | Nice to Have>
-
-2. **FR-2**: <requirement>
-   - Details:
-   - Priority: <Must Have | Should Have | Nice to Have>
-
-### Non-Functional Requirements
-<performance, security, usability, accessibility, scalability>
-
-1. **NFR-1**: <requirement category>
-   - Requirement:
-   - Target:
-   - Measurement:
-
-2. **NFR-2**: <requirement category>
-   - Requirement:
-   - Target:
-   - Measurement:
-
-### Technical Requirements
-<implementation constraints, technology choices, architectural decisions>
-
-- **Stack**:
-- **Dependencies**:
-- **Architecture**:
-- **Data Model**:
-- **API Contracts**:
-
-## Scope
-
-### In Scope
-<what will be included in this implementation>
-
--
--
--
-
-### Out of Scope
-<what will NOT be included - be explicit to prevent scope creep>
-
--
--
--
-
-### Future Considerations
-<features deferred for later iterations>
-
--
--
-
-## Impact Analysis
-
-### Affected Areas
-<list impacted components/modules>
-
--
--
-
-### Users Affected
-<who is impacted and how>
-
--
-
-### System Impact
-<performance, security, data integrity considerations>
-
-- **Performance**:
-- **Security**:
-- **Data Integrity**:
-
-### Dependencies
-<what other features/systems are affected>
-
-- **Upstream**:
-- **Downstream**:
-- **External**:
-
-### Breaking Changes
-<list any breaking changes - MUST be explicit>
-
-- [ ] **None**
-- [ ] <breaking change 1> - Impact:
-- [ ] <breaking change 2> - Impact:
-
-## Steps to Reproduce (for Bugs)
-**Required for:** Bugs, Issues
-
-<list exact steps to reproduce the issue with environment details>
-
-1.
-2.
-3.
-
-**Expected**:
-**Actual**:
-
-## Root Cause Analysis (for Bugs)
-**Required for:** Bugs, Critical Issues
-
-<analyze and explain the root cause - use the 5 Whys technique if applicable>
-
-1. **Why**:
-2. **Why**:
-3. **Why**:
-4. **Why**:
-5. **Root Cause**:
-
-## Solution Design
-
-### Approach
-<describe the proposed solution approach with architectural considerations>
-
-### Alternatives Considered
-<what other approaches were evaluated and why were they rejected>
-
-1. **Alternative 1**:
-   - Pros:
-   - Cons:
-   - Why rejected:
-
-### Data Model Changes
-<schema changes, migrations, data transformations>
-
-### API Changes
-<new endpoints, modified contracts, deprecated APIs>
-
-### UI/UX Changes
-<component changes, new screens, interaction flows>
-
-## Implementation Plan
-
-### Phase 1: Foundation & Preparation
-**Complexity**: <1-10> | **Priority**: <High|Medium|Low>
-
-- [ ] Setup and configuration
-- [ ] Database schema updates
-- [ ] Install required dependencies
-- [ ] Create base types and interfaces
-
-### Phase 2: Core Implementation
-**Complexity**: <1-10> | **Priority**: <High|Medium|Low>
-
-- [ ] Implement backend logic
-- [ ] Create API endpoints
-- [ ] Build UI components
-- [ ] Integrate frontend with backend
-
-### Phase 3: Testing & Validation
-**Complexity**: <1-10> | **Priority**: <High|Medium|Low>
-
-- [ ] Unit tests for all new functions
-- [ ] Integration tests for API endpoints
-- [ ] E2E tests for user flows
-- [ ] Performance testing
-- [ ] Security testing
-
-### Phase 4: Documentation & Polish
-**Complexity**: <1-10> | **Priority**: <High|Medium|Low>
-
-- [ ] Code documentation
-- [ ] API documentation
-- [ ] User documentation
-- [ ] Update README if needed
-- [ ] Plugin validation (if applicable):
-  - [ ] Commands documented in README.md
-  - [ ] Plugin.json schema valid
-  - [ ] Run `bun run validate` successfully
-
-### Phase 5: Validation
-**Complexity**: <1-10> | **Priority**: <High|Medium|Low>
-
-- [ ] Run all validation commands
-- [ ] Manual testing
-- [ ] User acceptance testing
-
-## Relevant Files
-
-### Existing Files
-<find and list the files that are relevant to the task describe why they are relevant>
-
-- `path/to/file1.ts` - <why relevant>
-- `path/to/file2.tsx` - <why relevant>
-
-### New Files
-<files that need to be created>
-
-- `path/to/new-file.ts` - <purpose and responsibility>
-
-### Test Files
-<test files to create or modify>
-
-- `path/to/file.test.ts` - <what it tests>
-
-## Testing Strategy
-
-### Unit Tests
-<describe unit test coverage requirements>
-
--
-
-### Integration Tests
-<describe integration test requirements>
-
--
-
-### E2E Tests
-<describe end-to-end test scenarios>
-
--
-
-### Manual Test Cases
-<tests that require manual validation>
-
-1. **Test Case**:
-   - Steps:
-   - Expected:
-
-## Risk Assessment
-
-### Technical Risks
-<potential technical challenges>
-
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| | Low/Med/High | Low/Med/High | |
-
-### Business Risks
-<potential business impact>
-
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| | Low/Med/High | Low/Med/High | |
-
-### Mitigation Strategy
-<overall strategy to minimize risks>
-
-## Rollback Strategy
-
-### Rollback Steps
-<describe how to revert changes if issues arise>
-
-1.
-2.
-3.
-
-### Rollback Conditions
-<when should we rollback?>
-
--
--
-
-## Validation Commands
-
-Execute every command to validate the implementation is successful with zero regressions.
-
-```bash
-# Run all tests
-bun run test
-
-# Run linter
-bun run lint
-
-# Build the project
-bun run build
-
-# Start dev server (background)
-bun run dev
-
-# Reproduce the original issue (for bugs)
-# <specific commands to verify the bug is fixed>
-
-# Verify new functionality (for features)
-# <specific commands to verify the feature works>
-```
-
-## Acceptance Criteria
-
-Define clear, testable success criteria:
-
-- [ ] All functional requirements implemented
-- [ ] All user stories satisfied
-- [ ] All tests passing (unit, integration, E2E)
-- [ ] No regressions in existing functionality
-- [ ] Code review completed
-- [ ] Documentation updated
-- [ ] Performance targets met
-- [ ] Security requirements satisfied
-- [ ] Accessibility standards met
-- [ ] All validation commands execute successfully
-
-## Dependencies
-
-### New Dependencies
-<packages that need to be installed>
-
-- `package-name@version` - <reason and purpose>
-
-### Dependency Updates
-<existing packages that need version updates>
-
-- `package-name@old-version` → `@new-version` - <reason>
-
-## Notes & Context
-
-### Additional Context
-<any additional notes or context that are relevant>
-
-### Assumptions
-<assumptions made during planning>
-
--
--
-
-### Constraints
-<technical or business constraints>
-
--
--
-
-### Related Tasks/Issues
-<link to related tasks if applicable>
-
--
-
-### References
-<documentation links, design specs, etc.>
-
--
--
-
-### Open Questions
-<unresolved questions that need answers before implementation>
-
-- [ ] Question 1?
-- [ ] Question 2?
-
-## Blindspot Review
-
-**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
-**Date**: <YYYY-MM-DD>
-**Plan Readiness**: <Ready | Needs Revision | Major Gaps>
-
-### Addressed Concerns
-<concerns from multi-LLM review that were incorporated into the plan>
-
-- [Consensus/Codex/Gemini] <issue> → <where addressed in plan>
-
-### Acknowledged but Deferred
-<valid concerns intentionally deferred>
-
-- [Source, Severity] <concern> → <reason for deferral>
-
-### Dismissed
-<concerns that were evaluated but not applicable>
-
-- [Source, Severity] <concern> → <reason for dismissal>
-```
+Find and read the PRD template using Glob:
+- Pattern: `**/sdlc/**/references/prd-template.md`
+- Search path: `~/.claude/plugins`
+
+Fill every section completely. Save to `plans/<descriptive-name>.md`.
+
+The template includes:
+- Frontmatter with metadata (title, type, issue, status, reviewed, reviewers, created)
+- ## Metadata (type, priority, severity, complexity, status)
+- ## Overview (problem statement, goals, success metrics)
+- ## User Stories
+- ## Requirements (functional, non-functional, technical)
+- ## Scope (in scope, out of scope, future considerations)
+- ## Impact Analysis (affected areas, users, system impact, dependencies, breaking changes)
+- ## Steps to Reproduce (for bugs)
+- ## Root Cause Analysis (for bugs)
+- ## Solution Design (approach, alternatives, data/API/UI changes)
+- ## Implementation Plan (Phase 1-5 with **Complexity**: <1-10> | **Priority**: <High|Medium|Low>)
+- ## Relevant Files (existing, new, test files)
+- ## Testing Strategy (unit, integration, E2E, manual)
+- ## Risk Assessment (technical/business risks, mitigation)
+- ## Rollback Strategy (steps, conditions)
+- ## Validation Commands (bash commands to verify success)
+- ## Acceptance Criteria
+- ## Dependencies (new/updated packages)
+- ## Notes & Context (additional context, assumptions, constraints, related tasks, references, open questions)
+- ## Blindspot Review (reviewers, date, addressed/deferred/dismissed concerns)
+
+## Multi-LLM Blindspot Review
+
+Find and read the blindspot review protocol:
+- Pattern: `**/sdlc/**/references/blindspot-review-protocol.md`
+- Search path: `~/.claude/plugins`
+
+This protocol defines:
+- How to run Codex and Gemini plan critics in parallel
+- Review consolidation process (deduplicate, flag consensus, sort by severity)
+- Plan refinement rules (when to address/defer/dismiss concerns)
+- How to document review findings in the plan
+
+## References
+
+Load these files before proceeding (use Glob with path `~/.claude/plugins`):
+- `**/sdlc/**/references/prd-template.md` - Full PRD template with all sections
+- `**/sdlc/**/references/blindspot-review-protocol.md` - Multi-LLM review protocol
+
+## Workflow
+
+1. **Ambiguity Detection**: Analyze task for genuine ambiguities (architecture approaches, scope boundaries, technology choices, user intent, priority tradeoffs). If found, use `AskUserQuestion` with 1-4 focused questions before planning. If clear, proceed.
+
+2. **Research**: Read README.md, then explore relevant codebase files to understand context.
+
+3. **Draft Plan**: Load PRD template, fill all sections, save to `plans/<name>.md`.
+
+4. **Blindspot Review**: Load protocol, run Codex + Gemini critics in parallel, consolidate feedback, refine plan.
+
+5. **Finalize**: Update frontmatter (reviewed: true, reviewers: ["codex", "gemini"], status: Ready for Implementation), commit to branch `plan/feature-name`, run `/github:create-issue-from-plan plans/<name>.md`.
 
 ## Task
+
 $ARGUMENTS
 
 ## Report
-- Summarize the work you've just done in a concise bullet point list.
-- Include a path to the plan you created in the `plans/*.md` file.
+
+- Summarize work done in concise bullet points
+- Include absolute path to the plan created in `plans/*.md`
