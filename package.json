@@ -1,6 +1,6 @@
 {
   "name": "sdlc-plugin",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "Comprehensive SDLC plugin with specialized agents, commands, and integrations",
   "private": true,
   "type": "module",
