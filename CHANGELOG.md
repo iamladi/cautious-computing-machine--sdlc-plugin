@@ -5,6 +5,17 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-02-08
+
+### Added
+- `x-search` skill — search X/Twitter for real-time developer discourse, product feedback, community sentiment, and expert opinions
+  - CLI tool with search, profile, thread, watchlist, and cache subcommands
+  - Iterative research approach with thread following and linked content deep-dives
+  - X search operator support for noise reduction and signal targeting
+
+### Changed
+- Rewrote `x-search/SKILL.md` for constitution alignment (4.6/10 → ~7.5/10) — replaced procedural CLI docs and 6-step research loop with reasoning-based principles
+
 ## [1.14.0] - 2026-02-07
 
 ### Added
