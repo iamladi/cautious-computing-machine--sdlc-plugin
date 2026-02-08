@@ -1,0 +1,72 @@
+{
+  "data": [
+    {
+      "id": "9999999999",
+      "text": "Thread: Here's everything I learned building a production app with Bun 2.0 over the last month. A thread.",
+      "author_id": "333",
+      "created_at": "2026-02-06T08:00:00.000Z",
+      "conversation_id": "9999999999",
+      "public_metrics": {
+        "retweet_count": 50,
+        "reply_count": 25,
+        "like_count": 300,
+        "quote_count": 10,
+        "bookmark_count": 80,
+        "impression_count": 15000
+      },
+      "entities": {
+        "urls": [],
+        "mentions": [],
+        "hashtags": [{ "tag": "bun" }, { "tag": "webdev" }]
+      }
+    },
+    {
+      "id": "9999999998",
+      "text": "1/ First, the setup. Bun's init is blazing fast compared to npm. Zero config needed.",
+      "author_id": "333",
+      "created_at": "2026-02-06T08:01:00.000Z",
+      "conversation_id": "9999999999",
+      "public_metrics": {
+        "retweet_count": 5,
+        "reply_count": 3,
+        "like_count": 40,
+        "quote_count": 0,
+        "bookmark_count": 5,
+        "impression_count": 3000
+      },
+      "entities": {
+        "urls": [],
+        "mentions": [],
+        "hashtags": []
+      }
+    },
+    {
+      "id": "9999999997",
+      "text": "2/ The test runner is incredible. Runs my entire suite in 200ms vs 4s with Jest.",
+      "author_id": "333",
+      "created_at": "2026-02-06T08:02:00.000Z",
+      "conversation_id": "9999999999",
+      "public_metrics": {
+        "retweet_count": 10,
+        "reply_count": 7,
+        "like_count": 80,
+        "quote_count": 2,
+        "bookmark_count": 15,
+        "impression_count": 5000
+      },
+      "entities": {
+        "urls": [{ "expanded_url": "https://bun.sh/docs/cli/test" }],
+        "mentions": [],
+        "hashtags": []
+      }
+    }
+  ],
+  "includes": {
+    "users": [
+      { "id": "333", "username": "thread_author", "name": "Thread Author" }
+    ]
+  },
+  "meta": {
+    "result_count": 3
+  }
+}

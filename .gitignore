@@ -92,3 +92,7 @@ research/
 # Test outputs
 test-results/
 playwright-report/
+
+# x-search data (cache and watchlist are local runtime data)
+utils/x-search/data/cache/*.json
+utils/x-search/data/watchlist.json
