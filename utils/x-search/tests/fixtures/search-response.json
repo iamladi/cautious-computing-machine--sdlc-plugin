@@ -1,0 +1,73 @@
+{
+  "data": [
+    {
+      "id": "1234567890",
+      "text": "Just shipped a new feature using Bun 2.0 - the performance gains are incredible https://t.co/abc123",
+      "author_id": "111",
+      "created_at": "2026-02-07T10:00:00.000Z",
+      "conversation_id": "1234567890",
+      "public_metrics": {
+        "retweet_count": 15,
+        "reply_count": 8,
+        "like_count": 120,
+        "quote_count": 3,
+        "bookmark_count": 10,
+        "impression_count": 5000
+      },
+      "entities": {
+        "urls": [{ "expanded_url": "https://github.com/oven-sh/bun/releases" }],
+        "mentions": [],
+        "hashtags": [{ "tag": "bun" }]
+      }
+    },
+    {
+      "id": "1234567891",
+      "text": "Bun 2.0 broke my build pipeline again. Third time this week.",
+      "author_id": "222",
+      "created_at": "2026-02-07T09:00:00.000Z",
+      "conversation_id": "1234567891",
+      "public_metrics": {
+        "retweet_count": 2,
+        "reply_count": 12,
+        "like_count": 45,
+        "quote_count": 1,
+        "bookmark_count": 2,
+        "impression_count": 2000
+      },
+      "entities": {
+        "mentions": [{ "username": "bunaborash" }],
+        "hashtags": []
+      }
+    },
+    {
+      "id": "1234567890",
+      "text": "Just shipped a new feature using Bun 2.0 - the performance gains are incredible https://t.co/abc123",
+      "author_id": "111",
+      "created_at": "2026-02-07T10:00:00.000Z",
+      "conversation_id": "1234567890",
+      "public_metrics": {
+        "retweet_count": 15,
+        "reply_count": 8,
+        "like_count": 120,
+        "quote_count": 3,
+        "bookmark_count": 10,
+        "impression_count": 5000
+      },
+      "entities": {
+        "urls": [{ "expanded_url": "https://github.com/oven-sh/bun/releases" }],
+        "mentions": [],
+        "hashtags": [{ "tag": "bun" }]
+      }
+    }
+  ],
+  "includes": {
+    "users": [
+      { "id": "111", "username": "devexpert", "name": "Dev Expert" },
+      { "id": "222", "username": "frustrated_dev", "name": "Frustrated Developer" }
+    ]
+  },
+  "meta": {
+    "next_token": "abc123nexttoken",
+    "result_count": 3
+  }
+}
