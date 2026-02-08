@@ -12,17 +12,17 @@ Signal quality > Source attribution > API cost efficiency
 
 ## Goal
 
-Search X/Twitter for real-time perspectives, developer discussions, product feedback, and expert opinions. Decompose research questions into targeted searches, iteratively refine, follow threads, deep-dive linked content, and synthesize into a sourced briefing with engagement metrics and attribution.
+Surface real-time perspectives, developer discussions, product feedback, and expert opinions from X/Twitter. The value you provide is turning raw social discourse into a sourced, structured briefing — separating signal from noise and attributing every claim to its source with engagement context.
 
-## Constraints
+## Platform Constraints
 
-- Requires `X_BEARER_TOKEN` env var. Get a bearer token from https://developer.x.com (Basic tier, $200/mo).
-- X API covers last 7 days only (Basic tier). Cannot search older tweets.
-- Rate limit: 450 requests per 15-minute window. CLI adds 350ms delay between calls.
-- `min_likes`/`min_retweets` search operators unavailable on Basic tier — filter post-hoc from `public_metrics`.
-- Max 100 tweets per API request, max 5 pages (500 tweets per search).
-- Default output is markdown. Use `--json` for raw data, `--telegram` for legacy format.
-- `--save` writes to current working directory as `x-research-{slug}-{date}.md`.
+These are hard technical limits that shape your approach:
+
+- **Auth**: Requires `X_BEARER_TOKEN` env var (Basic tier, $200/mo from https://developer.x.com).
+- **Time window**: Basic tier covers last 7 days only — you cannot search older tweets, so don't promise historical analysis.
+- **Rate limits**: 450 requests per 15-minute window. The CLI adds 350ms delay between calls, but be aware during multi-page research that you're consuming a shared budget.
+- **Filtering**: `min_likes`/`min_retweets` search operators are unavailable on Basic tier. The CLI filters post-hoc from `public_metrics` instead — this means you still fetch the full result set even when filtering aggressively.
+- **Volume**: Max 100 tweets per request, max 5 pages (500 tweets per search). For most research questions this is sufficient; if not, refine queries rather than paginating blindly.
 
 ## CLI Tool
 
@@ -32,147 +32,44 @@ Locate the CLI entry point:
 Glob(pattern: "**/sdlc/**/utils/x-search/x-search.ts", path: "~/.claude/plugins")
 ```
 
-Run via Bash tool with the resolved path.
+Run via Bash tool with the resolved path. The CLI has built-in `--help` for each subcommand. Key subcommands:
 
-### Search
+- **`search "<query>" [options]`** — Search tweets. Useful options: `--sort` (likes/impressions/retweets/recent), `--since` (1h/3h/12h/1d/7d), `--min-likes N`, `--pages N` (1-5), `--limit N`, `--no-replies`, `--save`. Auto-adds `-is:retweet` unless your query already includes it.
+- **`profile <username> [--count N] [--replies]`** — Recent tweets from a user (excludes replies by default).
+- **`thread <tweet_id> [--pages N]`** — Full conversation thread from a root tweet.
+- **`tweet <tweet_id>`** — Fetch a single tweet with full metadata.
+- **`watchlist [add|remove|check]`** — Manage tracked accounts (stored in `data/watchlist.json` alongside CLI).
+- **`cache clear`** — Clear cached results (15-minute TTL).
 
-```bash
-bun run <path>/x-search.ts search "<query>" [options]
-```
+Output defaults to markdown. Use `--json` for raw data, `--save` to write to CWD as `x-research-{slug}-{date}.md`.
 
-**Options:**
-- `--sort likes|impressions|retweets|recent` — sort order (default: likes)
-- `--since 1h|3h|12h|1d|7d` — time filter (default: last 7 days). Also accepts minutes (`30m`) or ISO timestamps.
-- `--min-likes N` — filter by minimum likes
-- `--min-impressions N` — filter by minimum impressions
-- `--pages N` — pages to fetch, 1-5 (default: 1, 100 tweets/page)
-- `--limit N` — max results to display (default: 15)
-- `--no-replies` — exclude replies
-- `--include-retweets` — include retweets (excluded by default)
-- `--save` — save results to CWD as `x-research-{slug}-{date}.md`
-- `--json` — raw JSON output
-- `--telegram` — legacy Telegram format
+## Research Approach
 
-Auto-adds `-is:retweet` unless query already includes it.
+For a quick single search, just run the query and present results. For deeper research questions, use an iterative approach:
 
-**Examples:**
-```bash
-bun run <path>/x-search.ts search "bun 2.0" --sort likes --limit 10
-bun run <path>/x-search.ts search "from:anthropic" --sort recent
-bun run <path>/x-search.ts search "(claude OR opus) coding" --pages 2 --save
-bun run <path>/x-search.ts search "react server components" --min-likes 5
-```
+**Decompose the question into targeted searches.** Think about what angles will surface useful signal: the core topic, known expert voices (`from:` operator), pain points vs positive sentiment, and linked resources (`has:links`, `url:domain`). Use X search operators to reduce noise — the reference docs below cover the full operator set.
 
-### Profile
+**Iterate based on what you find.** After each search, assess: Is this signal or noise? Are there expert voices worth searching directly? High-engagement threads worth following? Linked resources worth fetching? Adjust your queries based on what the data tells you rather than running a fixed set.
 
-```bash
-bun run <path>/x-search.ts profile <username> [--count N] [--replies] [--json]
-```
+**Follow threads and linked content.** Threads often contain the most substantive takes because they allow nuance. When tweets link to GitHub repos, blog posts, or docs, use `web_fetch` to get the full context — especially for links that multiple tweets reference or that come from high-engagement sources.
 
-Fetches recent tweets from a specific user (excludes replies by default).
+**Synthesize by theme, not by query.** Group your findings around what you learned, not how you searched. Each theme should include a brief summary, attributed quotes with engagement metrics (likes, impressions), and links to referenced resources.
 
-### Thread
+## Improving Search Quality
 
-```bash
-bun run <path>/x-search.ts thread <tweet_id> [--pages N]
-```
+Use your judgment to adapt these strategies:
 
-Fetches full conversation thread by root tweet ID.
+- **Too much noise?** Exclude replies (`-is:reply`), sort by likes, use more specific keywords.
+- **Too few results?** Broaden with `OR` operators, remove restrictive filters, try alternative terminology.
+- **Crypto/spam flooding?** Add exclusions like `-$ -airdrop -giveaway -whitelist`.
+- **Want substance over hot takes?** Filter for tweets with links (`has:links`) or minimum engagement (`--min-likes`).
+- **Want expert perspectives?** Use `from:` for known voices in the space, or sort by engagement to surface authoritative tweets.
 
-### Single Tweet
-
-```bash
-bun run <path>/x-search.ts tweet <tweet_id> [--json]
-```
-
-### Watchlist
-
-```bash
-bun run <path>/x-search.ts watchlist                       # Show all
-bun run <path>/x-search.ts watchlist add <user> [note]     # Add account
-bun run <path>/x-search.ts watchlist remove <user>          # Remove account
-bun run <path>/x-search.ts watchlist check                  # Check recent from all
-```
-
-Watchlist stored in `data/watchlist.json` alongside the CLI.
-
-### Cache
-
-```bash
-bun run <path>/x-search.ts cache clear    # Clear all cached results
-```
-
-15-minute TTL. Avoids re-fetching identical queries.
-
-## Research Loop (Agentic)
-
-When doing deep research (not just a quick search), follow this loop:
-
-### 1. Decompose the Question into Queries
-
-Turn the research question into 3-5 keyword queries using X search operators:
-
-- **Core query**: Direct keywords for the topic
-- **Expert voices**: `from:` specific known experts
-- **Pain points**: Keywords like `(broken OR bug OR issue OR migration)`
-- **Positive signal**: Keywords like `(shipped OR love OR fast OR benchmark)`
-- **Links**: `url:github.com` or `url:` specific domains
-- **Noise reduction**: `-is:retweet` (auto-added), add `-is:reply` if needed
-- **Crypto spam**: Add `-airdrop -giveaway -whitelist` if crypto topics flooding
-
-### 2. Search and Extract
-
-Run each query via CLI. After each, assess:
-- Signal or noise? Adjust operators.
-- Key voices worth searching `from:` specifically?
-- Threads worth following via `thread` command?
-- Linked resources worth deep-diving with `web_fetch`?
-
-### 3. Follow Threads
-
-When a tweet has high engagement or is a thread starter:
-```bash
-bun run <path>/x-search.ts thread <tweet_id>
-```
-
-### 4. Deep-Dive Linked Content
-
-When tweets link to GitHub repos, blog posts, or docs, fetch with `web_fetch`. Prioritize links that:
-- Multiple tweets reference
-- Come from high-engagement tweets
-- Point to technical resources directly relevant to the question
-
-### 5. Synthesize
-
-Group findings by theme, not by query:
-
-```
-### [Theme/Finding Title]
-
-[1-2 sentence summary]
-
-- @username: "[key quote]" (NL, NI) [Tweet](url)
-- @username2: "[another perspective]" (NL, NI) [Tweet](url)
-
-Resources shared:
-- [Resource title](url) — [what it is]
-```
-
-### 6. Save
-
-Use `--save` flag to save results to the current working directory.
-
-## Refinement Heuristics
-
-- **Too much noise?** Add `-is:reply`, use `--sort likes`, narrow keywords
-- **Too few results?** Broaden with `OR`, remove restrictive operators
-- **Crypto spam?** Add `-$ -airdrop -giveaway -whitelist`
-- **Expert takes only?** Use `from:` or `--min-likes 50`
-- **Substance over hot takes?** Search with `has:links`
+Match your search depth to the question. A "what do people think about X?" question might need one or two searches. A "comprehensive landscape of Y" might need five searches across different angles with thread follows and link deep-dives.
 
 ## References
 
-Load X API reference for endpoint details, search operators, and response structure:
+For X API endpoint details, search operators, and response structure:
 
 - `Glob(pattern: "**/sdlc/**/skills/x-search/references/x-api.md", path: "~/.claude/plugins")` → Read result
 
