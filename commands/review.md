@@ -2,7 +2,7 @@
 
 ## Session Naming
 
-Before starting, rename this session for clarity:
+Before starting, rename this session:
 - If `$ARGUMENTS` provided: `/rename "Review: $ARGUMENTS"`
 - Otherwise: `/rename "Review: Current Changes"`
 
@@ -14,49 +14,77 @@ Correctness > Consensus > Coverage > Speed
 
 Run comprehensive code reviews using GPT-5.2-Codex and Gemini 3 Pro in parallel, then consolidate findings into a unified report with priority levels and confidence scores.
 
-## Constraints
+## Why Parallel Multi-Model Review
 
-**Scope**: Default to `git diff HEAD` unless `$ARGUMENTS` specifies commit range or file paths.
+Different models have different blind spots: Codex excels at logic/performance, Gemini at architecture/design. Consensus signals genuine issues; divergence reveals trade-offs.
 
-**Parallel execution**: Spawn both Codex review and Gemini review agents simultaneously in a single message. Wait for both to complete before consolidation.
+## Scope and Execution
 
-**Codex review agent**: Use `codex` skill with model `gpt-5.2-codex`, reasoning effort `xhigh`, sandbox `read-only`, full auto mode. Focus on correctness, performance, security, maintainability. Flag only actionable issues introduced by changes.
+**Default scope**: Review `git diff HEAD` unless `$ARGUMENTS` specifies commit range or files.
 
-**Gemini review agent**: Use `gemini` skill with model `gemini-3-pro-preview`, approval mode `yolo`, 300s timeout wrapper. Same focus areas and flagging criteria as Codex.
+**Parallel execution**: Spawn both reviewers simultaneously. Fetch diff once before spawning.
 
-**Finding format**: Each reviewer outputs findings as `### [TITLE] (P{0-3}, confidence: {0.0-1.0})` with file path, line range, and explanation.
+**Codex reviewer**: Use `codex` skill with model `gpt-5.2-codex`, reasoning `xhigh`, sandbox `read-only`, full auto mode.
 
-**Priority levels**:
-- P0: Critical (security, data loss, crashes)
-- P1: High (logic errors, significant bugs)
-- P2: Medium (code quality, maintainability)
-- P3: Low (style, minor suggestions)
+**Gemini reviewer**: Use `gemini` skill with model `gemini-3-pro-preview`, approval `yolo`, 300s timeout.
 
-**Verdict format**: Each reviewer ends with Overall Verdict including assessment (Codex: "patch is correct/incorrect", Gemini: "APPROVE/REQUEST_CHANGES"), confidence score, and justification.
+Both focus on correctness, performance, security, maintainability. Flag only actionable issues introduced by these changes, not pre-existing debt.
 
-**Consolidation rules**: Parse both outputs, deduplicate overlapping issues (same file + overlapping lines + similar issue), flag consensus when both reviewers identify same issue, sort by priority then confidence.
+## Priority Levels
 
-**Empty diff handling**: If no changes, report "No changes to review. Stage some changes or specify a commit range."
+**P0 - Critical**: Security vulnerabilities, data loss, crashes, production outages. Block deployment.
 
-**Large diff warning**: For diffs >10k lines, warn about token limits or suggest chunking.
+**P1 - High**: Logic errors and significant bugs causing incorrect behavior. Fix before merge.
 
-## Output
+**P2 - Medium**: Code quality issues impacting maintainability or extensibility. Worth addressing but not blockers.
 
-Generate consolidated report with:
+**P3 - Low**: Style preferences, minor suggestions, nitpicks. Consider trade-off between value and friction.
 
-**Header**: Scope (diff command), date, reviewers (GPT-5.2-Codex xhigh, Gemini 3 Pro)
+## Finding Format
 
-**Summary table**: Priority levels P0-P3 with counts and descriptions
+Each finding: specific location (file path + line range), problem statement, impact, confidence (0.0-1.0, lower for judgment calls).
 
-**Overall Verdict**: Both reviewers' assessments with confidence scores, plus consensus (APPROVE/REQUEST_CHANGES/MIXED)
+Structure: `### [TITLE] (P{0-3}, confidence: {0.0-1.0})` followed by file path, line range, explanation.
 
-**Findings sections**: Organized by priority (P0 Critical, P1 High, P2 Medium, P3 Low). Each finding shows title, file path, lines, flagged by (note consensus), confidence, merged explanation.
+Each reviewer concludes with **Overall Verdict**: assessment (Codex: "patch is correct/incorrect", Gemini: "APPROVE/REQUEST_CHANGES"), confidence score, justification.
 
-**Reviewer Disagreements**: List any findings where reviewers had significantly different assessments.
+## Consolidating the Reviews
+
+After both complete, synthesize findings via judgment-driven synthesis, not mechanical deduplication.
+
+**Overlap** (same file/lines, same issue): Merge into one finding, note consensus, combine explanations, use higher confidence.
+
+**Disagreement** (different flags or severity): Surface both perspectives. These reveal trade-offs needing human judgment.
+
+**Sorting**: By priority (P0 → P3), then confidence within priority.
+
+## Edge Cases
+
+**Empty diff**: Report "No changes to review" without spawning reviewers.
+
+**Large diffs** (>10k lines): Warn about token limits, suggest chunking.
+
+**Partial failures**: Proceed with available review, note partial coverage.
+
+**Contradictory verdicts**: Mark consensus "MIXED", highlight disagreement.
+
+**Low-confidence findings** (<0.5): Consider value vs noise trade-off.
+
+## Output: Consolidated Report
+
+**Header**: Scope, date, reviewers (GPT-5.2-Codex xhigh, Gemini 3 Pro)
+
+**Summary table**: P0-P3 counts and descriptions
+
+**Overall Verdict**: Both assessments + confidence scores + consensus (APPROVE/REQUEST_CHANGES/MIXED). Explain disagreements.
+
+**Findings**: Organized by priority. Each shows title, file path + line range, flagged by which reviewer(s), confidence (higher if merged), merged explanation.
+
+**Reviewer Disagreements**: Findings with significantly different assessments, explaining why.
 
 **Footer**: "Generated by /sdlc:review using GPT-5.2-Codex and Gemini 3 Pro"
 
-Highlight any P0/P1 issues requiring immediate attention. If no issues: "No significant issues found. Code looks good to proceed."
+Highlight P0/P1 issues as requiring immediate attention. If none: "No significant issues found. Code looks good to proceed."
 
 ## Scope
 

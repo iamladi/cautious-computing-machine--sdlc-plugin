@@ -18,150 +18,135 @@ Read documentarian constraints (Glob `**/sdlc/**/references/documentarian-constr
 
 ### Argument Parsing
 
-Parse `$ARGUMENTS` for flags before processing:
-1. Check if `--swarm` appears as a standalone token (not inside quotes)
-2. If found: set `SWARM_MODE=true`, remove all `--swarm` tokens from the argument string
-3. The remaining text (trimmed) is the research topic
-4. If the topic is empty after removing `--swarm`: prompt the user "Please provide a research question." and stop
+The `$ARGUMENTS` input contains both the research topic and optional mode flags. Extract the intent:
+- Identify if `--swarm` flag is present (indicates user wants parallel team research)
+- Separate the flag from the research topic itself
+- The research topic is the remaining text after flag extraction
+
+If no topic remains after flag extraction, ask the user for a research question before proceeding.
 
 ### Mode Selection
 
-**If `SWARM_MODE=true`**: Execute the **Swarm Workflow** below.
+**If user requested swarm mode** (via `--swarm` flag): Execute the **Swarm Workflow** below.
 **Otherwise**: Execute the **Standard Workflow** below.
 
 ---
 
 ## Standard Workflow
 
-The default research flow using subagents.
+The default research approach uses specialized subagents to explore different aspects of the codebase in parallel.
 
-- Read user-mentioned files FULLY (no limit/offset) before spawning sub-agents
-- Spawn parallel agents: codebase-locator, codebase-analyzer, codebase-pattern-finder
-- Wait for ALL agents before synthesizing
-- Web research only if explicitly requested (use web-search-researcher)
-- All findings require file:line references
-- Prioritize live codebase over existing docs
+### Context Gathering
+
+Read any files the user mentioned completely before delegating work. This provides grounding for the subagents and ensures you understand what the user is starting from.
+
+### Parallel Investigation
+
+Spawn subagents with complementary perspectives on the research question:
+- **Locator**: Discovers where relevant code lives (files, directories, components)
+- **Analyzer**: Understands how the code works (data flow, interactions, implementation)
+- **Pattern Finder**: Identifies conventions and similar implementations elsewhere
+
+These roles work best when they have judgment latitude about HOW to investigate, while being clear on WHAT they're investigating. Each subagent should determine its own search strategy based on what it discovers.
+
+### Optional Web Research
+
+If the user explicitly requested information that requires web search (external APIs, library documentation, recent changes), spawn a web-search-researcher subagent alongside the codebase investigators.
+
+### Source Requirements
+
+All findings must trace back to specific locations in the codebase (file:line references). Prioritize the live codebase over existing documentation when they conflict — code is the source of truth.
+
+### Synthesis
+
+Wait for all subagents to complete their investigation. Integrate their findings into a coherent research document that answers the original question, preserving all source attributions.
 
 ---
 
 ## Swarm Workflow
 
-Agent team-based parallel research using Claude Code's experimental agent teams.
+An alternative approach using agent teams for research that benefits from dynamic collaboration between teammates. This works well when the research question requires teammates to share discoveries in real-time rather than working in isolation.
 
-### Step 1: Create Team (validates prerequisites)
+### Team Prerequisites and Fallback
 
-Create the agent team with a unique timestamped name. This also validates that agent teams are available:
-- Team name: `research-{topic-kebab}-{YYYYMMDD-HHMMSS}` (e.g., `research-auth-flow-20260207-143052`)
-- Call `TeamCreate` with this name and description: "Research: {topic}"
-- **If TeamCreate fails or the tool is unavailable**: Output this error message and execute the Standard Workflow instead (topic is already parsed with `--swarm` removed):
-  ```
-  Swarm mode requires agent teams. Set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in settings.json or environment.
-  Falling back to standard subagent mode.
-  ```
+Attempt to create the agent team using `TeamCreate` with a unique timestamped name: `research-{topic-kebab}-{YYYYMMDD-HHMMSS}` and description: "Research: {topic}".
 
-### Step 2: Read Context
+If team creation fails (tool unavailable or experimental features disabled), inform the user that swarm mode requires agent teams to be enabled (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json), then fall back to executing the Standard Workflow instead. The research topic is already parsed and ready to use.
 
-- Read user-mentioned files FULLY (no limit/offset) before spawning teammates
-- Summarize the research question and any referenced files — this context will be embedded in teammate spawn prompts
+### Context Preparation
 
-### Step 3: Create Research Tasks
+Before spawning teammates, read any user-mentioned files completely and understand the research question. Summarize this context in the teammate spawn prompts so they start with shared understanding.
 
-Use `TaskCreate` to create tasks for the shared task list:
-1. **Locate relevant files** — Find all files, directories, and components related to the research topic
-2. **Analyze implementation details** — Trace data flow, understand how components interact, document with file:line refs
-3. **Find patterns and conventions** — Identify reusable patterns, similar implementations, and coding conventions
+### Shared Task List
 
-### Step 4: Spawn Teammates
+Create tasks via `TaskCreate` that represent the key unknowns you need answered:
+1. **Locate relevant files** — coverage goal is finding ALL files related to the topic
+2. **Analyze implementation details** — depth goal is understanding HOW it works
+3. **Find patterns and conventions** — breadth goal is discovering SIMILAR implementations
 
-Spawn 3 teammates via the `Task` tool with `team_name` parameter and `subagent_type: "general-purpose"`:
+These tasks provide structure without prescribing the investigation approach.
+
+### Teammate Roles
+
+Spawn 3 teammates via the `Task` tool with `team_name` parameter and `subagent_type: "general-purpose"`. Each teammate has a different lens on the research question:
 
 **Teammate 1: Locator**
-```
-You are a codebase locator on a research team investigating: "{topic}"
 
-Your role: Find ALL files, directories, and components relevant to this topic.
+Your role is to find ALL files, directories, and components relevant to "{topic}". Success means the team knows WHERE to look, not just some places but everywhere this topic touches the codebase.
 
-Instructions:
-1. Check TaskList for your assigned task
-2. Use Glob and Grep to search with multiple naming patterns and extensions
-3. Categorize findings: Implementation Files, Test Files, Configuration, Type Definitions, Documentation
-4. Include directory counts ("Contains X files")
-5. Share important discoveries with teammates via SendMessage — especially if you find files that the Analyzer or Pattern Finder should examine
-6. When done, update your task via TaskUpdate (mark completed)
-7. Send a message to the team lead: "RESEARCH COMPLETE"
+Approach this with multiple search strategies — don't rely on a single grep pattern. Try different naming conventions, file extensions, and related concepts. Categorize what you find (implementation, tests, config, types, docs) so teammates know what matters most.
 
-Do NOT read file contents in depth — focus on locating and categorizing.
-All findings must include full file paths.
-```
+When you discover files that teammates should examine, tell them via SendMessage. When you've achieved comprehensive coverage, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE". All findings must include full file paths.
 
 **Teammate 2: Analyzer**
-```
-You are a codebase analyzer on a research team investigating: "{topic}"
 
-Your role: Analyze implementation details, trace data flow, and document how components interact.
+Your role is to understand HOW "{topic}" works — trace the actual execution paths, data flow, and component interactions. Success means the team understands the implementation mechanics, not just the surface API.
 
-Instructions:
-1. Check TaskList for your assigned task
-2. Read files thoroughly before making statements
-3. Trace actual code paths — don't assume
-4. Include file:line references for ALL claims
-5. Focus on "how" it works: entry points, core logic, data flow, error handling
-6. Share important discoveries with teammates via SendMessage — especially patterns you notice (for Pattern Finder) or files that need locating (for Locator)
-7. When done, update your task via TaskUpdate (mark completed)
-8. Send a message to the team lead: "RESEARCH COMPLETE"
+Read files thoroughly before making statements. Follow the code paths to see what actually happens. Every claim you make should cite file:line references that prove it.
 
-Document: Entry Points, Core Implementation, Data Flow, Key Patterns, Configuration, Error Handling.
-```
+Focus on the "how" questions: Where are the entry points? What's the core logic? How does data flow through? What error handling exists? How do components interact?
+
+When you discover patterns worth documenting or realize files are missing from the team's awareness, share via SendMessage. When you've achieved sufficient depth to explain the implementation, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE".
 
 **Teammate 3: Pattern Finder**
-```
-You are a codebase pattern finder on a research team investigating: "{topic}"
 
-Your role: Find similar implementations, usage examples, and existing patterns that illuminate the topic.
+Your role is to find similar implementations, usage examples, and existing patterns that illuminate "{topic}". Success means the team sees HOW this topic fits into broader codebase conventions and where to find working examples.
 
-Instructions:
-1. Check TaskList for your assigned task
-2. Show working code examples, not just snippets
-3. Include file:line references for all code examples
-4. Show multiple variations when they exist
-5. Categorize: API patterns, Data patterns, Component patterns, Testing patterns
-6. Share important discoveries with teammates via SendMessage — especially if you find patterns the Analyzer should trace or files the Locator missed
-7. When done, update your task via TaskUpdate (mark completed)
-8. Send a message to the team lead: "RESEARCH COMPLETE"
+Show actual working code examples with file:line references, not just snippets. When multiple variations exist, show them — the differences often reveal important context. Categorize patterns by type: API patterns, data patterns, component patterns, testing patterns.
 
-Include test patterns alongside implementation patterns where they exist.
-```
+When you find patterns the Analyzer should trace or files the Locator missed, share via SendMessage. When you've achieved sufficient breadth to show the patterns and conventions, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE".
 
-### Step 5: Web Research (if requested)
+### Optional Web Research
 
-If the user explicitly requested web research, spawn a `web-search-researcher` subagent (NOT a teammate) in parallel with the team work. This runs alongside the team, not as part of it.
+If the user explicitly requested web research, spawn a `web-search-researcher` subagent (NOT a teammate) in parallel with the team. This runs independently and may complete on a different timeline.
 
-### Step 6: Wait for Completion
+### Completion Criteria and Convergence
 
-Wait for all 3 teammates to send "RESEARCH COMPLETE" messages. Timeout: 10 minutes from when each teammate was spawned (so max 10 minutes wall clock, not 30 cumulative). Also wait for the web-search-researcher subagent if one was spawned in Step 5.
+Teammates signal completion by sending "RESEARCH COMPLETE" messages. Wait up to 10 minutes from teammate spawn time for all three to complete. If a teammate hasn't signaled completion by timeout, proceed with available findings and note which teammates timed out in the output.
 
-- If all complete: proceed with all findings
-- If any teammate times out: proceed with available findings, note which teammates timed out in the output
-- If web researcher is still running when teammates finish: wait up to 2 more minutes, then proceed without it
+**Web research timing**: If the optional web-search-researcher is still running when all three teammates complete, wait up to 2 additional minutes. If it hasn't finished, proceed without it. Web research is supplementary, not blocking.
 
-### Step 7: Synthesize Findings
+**Fallback behavior**: If a teammate fails or gets stuck in a loop (indicated by repeated similar messages or no progress), you have three options: (1) note the failure and proceed with other teammates' findings, (2) spawn a replacement teammate with clearer scoped instructions, or (3) handle that aspect of research yourself. Choose based on how critical that role's findings are to answering the research question.
 
-As team lead, collect all teammate findings and produce the research document:
-- Merge findings from all teammates (and web research if applicable)
-- Use team attribution in body sections: `[Locator]`, `[Analyzer]`, `[Pattern Finder]`, `[Consensus]` for findings confirmed by multiple teammates
-- Identify consensus findings (mentioned by 2+ teammates) vs unique discoveries
-- All file:line references preserved from all sources
-- Output format is identical to Standard Workflow (same frontmatter schema, same sections)
+### Synthesis Principles
 
-### Step 8: Cleanup (ALWAYS runs)
+As team lead, your job is to integrate teammate findings into a coherent answer to the research question, not mechanically merge their outputs.
 
-**CRITICAL: Execute this step regardless of outcome. Whether Step 7 succeeded, failed, or any earlier step errored — ALWAYS run cleanup before ending.**
+**Attribution strategy**: Use team attribution markers in body sections: `[Locator]`, `[Analyzer]`, `[Pattern Finder]`. Mark independently confirmed findings `[Consensus]`.
 
-1. Send shutdown requests to all teammates via `SendMessage` with `type: "shutdown_request"`
-2. Wait briefly for shutdown confirmations
-3. Call `TeamDelete` to remove the team and its task list
+**Preserve provenance**: All file:line references from teammates must appear in the final document.
+
+**Output format**: The research document structure is identical to Standard Workflow output (same YAML frontmatter schema, same required sections). In the Summary section, briefly note team composition and which teammates contributed. Attribution markers belong in body sections, NOT in YAML frontmatter.
+
+### Resource Cleanup
+
+After completing synthesis (whether successful or failed), always clean up team resources. This prevents lingering agent processes and task lists from accumulating.
+
+Send shutdown requests to all teammates via `SendMessage` with `type: "shutdown_request"`, wait briefly for confirmations, then call `TeamDelete` to remove the team and its task list.
 
 If cleanup itself fails, inform the user: "Team cleanup incomplete. You may need to check for lingering team resources."
+
+Execute cleanup regardless of synthesis outcome — even if earlier steps errored or teammates timed out, cleanup must run before ending.
 
 ---
 

@@ -11,7 +11,7 @@ Correctness > Test Coverage > Implementation Speed
 
 ## Goal
 
-Enforce Test-Driven Development based on project configuration. Read `tdd:` setting from CLAUDE.md (default: off). Support three enforcement modes: strict (test required before implementation), soft (warnings only), off (no checks).
+Enforce Test-Driven Development based on project configuration. Agents reliably implement happy-path code that breaks on edge cases — TDD makes the test the durable specification across fresh-context dispatches.
 
 ## Configuration
 
@@ -27,30 +27,27 @@ Check both `CLAUDE.md` and `.claude/CLAUDE.md`. Default: `off`.
 ### Strict (`tdd: strict`)
 Hard enforcement. Before implementation, verify test exists. If missing, STOP and present AskUserQuestion with options: (1) Write test first, (2) Prototype escape with justification. Log escapes for review.
 
+**Escape when**: Markdown-only changes, config changes, or when mocking exceeds the change's complexity.
+
 ### Soft (`tdd: soft`)
-Warning without blocking. Check for test, output warning if missing, continue implementation. Track untested items and summarize after completion.
+Warning without blocking. Check for test, warn if missing, continue. Summarize untested items after completion.
 
 ### Off (`tdd: off`)
 No TDD checks. Standard implementation flow.
 
 ## Test Discovery
 
-Search patterns:
-1. `__tests__/[filename].test.ts`
-2. `[filename].test.ts` (adjacent)
-3. `[filename].spec.ts` (adjacent)
-4. `test/[filename].test.ts`
-5. `tests/[filename].test.ts`
+Search patterns: `__tests__/[filename].test.ts`, `[filename].test.ts`, `[filename].spec.ts`, `test/[filename].test.ts`, `tests/[filename].test.ts`.
 
-Match function names, class names, or exported methods in test descriptions.
+## Red-Green-Refactor Cycle
 
-## Example
+**Red**: Write test describing expected behavior first and verify it fails — a passing test before implementation is a false positive.
 
-Red → Green → Refactor cycle:
-1. Write test describing expected behavior (verify it fails)
-2. Write minimal implementation to pass test
-3. Refactor if needed
-4. Commit test and implementation together
+**Green**: Write minimal implementation to pass test — the test defines "done", satisfy it, nothing more.
+
+**Refactor**: Clean up with test safety net — the passing test ensures refactoring doesn't break behavior.
+
+**Commit**: Test and implementation together as atomic unit.
 
 ## Arguments
 

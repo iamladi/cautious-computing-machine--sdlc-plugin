@@ -16,15 +16,29 @@ Create a comprehensive PRD in `plans/*.md` that resolves the given task. The pla
 
 ## Constraints
 
-- Research codebase first (start with README.md, then relevant files)
-- Detect genuine ambiguities before planning - use `AskUserQuestion` for decisions that affect implementation
-- Fill every section of the PRD template - replace all `<placeholder>` tags with specific values
-- Split phases with complexity >5 into sub-tasks (max 5 tasks per phase)
-- No decorators - keep implementation simple
-- Report new library needs in the Notes section
-- After draft: run multi-LLM blindspot review (Codex + Gemini in parallel)
-- After review: update frontmatter (`reviewed: true`, add `reviewers`, update `status`)
-- Commit plan to new branch, then create GitHub Issue via `/github:create-issue-from-plan`
+**Research codebase first (start with README.md, then relevant files)**
+Plans based on assumptions rather than actual code state lead to mismatched implementations.
+
+**Detect genuine ambiguities before planning**
+Early ambiguity detection is cheaper than replanning after implementation starts.
+
+**Fill every section of the PRD template completely**
+Incomplete plans cause implementation ambiguity and require mid-task clarifications that break flow.
+
+**Split phases with complexity >5 into sub-tasks (max 5 tasks per phase)**
+Agent context windows can't reliably hold large tasks without dropping requirements or losing track of dependencies.
+
+**No decorators - keep implementation simple**
+Decorators add abstraction complexity that conflicts with the "Minimality" priority.
+
+**Report new library needs in the Notes section**
+New dependencies need human approval for security audits, maintenance burden assessment, licensing compatibility checks, and bundle size impact review.
+
+**Run multi-LLM blindspot review after draft**
+Different models have different blind spots - Codex catches API misuse, Gemini catches architectural inconsistencies.
+
+**Update frontmatter after review, then commit and create issue**
+Marking `reviewed: true` signals the plan is ready for implementation.
 
 ## Plan Format
 
@@ -76,15 +90,20 @@ Load these files before proceeding (use Glob with path `~/.claude/plugins`):
 
 ## Workflow
 
-1. **Ambiguity Detection**: Analyze task for genuine ambiguities (architecture approaches, scope boundaries, technology choices, user intent, priority tradeoffs). If found, use `AskUserQuestion` with 1-4 focused questions before planning. If clear, proceed.
+**Ambiguity Detection Checkpoint**
+Analyze for genuine ambiguities (architecture, scope, technology, intent). If found, use `AskUserQuestion` with 1-4 focused questions.
 
-2. **Research**: Read README.md, then explore relevant codebase files to understand context.
+**Research Checkpoint**
+Read README.md to understand architecture patterns and conventions, then explore relevant codebase files to map existing abstractions and integration points. Plans grounded in actual code state avoid mismatched implementations.
 
-3. **Draft Plan**: Load PRD template, fill all sections, save to `plans/<name>.md`.
+**Draft Plan Checkpoint**
+Load the PRD template and fill every section completely. Save to `plans/<name>.md`.
 
-4. **Blindspot Review**: Load protocol, run Codex + Gemini critics in parallel, consolidate feedback, refine plan.
+**Blindspot Review Checkpoint**
+Load the blindspot review protocol, then run Codex and Gemini critics in parallel. Consolidate their feedback (deduplicate, flag consensus issues, sort by severity), then refine the plan by addressing, deferring, or dismissing each concern with justification.
 
-5. **Finalize**: Update frontmatter (reviewed: true, reviewers: ["codex", "gemini"], status: Ready for Implementation), commit to branch `plan/feature-name`, run `/github:create-issue-from-plan plans/<name>.md`.
+**Finalization Checkpoint**
+Update frontmatter to mark `reviewed: true`, add `reviewers: ["codex", "gemini"]`, and set `status: Ready for Implementation`. Commit to branch `plan/feature-name` to create an audit trail, then run `/github:create-issue-from-plan plans/<name>.md` to make the work trackable.
 
 ## Task
 
