@@ -19,8 +19,8 @@ Create a comprehensive PRD in `plans/*.md` that resolves the given task. The pla
 **Research codebase first (start with README.md, then relevant files)**
 Plans based on assumptions rather than actual code state lead to mismatched implementations.
 
-**Detect genuine ambiguities before planning**
-Early ambiguity detection is cheaper than replanning after implementation starts.
+**Interview the user before planning**
+Upfront interviews are cheaper than replanning after implementation starts.
 
 **Fill every section of the PRD template completely**
 Incomplete plans cause implementation ambiguity and require mid-task clarifications that break flow.
@@ -90,8 +90,15 @@ Load these files before proceeding (use Glob with path `~/.claude/plugins`):
 
 ## Workflow
 
-**Ambiguity Detection Checkpoint**
-Analyze for genuine ambiguities (architecture, scope, technology, intent). If found, use `AskUserQuestion` with 1-4 focused questions.
+**Interview Checkpoint**
+Find and read the interview protocol using Glob:
+- Pattern: `**/sdlc/**/skills/interview/SKILL.md`
+- Search path: `~/.claude/plugins`
+
+Execute the interview protocol with these overrides:
+- Output to conversation context only — do not update files or write an Interview Insights section
+- Focus on: architecture approaches, scope boundaries, technology choices, user intent, priority tradeoffs
+- The topic for the interview is: the user's task as provided in $ARGUMENTS
 
 **Research Checkpoint**
 Read README.md to understand architecture patterns and conventions, then explore relevant codebase files to map existing abstractions and integration points. Plans grounded in actual code state avoid mismatched implementations.

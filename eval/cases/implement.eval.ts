@@ -20,6 +20,10 @@ const evalCase: EvalCase = {
       test: (content) => /^## Plan/m.test(content) && /\$ARGUMENTS/.test(content)
     },
     {
+      name: 'has-interview-checkpoint',
+      test: (content) => /interview.*protocol|interview.*SKILL/i.test(content)
+    },
+    {
       name: 'has-progress-tracking',
       test: (content) => /progress.*track|todo.*list/i.test(content)
     },

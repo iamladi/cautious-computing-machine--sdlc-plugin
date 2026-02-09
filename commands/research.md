@@ -36,9 +36,22 @@ If no topic remains after flag extraction, ask the user for a research question 
 
 The default research approach uses specialized subagents to explore different aspects of the codebase in parallel.
 
+### Interview Checkpoint
+
+Find and read the interview protocol using Glob:
+- Pattern: `**/sdlc/**/skills/interview/SKILL.md`
+- Search path: `~/.claude/plugins`
+
+Execute the interview protocol with these overrides:
+- Output to conversation context only — do not update files or write an Interview Insights section
+- Focus on: research scope, focus areas, depth vs breadth, intended use of research output
+- The topic for the interview is: the research topic as parsed from $ARGUMENTS
+
 ### Context Gathering
 
 Read any files the user mentioned completely before delegating work. This provides grounding for the subagents and ensures you understand what the user is starting from.
+
+Include interview decisions and focus areas when summarizing context for subagent prompts.
 
 ### Parallel Investigation
 
@@ -73,9 +86,22 @@ Attempt to create the agent team using `TeamCreate` with a unique timestamped na
 
 If team creation fails (tool unavailable or experimental features disabled), inform the user that swarm mode requires agent teams to be enabled (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json), then fall back to executing the Standard Workflow instead. The research topic is already parsed and ready to use.
 
+### Interview Checkpoint
+
+Find and read the interview protocol using Glob:
+- Pattern: `**/sdlc/**/skills/interview/SKILL.md`
+- Search path: `~/.claude/plugins`
+
+Execute the interview protocol with these overrides:
+- Output to conversation context only — do not update files or write an Interview Insights section
+- Focus on: research scope, focus areas, depth vs breadth, intended use of research output
+- The topic for the interview is: the research topic as parsed from $ARGUMENTS
+
 ### Context Preparation
 
 Before spawning teammates, read any user-mentioned files completely and understand the research question. Summarize this context in the teammate spawn prompts so they start with shared understanding.
+
+Include interview decisions and focus areas when summarizing context in the teammate spawn prompts.
 
 ### Shared Task List
 
