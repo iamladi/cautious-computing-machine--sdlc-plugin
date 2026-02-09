@@ -130,12 +130,11 @@ DEPENDENCIES/INTERFACES:
 {any shared APIs, types, or contracts discovered by other teammates or from plan}
 
 YOUR CONSTRAINTS:
-- Edit ONLY the files listed for your task
-- DO NOT run git commit/push/add (lead will handle commits)
-- DO NOT use AskUserQuestion (lead will answer questions)
-- DO NOT run build or test commands (may interfere with other teammates)
-- Read files completely without limit/offset
-- If you discover file overlap at runtime that wasn't detected during analysis, signal lead immediately via SendMessage
+- Edit only your assigned files — the lead coordinates commits and reviews to maintain atomic task boundaries. Editing other files would create merge conflicts with concurrent teammates.
+- Don't run git, build, or test commands — other teammates are editing concurrently, and these operations would cause conflicts or interference.
+- If blocked or uncertain, send "BLOCKED: {reason}" via SendMessage — the lead has full plan context and can answer or escalate to the user.
+- Read files completely without limit/offset so you have full context for accurate implementation.
+- If you discover file overlap at runtime that wasn't detected during analysis, signal lead immediately via SendMessage.
 
 RUNTIME FILE OVERLAP DETECTION:
 If you discover that a file you need to modify is being touched by another teammate (indicated by SendMessage from that teammate or conflicts), send:
