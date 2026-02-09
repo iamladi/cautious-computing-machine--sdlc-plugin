@@ -30,6 +30,17 @@ Parse the plan reference:
 
 Read plan completely, check Issue for progress, read all referenced files (no limit/offset). Extract tasks from phases.
 
+### Interview Checkpoint
+
+Find and read the interview protocol using Glob:
+- Pattern: `**/sdlc/**/skills/interview/SKILL.md`
+- Search path: `~/.claude/plugins`
+
+Execute the interview protocol with these overrides:
+- Output to conversation context only — do not update files or write an Interview Insights section
+- Focus on: task ordering preferences, testing approach, code style choices, areas where the plan leaves decisions open
+- The topic for the interview is the plan's goals and requirements as parsed in the Plan Input step above
+
 ### Mode Selection
 
 **If user requested swarm mode** (via `--swarm` flag): Execute the **Swarm Workflow** below.

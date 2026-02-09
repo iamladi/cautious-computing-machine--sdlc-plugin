@@ -5,6 +5,18 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0] - 2026-02-09
+
+### Added
+
+- **Default interview integration** for `/plan`, `/research`, and `/implement` commands
+  - Interview runs automatically before main workflow — no manual `/interview` invocation required
+  - `/plan`: Replaced conditional Ambiguity Detection Checkpoint with unconditional Interview Checkpoint
+  - `/research`: Added Interview Checkpoint before Context Gathering (Standard) and Context Preparation (Swarm)
+  - `/implement`: Added Interview Checkpoint after Plan Input, before Mode Selection — uses parsed plan content as topic, not raw file path
+  - All three commands reference `skills/interview/SKILL.md` via Glob with conversation-context-only override
+  - New `has-interview-checkpoint` structural eval assertions for plan, research, and implement
+
 ## [1.16.0] - 2026-02-09
 
 ### Added

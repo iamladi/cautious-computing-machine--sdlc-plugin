@@ -24,6 +24,10 @@ const evalCase: EvalCase = {
       test: (content) => /\$ARGUMENTS/.test(content)
     },
     {
+      name: 'has-interview-checkpoint',
+      test: (content) => /interview.*protocol|interview.*SKILL/i.test(content)
+    },
+    {
       name: 'has-prd-template-content',
       test: (content) => /## Metadata/.test(content) &&
                           /## Overview/.test(content) &&

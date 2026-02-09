@@ -19,6 +19,10 @@ const evalCase: EvalCase = {
       test: (content) => /parallel.*agent|Task.*agent|sub-agent/i.test(content)
     },
     {
+      name: 'has-interview-checkpoint',
+      test: (content) => /interview.*protocol|interview.*SKILL/i.test(content)
+    },
+    {
       name: 'has-frontmatter-template',
       test: (content) => /---\s*\n.*\ndate:.*\ngit_commit:/s.test(content) ||
                           /frontmatter/i.test(content)
