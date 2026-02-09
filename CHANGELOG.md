@@ -5,6 +5,19 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] - 2026-02-09
+
+### Added
+
+- **`--swarm` flag for `/implement`** — parallel team implementation for independent tasks
+  - Analyzes file overlap to identify independent task clusters
+  - Spawns one teammate per independent task for parallel execution
+  - Runtime file overlap detection with serialization fallback
+  - Preserves spec-reviewer + code-quality-reviewer gates per task
+  - Dependent tasks managed via shared task list with blockedBy relationships
+  - Lead-only git protocol (teammates edit files, lead commits)
+  - Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+
 ## [1.15.0] - 2026-02-08
 
 ### Added
