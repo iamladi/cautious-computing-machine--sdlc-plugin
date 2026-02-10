@@ -16,63 +16,14 @@ Research and document the codebase to answer the given question. Produce a stand
 
 Read documentarian constraints (Glob `**/sdlc/**/references/documentarian-constraints.md`, path `/Users/iamladi/Projects/claude-code-plugins`). YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY. DO NOT suggest improvements or changes unless explicitly requested. Document what IS, not what SHOULD BE.
 
-### Argument Parsing
+### CRITICAL: Route Selection
 
-The `$ARGUMENTS` input contains both the research topic and optional mode flags. Extract the intent:
-- Identify if `--swarm` flag is present (indicates user wants parallel team research)
-- Separate the flag from the research topic itself
-- The research topic is the remaining text after flag extraction
+BEFORE taking any other action, check `$ARGUMENTS` for the `--swarm` flag:
 
-If no topic remains after flag extraction, ask the user for a research question before proceeding.
+1. If `--swarm` IS present: remove it from the arguments (the remaining text is the research topic), then skip directly to **Swarm Workflow**. Do NOT execute any Standard Workflow steps.
+2. If `--swarm` is NOT present: the full `$ARGUMENTS` is the research topic, skip directly to **Standard Workflow**. Do NOT execute any Swarm Workflow steps.
 
-### Mode Selection
-
-**If user requested swarm mode** (via `--swarm` flag): Execute the **Swarm Workflow** below.
-**Otherwise**: Execute the **Standard Workflow** below.
-
----
-
-## Standard Workflow
-
-The default research approach uses specialized subagents to explore different aspects of the codebase in parallel.
-
-### Interview Checkpoint
-
-Find and read the interview protocol using Glob:
-- Pattern: `**/sdlc/**/skills/interview/SKILL.md`
-- Search path: `~/.claude/plugins`
-
-Execute the interview protocol with these overrides:
-- Output to conversation context only — do not update files or write an Interview Insights section
-- Focus on: research scope, focus areas, depth vs breadth, intended use of research output
-- The topic for the interview is: the research topic as parsed from $ARGUMENTS
-
-### Context Gathering
-
-Read any files the user mentioned completely before delegating work. This provides grounding for the subagents and ensures you understand what the user is starting from.
-
-Include interview decisions and focus areas when summarizing context for subagent prompts.
-
-### Parallel Investigation
-
-Spawn subagents with complementary perspectives on the research question:
-- **Locator**: Discovers where relevant code lives (files, directories, components)
-- **Analyzer**: Understands how the code works (data flow, interactions, implementation)
-- **Pattern Finder**: Identifies conventions and similar implementations elsewhere
-
-These roles work best when they have judgment latitude about HOW to investigate, while being clear on WHAT they're investigating. Each subagent should determine its own search strategy based on what it discovers.
-
-### Optional Web Research
-
-If the user explicitly requested information that requires web search (external APIs, library documentation, recent changes), spawn a web-search-researcher subagent alongside the codebase investigators.
-
-### Source Requirements
-
-All findings must trace back to specific locations in the codebase (file:line references). Prioritize the live codebase over existing documentation when they conflict — code is the source of truth.
-
-### Synthesis
-
-Wait for all subagents to complete their investigation. Integrate their findings into a coherent research document that answers the original question, preserving all source attributions.
+If no research topic remains after processing, ask the user for a research question before proceeding.
 
 ---
 
@@ -173,6 +124,50 @@ Send shutdown requests to all teammates via `SendMessage` with `type: "shutdown_
 If cleanup itself fails, inform the user: "Team cleanup incomplete. You may need to check for lingering team resources."
 
 Execute cleanup regardless of synthesis outcome — even if earlier steps errored or teammates timed out, cleanup must run before ending.
+
+---
+
+## Standard Workflow
+
+The default research approach uses specialized subagents to explore different aspects of the codebase in parallel.
+
+### Interview Checkpoint
+
+Find and read the interview protocol using Glob:
+- Pattern: `**/sdlc/**/skills/interview/SKILL.md`
+- Search path: `~/.claude/plugins`
+
+Execute the interview protocol with these overrides:
+- Output to conversation context only — do not update files or write an Interview Insights section
+- Focus on: research scope, focus areas, depth vs breadth, intended use of research output
+- The topic for the interview is: the research topic as parsed from $ARGUMENTS
+
+### Context Gathering
+
+Read any files the user mentioned completely before delegating work. This provides grounding for the subagents and ensures you understand what the user is starting from.
+
+Include interview decisions and focus areas when summarizing context for subagent prompts.
+
+### Parallel Investigation
+
+Spawn subagents with complementary perspectives on the research question:
+- **Locator**: Discovers where relevant code lives (files, directories, components)
+- **Analyzer**: Understands how the code works (data flow, interactions, implementation)
+- **Pattern Finder**: Identifies conventions and similar implementations elsewhere
+
+These roles work best when they have judgment latitude about HOW to investigate, while being clear on WHAT they're investigating. Each subagent should determine its own search strategy based on what it discovers.
+
+### Optional Web Research
+
+If the user explicitly requested information that requires web search (external APIs, library documentation, recent changes), spawn a web-search-researcher subagent alongside the codebase investigators.
+
+### Source Requirements
+
+All findings must trace back to specific locations in the codebase (file:line references). Prioritize the live codebase over existing documentation when they conflict — code is the source of truth.
+
+### Synthesis
+
+Wait for all subagents to complete their investigation. Integrate their findings into a coherent research document that answers the original question, preserving all source attributions.
 
 ---
 

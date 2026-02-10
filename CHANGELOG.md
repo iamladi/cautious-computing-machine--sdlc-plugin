@@ -5,6 +5,13 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.1] - 2026-02-10
+
+### Fixed
+
+- **`/research --swarm` routing** — replaced advisory "Argument Parsing" + "Mode Selection" with imperative "CRITICAL: Route Selection" gate; reordered Swarm Workflow before Standard Workflow to prevent top-to-bottom execution bias
+- **`/research-deep --swarm` routing** — strengthened "CRITICAL: Parse Flags and Route" with imperative skip directives; reordered Swarm Discovery before Standard Discovery
+
 ## [1.18.0] - 2026-02-10
 
 ### Changed

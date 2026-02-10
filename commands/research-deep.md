@@ -14,9 +14,9 @@ Depth (multi-perspective) > Accuracy (consensus validation) > Concision
 
 Execute 3-phase multi-LLM research (Discovery → Analysis → Synthesis) on a codebase topic, producing a comprehensive document with LLM attribution markers showing which findings came from Claude, Gemini, and/or Codex.
 
-## Argument Parsing
+## CRITICAL: Parse Flags and Route
 
-Parse `$ARGUMENTS` for flags before processing:
+BEFORE doing anything else, parse `$ARGUMENTS` for flags:
 1. Check if `--swarm` appears as a standalone token (not inside quotes)
 2. If found: set `SWARM_MODE=true`, remove all `--swarm` tokens from the argument string
 3. The remaining text (trimmed) is the research topic
@@ -26,15 +26,8 @@ Parse `$ARGUMENTS` for flags before processing:
 
 ### Phase 1: Discovery
 
-**If `SWARM_MODE=true`**: Use the **Swarm Discovery** workflow below.
-**Otherwise**: Use the **Standard Discovery** workflow below.
-
-#### Standard Discovery (Claude only)
-- Read any user-mentioned files first
-- Create `research/.deep-research-$(date +%Y%m%d-%H%M%S)/`
-- Spawn one discovery agent using codebase-locator, codebase-analyzer, and codebase-pattern-finder
-- Target <50K characters for CLI compatibility
-- Save to `context.md`
+If `SWARM_MODE=true`: skip directly to **Swarm Discovery** below. Do NOT execute Standard Discovery.
+If `SWARM_MODE` is not set: skip directly to **Standard Discovery** below. Do NOT execute Swarm Discovery.
 
 #### Swarm Discovery (Agent Team)
 
@@ -155,6 +148,14 @@ Collect all teammate findings and write them to `context.md` in the working dire
 3. Call `TeamDelete` to remove the team and its task list
 
 If cleanup itself fails, inform the user but continue to Phase 2: "Team cleanup incomplete. You may need to check for lingering team resources."
+
+#### Standard Discovery (Claude only)
+
+- Read any user-mentioned files first
+- Create `research/.deep-research-$(date +%Y%m%d-%H%M%S)/`
+- Spawn one discovery agent using codebase-locator, codebase-analyzer, and codebase-pattern-finder
+- Target <50K characters for CLI compatibility
+- Save to `context.md`
 
 ---
 
