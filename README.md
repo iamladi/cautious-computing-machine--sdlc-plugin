@@ -36,7 +36,7 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 ### 🔌 Integrations
 
 - **Context7** - Up-to-date library documentation and code examples
-- **Perplexity** - Advanced web search and research capabilities
+- **Perplexity Sonar (via OpenRouter)** - Advanced web search and research capabilities
 
 ## Installation
 
@@ -67,9 +67,9 @@ claude --debug
 Create a `.env` file or set environment variables:
 
 ```bash
-# Required for Perplexity integration
-export PERPLEXITY_API_KEY="your-api-key"
-export PERPLEXITY_MODEL="llama-3.1-sonar-small-128k-online"  # or your preferred model
+# Required for Perplexity Sonar integration (via OpenRouter)
+export OPENROUTER_API_KEY="your-api-key"
+export OPENROUTER_MODEL="perplexity/sonar-pro"  # or any OpenRouter model
 ```
 
 ## Usage
@@ -417,11 +417,11 @@ Configure in `.mcp.json`:
       "args": ["-y", "@upstash/context7-mcp@latest"]
     },
     "perplexity": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/utils/perplexity-mcp/index.js"],
+      "command": "bun",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/utils/perplexity-mcp/index.ts"],
       "env": {
-        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
-        "PERPLEXITY_MODEL": "${PERPLEXITY_MODEL}"
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+        "OPENROUTER_MODEL": "${OPENROUTER_MODEL:-perplexity/sonar-pro}"
       }
     }
   }
@@ -459,7 +459,7 @@ sdlc-plugin/
 │   └── test/SKILL.md
 ├── utils/
 │   └── perplexity-mcp/
-│       └── index.js         # Perplexity MCP server
+│       └── index.ts         # Perplexity Sonar MCP server (via OpenRouter)
 ├── logs/                    # Hook execution logs
 ├── .mcp.json               # MCP server configuration
 ├── README.md
@@ -603,7 +603,7 @@ claude --list-plugins
 ### MCP Servers Not Working
 
 1. Check Node.js is installed and accessible
-2. Verify environment variables are set (for Perplexity)
+2. Verify environment variables are set (`OPENROUTER_API_KEY`)
 3. Test MCP servers independently:
    ```bash
    npx -y @upstash/context7-mcp@latest

@@ -183,7 +183,7 @@
 /research "GraphQL vs REST for mobile API" --customContext "We have React Native app, 5 endpoints currently, team of 3 developers"
 ```
 
-## Research with Perplexity Integration
+## Research with Sonar Integration (via OpenRouter)
 
 ### Recent Information
 
@@ -191,7 +191,7 @@
 /research "Latest security vulnerabilities in popular npm packages 2024"
 ```
 
-Uses Perplexity MCP to fetch:
+Uses Sonar MCP (via OpenRouter) to fetch:
 - Recent CVEs
 - Security advisories
 - Patch recommendations

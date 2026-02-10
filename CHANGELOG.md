@@ -5,6 +5,25 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0] - 2026-02-10
+
+### Changed
+
+- **Migrated Perplexity MCP server from direct API to OpenRouter** (#31)
+  - Rewrote bundled 11,860-line `index.js` as clean ~285-line TypeScript `index.ts`
+  - Routes through OpenRouter (`https://openrouter.ai/api/v1/chat/completions`) instead of Perplexity API directly
+  - Runs directly with `bun` (no build step, no bundled JS)
+  - SSE streaming parser with 120s timeout, error event handling, defensive citation/image accumulation
+  - Citations parsed from top-level `response.citations` (OpenRouter/Sonar format)
+  - Default model: `perplexity/sonar-pro` (configurable via `OPENROUTER_MODEL`)
+
+### Breaking Changes
+
+- **Tool renamed**: `perplexity_search_web` → `search_web` (full qualified: `mcp__perplexity__search_web`)
+- **Environment variables**: `PERPLEXITY_API_KEY` → `OPENROUTER_API_KEY`, `PERPLEXITY_MODEL` → `OPENROUTER_MODEL`
+- **Removed parameters**: `return_citations`, `return_images` (citations come automatically from Sonar)
+- **Runtime**: MCP server now requires Bun instead of Node.js
+
 ## [1.17.0] - 2026-02-09
 
 ### Added
