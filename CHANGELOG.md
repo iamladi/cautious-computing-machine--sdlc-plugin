@@ -5,6 +5,21 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0] - 2026-02-12
+
+### Added
+
+- **4-phase vertical TDD workflow** — Planning → Tracer Bullet → Incremental Loop → Refactor, replacing simple presence-check enforcement
+- **Per-cycle checklist** — behavioral tests, public interface only, survives refactor, minimal code, no horizontal drift
+- **TDD reference documents** — mocking policy (boundary-only), interface design (DI), test quality (behavioral), refactoring guidance
+- **TDD reference injection** — `/implement` now injects key TDD excerpts into implementer subagent prompts when TDD mode is strict or soft
+
+### Changed
+
+- **`skills/tdd/SKILL.md`** — rewritten with anti-pattern documentation (horizontal vs vertical slicing) and explicit phase entry/exit criteria
+- **`agents/implementer.md`** — vertical TDD workflow instructions with per-cycle checklist
+- **`skills/test/references/test-patterns.md`** — mock example aligned with boundary-only policy
+
 ## [1.18.1] - 2026-02-10
 
 ### Fixed
