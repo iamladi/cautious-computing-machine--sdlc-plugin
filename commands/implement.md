@@ -55,7 +55,11 @@ The default implementation approach uses sequential subagent-driven development 
 ### Subagent Workflow
 You orchestrate; implementer agents execute. Per task:
 
-1. **Dispatch implementer** (Task tool, `subagent_type: "implementer"`): task spec, TDD mode, context, files to reference
+1. **Dispatch implementer** (Task tool, `subagent_type: "implementer"`): task spec, TDD mode, context, files to reference. **When TDD mode is strict or soft**: Before dispatching, read TDD reference files via `Glob("**/tdd/references/*.md", path: "~/.claude/plugins")` and inject key excerpts into the implementer's Task prompt:
+   - From `mocking.md`: boundary-only rule, system boundary definition, legacy compatibility clause
+   - From `test-quality.md`: behavioral test criteria (WHAT not HOW, public interface, survives refactor)
+   - From `interface-design.md`: DI principle (accept dependencies, don't create them)
+   - Inject as literal text under a `TDD GUIDANCE:` section in the prompt. Do NOT include full files — extract the rules and one example each.
 2. **Handle questions**: Answer from plan/context first, else AskUserQuestion
 3. **Dispatch spec-reviewer** (`subagent_type: "spec-reviewer"`): original spec + implementation → verify nothing missing/extra, behavior matches
 4. **Dispatch code-quality-reviewer** (`subagent_type: "code-quality-reviewer"`): changed files → check bugs/smells/security/anti-patterns
