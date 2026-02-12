@@ -411,7 +411,7 @@ Define clear, testable success criteria:
 
 ## Blindspot Review
 
-**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
+**Reviewers**: GPT-5.3-Codex (xhigh), Gemini 3 Pro
 **Date**: <YYYY-MM-DD>
 **Plan Readiness**: <Ready | Needs Revision | Major Gaps>
 

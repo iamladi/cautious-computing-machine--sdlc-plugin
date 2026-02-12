@@ -15,15 +15,17 @@
 
 | Model | Best for | Context window | Key features |
 | --- | --- | --- | --- |
-| `gpt-5.2-codex` ⭐⭐ | **Code review flagship**: xhigh reasoning, security analysis, architecture review | 400K input / 128K output | 79% SWE-bench Pro, best for reviews |
-| `gpt-5.1-codex` ⭐ | **Flagship model**: Software engineering, agentic coding workflows | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
+| `gpt-5.3-codex` ⭐⭐ | **Flagship model**: Software engineering, code review, agentic coding | 400K input / 128K output | 25% faster, best agentic coding, $1.75/$14.00 |
+| `gpt-5.3-codex-spark` | Research preview: ultra-fast inference via Cerebras | 400K input / 128K output | 1000+ tokens/s, experimental |
+| `gpt-5.2-codex` | Code review, security analysis | 400K input / 128K output | 79% SWE-bench Pro |
+| `gpt-5.1-codex` ⭐ | Software engineering, agentic coding workflows | 400K input / 128K output | 76.3% SWE-bench, $1.25/$10.00 |
 | `gpt-5.1-codex-mini` | Cost-efficient coding (4x more usage allowance) | 400K input / 128K output | Near SOTA performance, $0.25/$2.00 |
 | `gpt-5.1-thinking` | Ultra-complex reasoning, deep problem analysis | 400K input / 128K output | Adaptive thinking depth, runs 2x slower on hardest tasks |
 
-**GPT-5.1-Codex Advantages**: 76.3% SWE-bench (vs 72.8% GPT-5), 30% faster on average tasks, better tool handling, reduced hallucinations, improved code quality. Knowledge cutoff: September 30, 2024.
+**GPT-5.3-Codex Advantages**: 25% faster inference than 5.1, better agentic coding, multi-step engineering capabilities. 400K input / 128K output context. $1.75/M input, $14/M output.
 
 **Reasoning Effort Levels**:
-- `xhigh` - Maximum quality (code review, security analysis, architecture review) - requires `gpt-5.2-codex`
+- `xhigh` - Maximum quality (code review, security analysis, architecture review) - requires `gpt-5.3-codex`
 - `high` - Complex tasks (refactoring, architecture, security analysis, performance optimization)
 - `medium` - Standard tasks (refactoring, code organization, feature additions, bug fixes)
 - `low` - Simple tasks (quick fixes, simple changes, code formatting, documentation)
@@ -32,12 +34,12 @@
 
 ## Code Review Mode
 
-For automated code reviews with maximum quality, use `gpt-5.2-codex` with `xhigh` reasoning:
+For automated code reviews with maximum quality, use `gpt-5.3-codex` with `xhigh` reasoning:
 
 ### Review Command Pattern
 ```bash
 codex exec --skip-git-repo-check \
-  -m gpt-5.2-codex \
+  -m gpt-5.3-codex \
   -c model_reasoning_effort="xhigh" \
   --sandbox read-only \
   --full-auto \
