@@ -1,7 +1,7 @@
 ---
 title: "Upgrade Codex skill to GPT-5.3-Codex as default and flagship model"
 type: Chore
-issue: null
+issue: 37
 research:
   - ../primitives-plugin/research/research-codex-gpt-53-model-upgrade.md
 status: Ready for Implementation
