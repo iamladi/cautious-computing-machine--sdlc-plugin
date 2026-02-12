@@ -11,7 +11,7 @@ After creating the draft plan, run it through Codex and Gemini in parallel to un
 
 ```bash
 codex exec --skip-git-repo-check \
-  -m gpt-5.2-codex \
+  -m gpt-5.3-codex \
   -c model_reasoning_effort="xhigh" \
   --sandbox read-only \
   --full-auto \
@@ -115,7 +115,7 @@ Add a new section to the plan after `## Notes & Context`:
 ```markdown
 ## Blindspot Review
 
-**Reviewers**: GPT-5.2-Codex (xhigh), Gemini 3 Pro
+**Reviewers**: GPT-5.3-Codex (xhigh), Gemini 3 Pro
 **Date**: [timestamp]
 
 ### Addressed Concerns

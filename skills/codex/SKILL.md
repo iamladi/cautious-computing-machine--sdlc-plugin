@@ -1,6 +1,6 @@
 ---
 name: codex
-description: Use when the user asks to run Codex CLI (codex exec, codex resume) or references OpenAI Codex for code analysis, refactoring, or automated editing. Uses GPT-5.1-Codex by default for state-of-the-art software engineering.
+description: Use when the user asks to run Codex CLI (codex exec, codex resume) or references OpenAI Codex for code analysis, refactoring, or automated editing. Uses GPT-5.3-Codex by default for state-of-the-art software engineering.
 ---
 
 # Codex Skill
@@ -11,11 +11,11 @@ Correctness > Security > Efficiency
 
 ## Goal
 
-Execute OpenAI Codex CLI for automated code analysis, refactoring, and editing tasks. Default to `gpt-5.1-codex` model with user-specified reasoning effort. Suppress stderr thinking tokens by default unless debugging is needed.
+Execute OpenAI Codex CLI for automated code analysis, refactoring, and editing tasks. Default to `gpt-5.3-codex` model with user-specified reasoning effort. Suppress stderr thinking tokens by default unless debugging is needed.
 
 ## Constraints
 
-- Default model: `gpt-5.1-codex` (ask user for reasoning effort: high, medium, or low)
+- Default model: `gpt-5.3-codex` (ask user for reasoning effort: high, medium, or low)
 - Sandbox mode: `--sandbox read-only` (default), `workspace-write` (for edits), `danger-full-access` (network/broad access)
 - Always use `--skip-git-repo-check` flag
 - Suppress stderr by default: append `2>/dev/null` to all `codex exec` commands
@@ -28,8 +28,10 @@ Execute OpenAI Codex CLI for automated code analysis, refactoring, and editing t
 
 | Model | Best for | Context window | Key features |
 | --- | --- | --- | --- |
-| `gpt-5.2-codex` ⭐⭐ | **Code review flagship**: xhigh reasoning, security analysis, architecture review | 400K input / 128K output | 79% SWE-bench Pro, best for reviews |
-| `gpt-5.1-codex` ⭐ | **Flagship model**: Software engineering, agentic coding workflows | 400K input / 128K output | 76.3% SWE-bench, adaptive reasoning, $1.25/$10.00 |
+| `gpt-5.3-codex` ⭐⭐ | **Flagship model**: Software engineering, code review, agentic coding | 400K input / 128K output | 25% faster, best agentic coding, $1.75/$14.00 |
+| `gpt-5.3-codex-spark` | Research preview: ultra-fast inference via Cerebras | 400K input / 128K output | 1000+ tokens/s, experimental |
+| `gpt-5.2-codex` | Code review, security analysis | 400K input / 128K output | 79% SWE-bench Pro |
+| `gpt-5.1-codex` ⭐ | Software engineering, agentic coding workflows | 400K input / 128K output | 76.3% SWE-bench, $1.25/$10.00 |
 | `gpt-5.1-codex-mini` | Cost-efficient coding (4x more usage allowance) | 400K input / 128K output | Near SOTA performance, $0.25/$2.00 |
 | `gpt-5.1-thinking` | Ultra-complex reasoning, deep problem analysis | 400K input / 128K output | Adaptive thinking depth, runs 2x slower on hardest tasks |
 

@@ -12,7 +12,7 @@
 - Reasoning effort? (high, medium, low)
 
 **Default configuration:**
-- Model: gpt-5.1-codex (automatic default)
+- Model: gpt-5.3-codex (automatic default)
 - Effort: high
 - Sandbox: read-only (default for analysis)
 
@@ -24,7 +24,7 @@
 
 **HAL will run:**
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.1-codex --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
+codex exec --skip-git-repo-check -m gpt-5.3-codex --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
 ```
 
 ## Reasoning Effort Levels
@@ -242,21 +242,38 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 ## Model Selection Guide
 
-### gpt-5.1-codex ⭐ (Default)
+### gpt-5.3-codex ⭐⭐ (Default)
+
+**Best for:**
+- Software engineering and code review
+- Agentic coding workflows
+- Multi-step engineering tasks
+- Complex refactoring and architecture changes
+
+**Characteristics:**
+- 25% faster inference than 5.1
+- Best agentic coding capabilities
+- Multi-step engineering
+- Optimized for code
+
+**Specs:**
+- Context: 400K input / 128K output
+- Pricing: $1.75/$14.00 per 1M tokens
+- 90% cache discount
+
+### gpt-5.1-codex ⭐
 
 **Best for:**
 - Software engineering (76.3% SWE-bench)
 - Code refactoring
-- Architecture changes
-- Complex transformations
 - Agentic coding workflows
+- Cost-conscious tasks ($1.25/$10.00)
 
 **Characteristics:**
 - Optimized for code
 - 30% faster than GPT-5
 - Adaptive reasoning
 - Better tool handling
-- Reduced hallucinations
 
 **Specs:**
 - Context: 400K input / 128K output
@@ -313,11 +330,12 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 | Task Type | Model | Reasoning | Sandbox |
 |-----------|-------|-----------|---------|
+| Code review | gpt-5.3-codex | xhigh | read-only |
 | Security audit | gpt-5.1-thinking | high | read-only |
-| Simple refactor | gpt-5.1-codex | medium | workspace-write |
-| Complex migration | gpt-5.1-codex | high | workspace-write |
-| Add types | gpt-5.1-codex | low | workspace-write |
-| Install deps | gpt-5.1-codex | medium | danger-full-access |
+| Simple refactor | gpt-5.3-codex | medium | workspace-write |
+| Complex migration | gpt-5.3-codex | high | workspace-write |
+| Add types | gpt-5.3-codex | low | workspace-write |
+| Install deps | gpt-5.3-codex | medium | danger-full-access |
 | High-volume tasks | gpt-5.1-codex-mini | medium | workspace-write |
 
 ### Use Session Continuity

@@ -21,13 +21,13 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **/research** - AI-powered research with project context
 - **/research-deep** - Parallel research with 3 instances and synthesis for comprehensive coverage
 - **/implement** - Execute implementation based on generated plans
-- **/review** - Parallel code review with GPT-5.2-Codex and Gemini 3 Pro, consolidated findings
+- **/review** - Parallel code review with GPT-5.3-Codex and Gemini 3 Pro, consolidated findings
 - **/submit** - Prepare and submit work for review
 - **/verify** - Validate implementation against acceptance criteria
 
 ### 🎯 Skills
 
-- **codex** - OpenAI Codex integration (GPT-5.1/5.2) for code analysis, review, refactoring, and automated editing
+- **codex** - OpenAI Codex integration (GPT-5.3) for code analysis, review, refactoring, and automated editing
 - **gemini** - Google Gemini 3 Pro integration for code review, plan analysis, and big context (>200k) processing
 - **interview** - Deep interviews about any topic with iterative questioning (uses Opus)
 - **tdd** - TDD enforcement during implementation (strict/soft/off modes via CLAUDE.md)
@@ -214,7 +214,7 @@ Executes the implementation plan with guided steps. Updates GitHub Issue checkbo
 /review origin/main...HEAD   # Review all commits on branch
 ```
 
-Runs parallel code reviews with GPT-5.2-Codex (xhigh reasoning) and Gemini 3 Pro:
+Runs parallel code reviews with GPT-5.3-Codex (xhigh reasoning) and Gemini 3 Pro:
 - Analyzes git diff for correctness, performance, security, maintainability
 - Deduplicates findings when both reviewers flag the same issue
 - Prioritizes by severity (P0-P3)
