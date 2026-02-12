@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Model tables** updated with `gpt-5.3-codex` as ⭐⭐ flagship and `gpt-5.3-codex-spark` research preview (1000+ tokens/s via Cerebras)
 - **All documentation** updated: README, examples, CLI reference, skill definition
 
+
 ## [1.19.0] - 2026-02-12
 
 ### Added
