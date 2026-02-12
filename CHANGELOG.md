@@ -5,6 +5,15 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.1] - 2026-02-12
+
+### Changed
+
+- **Default Codex model** upgraded from `gpt-5.1-codex` to `gpt-5.3-codex` (25% faster inference, better agentic coding)
+- **Code review flagship** upgraded from `gpt-5.2-codex` to `gpt-5.3-codex` across `/review`, blindspot protocol, and PRD template
+- **Model tables** updated with `gpt-5.3-codex` as ⭐⭐ flagship and `gpt-5.3-codex-spark` research preview (1000+ tokens/s via Cerebras)
+- **All documentation** updated: README, examples, CLI reference, skill definition
+
 ## [1.19.0] - 2026-02-12
 
 ### Added
