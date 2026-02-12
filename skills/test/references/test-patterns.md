@@ -53,12 +53,15 @@ test('throws error for invalid input', () => {
   expect(() => instance.process('')).toThrow('Input required')
 })
 
-test('calls dependency with correct arguments', () => {
-  const { instance, mockDependency } = setup()
+// Mock assertions are appropriate for SYSTEM BOUNDARY dependencies
+// (external APIs, databases, third-party SDKs) — not internal modules.
+// See: skills/tdd/references/mocking.md for boundary-only mocking policy.
+test('calls payment gateway with correct amount', () => {
+  const { instance, mockPaymentGateway } = setup()
 
-  instance.doWork()
+  instance.processOrder()
 
-  expect(mockDependency).toHaveBeenCalledWith('expected-arg')
+  expect(mockPaymentGateway).toHaveBeenCalledWith('expected-arg')
 })
 ```
 
