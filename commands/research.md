@@ -18,10 +18,10 @@ Read documentarian constraints (Glob `**/sdlc/**/references/documentarian-constr
 
 ### CRITICAL: Route Selection
 
-BEFORE taking any other action, check `$ARGUMENTS` for the `--swarm` flag:
+BEFORE taking any other action, check `$ARGUMENTS` for the `--no-swarm` flag:
 
-1. If `--swarm` IS present: remove it from the arguments (the remaining text is the research topic), then skip directly to **Swarm Workflow**. Do NOT execute any Standard Workflow steps.
-2. If `--swarm` is NOT present: the full `$ARGUMENTS` is the research topic, skip directly to **Standard Workflow**. Do NOT execute any Swarm Workflow steps.
+1. If `--no-swarm` IS present: remove it from the arguments (the remaining text is the research topic), then skip directly to **Standard Workflow**. Do NOT execute any Swarm Workflow steps.
+2. If `--no-swarm` is NOT present: the full `$ARGUMENTS` is the research topic, skip directly to **Swarm Workflow**. Do NOT execute any Standard Workflow steps.
 
 If no research topic remains after processing, ask the user for a research question before proceeding.
 
