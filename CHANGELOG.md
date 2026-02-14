@@ -5,6 +5,12 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.22.0] - 2026-02-14
+
+### Changed
+
+- **Swarm mode default** — `/research` now uses agent team (swarm) workflow by default; opt out with `--no-swarm` instead of opting in with `--swarm`
+
 ## [1.21.0] - 2026-02-14
 
 ### Changed
