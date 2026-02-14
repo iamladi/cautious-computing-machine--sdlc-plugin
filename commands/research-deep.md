@@ -117,17 +117,17 @@ Instructions:
 Include test patterns alongside implementation patterns where they exist.
 ```
 
-##### Step 4b: Web Research (if applicable)
+##### Step 4b: Web Research
 
-If the user's topic explicitly requests web research (e.g., "latest best practices for..." or "current industry standards for..."), spawn `web-search-researcher` as a subagent (NOT a teammate) in parallel with the team. Use the Task tool WITHOUT the `team_name` parameter. Include its findings when writing `context.md` in Step 6.
+Spawn `web-search-researcher` as a subagent (NOT a teammate) in parallel with the team. Use the Task tool WITHOUT the `team_name` parameter. Include its findings when writing `context.md` in Step 6 as a concise summary (max 500 words) to avoid exceeding Phase 2 LLM context budgets. If web search fails or returns no results, proceed with codebase-only findings.
 
 ##### Step 5: Wait for Completion
 
-Wait for all 3 teammates to send "RESEARCH COMPLETE" messages. Timeout: 10 minutes from when each teammate was spawned (so max 10 minutes wall clock, not 30 cumulative). Also wait for the web-search-researcher subagent if one was spawned in Step 4b.
+Wait for all 3 teammates to send "RESEARCH COMPLETE" messages. Timeout: 10 minutes from when each teammate was spawned (so max 10 minutes wall clock, not 30 cumulative). Also wait for the web-search-researcher subagent spawned in Step 4b.
 
 - If all complete: proceed with all findings
 - If any teammate times out: proceed with available findings, note which teammates timed out
-- If web researcher is still running when teammates finish: wait up to 2 more minutes, then proceed without it
+- If web researcher is still running when teammates finish: wait up to 2 more minutes, then proceed without it. Web research is supplementary — it always runs but never blocks command completion.
 
 ##### Step 6: Write context.md
 
@@ -154,7 +154,9 @@ If cleanup itself fails, inform the user but continue to Phase 2: "Team cleanup 
 - Read any user-mentioned files first
 - Create `research/.deep-research-$(date +%Y%m%d-%H%M%S)/`
 - Spawn one discovery agent using codebase-locator, codebase-analyzer, and codebase-pattern-finder
+- Spawn `web-search-researcher` subagent in parallel with codebase discovery agents. If web search is still running when codebase discovery completes, wait up to 2 additional minutes before proceeding without it.
 - Target <50K characters for CLI compatibility
+- Merge web search findings into `context.md` as a concise summary (max 500 words) to avoid exceeding Phase 2 LLM context budgets. If web search fails or returns no results, proceed with codebase-only findings.
 - Save to `context.md`
 
 ---

@@ -103,6 +103,8 @@ Execute the interview protocol with these overrides:
 **Research Checkpoint**
 Read README.md to understand architecture patterns and conventions, then explore relevant codebase files to map existing abstractions and integration points. Plans grounded in actual code state avoid mismatched implementations.
 
+Spawn `web-search-researcher` subagent in parallel with codebase exploration to research best practices, alternatives, and current documentation relevant to the task. The web-search-researcher must complete or timeout (3 minutes) before the Solution Design and Alternatives Considered sections are authored, to ensure web findings are available. If web search fails or returns no results, proceed with codebase-only findings.
+
 **Draft Plan Checkpoint**
 Load the PRD template and fill every section completely. Save to `plans/<name>.md`.
 

@@ -93,15 +93,15 @@ Show actual working code examples with file:line references, not just snippets. 
 
 When you find patterns the Analyzer should trace or files the Locator missed, share via SendMessage. When you've achieved sufficient breadth to show the patterns and conventions, mark your task complete via TaskUpdate and send "RESEARCH COMPLETE".
 
-### Optional Web Research
+### Mandatory Web Research
 
-If the user explicitly requested web research, spawn a `web-search-researcher` subagent (NOT a teammate) in parallel with the team. This runs independently and may complete on a different timeline.
+Spawn a `web-search-researcher` subagent (NOT a teammate) in parallel with the team. This runs independently and may complete on a different timeline. Web search always runs to provide external evidence alongside codebase findings. If web search fails or returns no results, proceed with codebase-only findings.
 
 ### Completion Criteria and Convergence
 
 Teammates signal completion by sending "RESEARCH COMPLETE" messages. Wait up to 10 minutes from teammate spawn time for all three to complete. If a teammate hasn't signaled completion by timeout, proceed with available findings and note which teammates timed out in the output.
 
-**Web research timing**: If the optional web-search-researcher is still running when all three teammates complete, wait up to 2 additional minutes. If it hasn't finished, proceed without it. Web research is supplementary, not blocking.
+**Web research timing**: If the web-search-researcher is still running when all three teammates complete, wait up to 2 additional minutes. If it hasn't finished, proceed without it. Web research is supplementary — it always runs but never blocks command completion.
 
 **Fallback behavior**: If a teammate fails or gets stuck in a loop (indicated by repeated similar messages or no progress), you have three options: (1) note the failure and proceed with other teammates' findings, (2) spawn a replacement teammate with clearer scoped instructions, or (3) handle that aspect of research yourself. Choose based on how critical that role's findings are to answering the research question.
 
@@ -154,12 +154,11 @@ Spawn subagents with complementary perspectives on the research question:
 - **Locator**: Discovers where relevant code lives (files, directories, components)
 - **Analyzer**: Understands how the code works (data flow, interactions, implementation)
 - **Pattern Finder**: Identifies conventions and similar implementations elsewhere
+- **Web Search Researcher**: Finds external evidence, best practices, and current documentation from web sources
 
 These roles work best when they have judgment latitude about HOW to investigate, while being clear on WHAT they're investigating. Each subagent should determine its own search strategy based on what it discovers.
 
-### Optional Web Research
-
-If the user explicitly requested information that requires web search (external APIs, library documentation, recent changes), spawn a web-search-researcher subagent alongside the codebase investigators.
+The web-search-researcher always runs in parallel with codebase subagents. If web search fails or returns no results, the command proceeds with codebase-only findings.
 
 ### Source Requirements
 
@@ -167,7 +166,7 @@ All findings must trace back to specific locations in the codebase (file:line re
 
 ### Synthesis
 
-Wait for all subagents to complete their investigation. Integrate their findings into a coherent research document that answers the original question, preserving all source attributions.
+Wait for all subagents to complete their investigation (including web-search-researcher). If web search is still running when codebase subagents finish, wait up to 2 additional minutes before proceeding without it. Integrate all findings — codebase analysis and web search results — into a coherent research document that answers the original question, preserving all source attributions.
 
 ---
 
