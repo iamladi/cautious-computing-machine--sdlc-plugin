@@ -5,6 +5,14 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0] - 2026-02-14
+
+### Changed
+
+- **Mandatory web search** in `/research`, `/research-deep`, and `/plan` — web-search-researcher now always spawns in parallel with codebase subagents instead of only when explicitly requested
+- **Parallel search strategy** in web-search-researcher agent — calls `mcp__search__search_web` and `WebSearch` in parallel instead of sequential Sonar-first flow
+- **Graceful degradation** — all commands complete even when search APIs are unavailable; explicit partial and total failure handling in the agent
+
 ## [1.20.0] - 2026-02-14
 
 ### Added
