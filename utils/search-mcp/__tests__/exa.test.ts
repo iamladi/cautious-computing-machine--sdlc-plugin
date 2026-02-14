@@ -394,10 +394,9 @@ describe("searchExa", () => {
     expect(capturedOptions?.category).toBe("news");
   });
 
-  test("throws timeout error after 30s", async () => {
+  test("throws timeout error with dynamic duration", async () => {
     const fakeClient: ExaClient = {
-      search: async (_query, _options) => {
-        // Simulate AbortController abort by throwing AbortError
+      search: async () => {
         const error = new DOMException("The operation was aborted", "AbortError");
         throw error;
       },
@@ -408,8 +407,14 @@ describe("searchExa", () => {
       provider: "exa",
     };
 
-    await expect(searchExa(input, {}, { client: fakeClient, timeoutMs: 1 })).rejects.toThrow(
+    // Default 30s timeout
+    await expect(searchExa(input, {}, { client: fakeClient })).rejects.toThrow(
       "exa error (timeout): Request timed out after 30s"
+    );
+
+    // Custom timeout
+    await expect(searchExa(input, {}, { client: fakeClient, timeoutMs: 5000 })).rejects.toThrow(
+      "exa error (timeout): Request timed out after 5s"
     );
   });
 

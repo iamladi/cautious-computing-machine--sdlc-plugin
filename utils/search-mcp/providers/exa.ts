@@ -74,7 +74,7 @@ export async function searchExa(
     ]);
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("exa error (timeout): Request timed out after 30s");
+      throw new Error(`exa error (timeout): Request timed out after ${timeoutMs / 1000}s`);
     }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`exa error: ${message}`);
