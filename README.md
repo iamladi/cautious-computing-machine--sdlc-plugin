@@ -423,8 +423,7 @@ Configure in `.mcp.json`:
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
         "OPENROUTER_MODEL": "${OPENROUTER_MODEL:-perplexity/sonar-pro}",
         "EXA_API_KEY": "${EXA_API_KEY}",
-        "BRAVE_API_KEY": "${BRAVE_API_KEY}",
-        "DEFAULT_PROVIDER": "${DEFAULT_PROVIDER:-perplexity}"
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     }
   }
