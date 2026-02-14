@@ -4,12 +4,14 @@
             "command": "npx",
             "args": ["-y", "@upstash/context7-mcp@latest"]
         },
-        "perplexity": {
+        "search": {
             "command": "bun",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/utils/perplexity-mcp/index.ts"],
+            "args": ["${CLAUDE_PLUGIN_ROOT}/utils/search-mcp/index.ts"],
             "env": {
               "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-              "OPENROUTER_MODEL": "${OPENROUTER_MODEL:-perplexity/sonar-pro}"
+              "OPENROUTER_MODEL": "${OPENROUTER_MODEL:-perplexity/sonar-pro}",
+              "EXA_API_KEY": "${EXA_API_KEY}",
+              "BRAVE_API_KEY": "${BRAVE_API_KEY}"
             }
         }
     }

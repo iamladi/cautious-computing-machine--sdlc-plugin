@@ -5,6 +5,24 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.0] - 2026-02-14
+
+### Added
+
+- **Multi-provider search MCP server** — unified `search_web` tool supporting Exa, Brave, and Perplexity via OpenRouter
+- **Provider adapters** with consistent error handling, timeout management, and response formatting
+- **Provider parameter validation** — cross-provider param misuse returns clear errors
+- **Automatic provider detection** from environment variables with priority cascade: Exa > Brave > Perplexity
+
+### Fixed
+
+- **Exa timeout memory leak** — `setTimeout` in `Promise.race` pattern now cleaned up via `finally` block
+- **Redundant `clearTimeout`** in Perplexity SSE stream error handler
+
+### Removed
+
+- **Old `perplexity-mcp/`** directory replaced by new `search-mcp/` implementation
+
 ## [1.19.1] - 2026-02-12
 
 ### Changed

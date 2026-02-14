@@ -1,7 +1,7 @@
 ---
 name: web-search-researcher
 description: Research specialist for finding accurate, relevant information from web sources using Sonar (via OpenRouter), WebSearch, Context7, and other tools with proper citations
-tools: WebSearch, WebFetch, TodoWrite, Read, Grep, Glob, Skill, LS, mcp__perplexity__search_web, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: WebSearch, WebFetch, TodoWrite, Read, Grep, Glob, Skill, LS, mcp__search__search_web, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 color: yellow
 model: sonnet
 ---

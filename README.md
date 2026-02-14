@@ -416,12 +416,14 @@ Configure in `.mcp.json`:
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
     },
-    "perplexity": {
+    "search": {
       "command": "bun",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/utils/perplexity-mcp/index.ts"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/utils/search-mcp/index.ts"],
       "env": {
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-        "OPENROUTER_MODEL": "${OPENROUTER_MODEL:-perplexity/sonar-pro}"
+        "OPENROUTER_MODEL": "${OPENROUTER_MODEL:-perplexity/sonar-pro}",
+        "EXA_API_KEY": "${EXA_API_KEY}",
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     }
   }
@@ -458,8 +460,14 @@ sdlc-plugin/
 │   ├── tdd/SKILL.md             # TDD enforcement
 │   └── test/SKILL.md
 ├── utils/
-│   └── perplexity-mcp/
-│       └── index.ts         # Perplexity Sonar MCP server (via OpenRouter)
+│   └── search-mcp/
+│       ├── index.ts         # Multi-provider search MCP server
+│       ├── types.ts         # Shared types and helpers
+│       ├── format.ts        # Response formatter
+│       └── providers/
+│           ├── perplexity.ts # Perplexity/OpenRouter adapter
+│           ├── exa.ts       # Exa search adapter
+│           └── brave.ts     # Brave Search adapter
 ├── logs/                    # Hook execution logs
 ├── .mcp.json               # MCP server configuration
 ├── README.md
