@@ -27,13 +27,13 @@ describe("detectAvailableProviders", () => {
     expect(result).toContain("brave");
   });
 
-  test("detects all three when all keys are set", () => {
+  test("detects all three when all keys are set, ordered by priority", () => {
     const result = detectAvailableProviders({
       OPENROUTER_API_KEY: "key",
       EXA_API_KEY: "key",
       BRAVE_API_KEY: "key",
     });
-    expect(result).toEqual(["perplexity", "exa", "brave"]);
+    expect(result).toEqual(["exa", "brave", "perplexity"]);
   });
 
   test("returns empty array when no keys are set", () => {
@@ -60,9 +60,9 @@ describe("resolveDefaultProvider", () => {
     expect(result).toBe("exa");
   });
 
-  test("returns first available in order: perplexity, exa, brave", () => {
-    const result = resolveDefaultProvider(undefined, ["perplexity", "exa", "brave"]);
-    expect(result).toBe("perplexity");
+  test("returns first available in priority order: exa, brave, perplexity", () => {
+    const result = resolveDefaultProvider(undefined, ["exa", "brave", "perplexity"]);
+    expect(result).toBe("exa");
   });
 
   test("throws when DEFAULT_PROVIDER is set to unavailable provider", () => {

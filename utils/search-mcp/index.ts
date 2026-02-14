@@ -16,7 +16,7 @@ import { searchPerplexity } from "./providers/perplexity";
 import { searchExa, type ExaClient } from "./providers/exa";
 import { searchBrave } from "./providers/brave";
 
-const ALL_PROVIDERS: SearchProvider[] = ["perplexity", "exa", "brave"];
+const ALL_PROVIDERS: SearchProvider[] = ["exa", "brave", "perplexity"];
 
 const ENV_KEY_MAP: Record<SearchProvider, string> = {
   perplexity: "OPENROUTER_API_KEY",

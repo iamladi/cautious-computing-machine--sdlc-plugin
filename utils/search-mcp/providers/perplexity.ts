@@ -200,9 +200,6 @@ export async function searchPerplexity(
   let sseResult: SSEResult;
   try {
     sseResult = await parseSSEStream(response);
-  } catch (error: unknown) {
-    clearTimeout(timeout);
-    throw error;
   } finally {
     clearTimeout(timeout);
   }

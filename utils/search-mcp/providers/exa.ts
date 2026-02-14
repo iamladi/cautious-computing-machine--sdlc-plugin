@@ -61,9 +61,10 @@ export async function searchExa(
   }
 
   let response;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         reject(new DOMException("The operation was aborted", "AbortError"));
       }, timeoutMs);
     });
@@ -78,6 +79,8 @@ export async function searchExa(
     }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`exa error: ${message}`);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 
   // Calculate latency
