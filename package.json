@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "exa-js": "^2.4.0",
     "zod": "^3.23.8"
   }
 }
