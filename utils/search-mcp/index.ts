@@ -203,6 +203,12 @@ function startServer() {
           }
 
           case "exa": {
+            if (!exaClient) {
+              return {
+                content: [{ type: "text" as const, text: "Exa client not initialized. Set EXA_API_KEY to enable." }],
+                isError: true,
+              };
+            }
             const exaOpts: ExaOptions = {
               search_type: args.search_type as ExaOptions["search_type"],
               include_domains: args.include_domains,
@@ -211,7 +217,7 @@ function startServer() {
               include_text: args.include_text,
             };
             result = await searchExa(input, exaOpts, {
-              client: exaClient!,
+              client: exaClient,
             });
             break;
           }

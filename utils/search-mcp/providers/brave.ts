@@ -3,6 +3,17 @@ import { clampNumResults } from "../types";
 
 type FetchFn = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
+interface BraveWebResult {
+  title: string;
+  url: string;
+  description: string;
+  thumbnail?: { src: string };
+}
+
+interface BraveSearchResponse {
+  web?: { results: BraveWebResult[] };
+}
+
 const FRESHNESS_MAP: Record<Recency, string> = {
   day: "pd",
   week: "pw",
@@ -22,7 +33,7 @@ export async function searchBrave(
   const params = new URLSearchParams();
   params.set("q", input.query);
 
-  const count = clampNumResults(input.provider, input.num_results);
+  const count = clampNumResults("brave", input.num_results);
   if (count !== undefined) {
     params.set("count", String(count));
   }
@@ -53,11 +64,11 @@ export async function searchBrave(
       throw new Error(`brave error (${response.status}): ${errorText}`);
     }
 
-    const data = await response.json();
-    const results = data.web?.results || [];
+    const data: BraveSearchResponse = await response.json();
+    const results: BraveWebResult[] = data.web?.results || [];
 
     // Extract sources
-    const sources = results.map((result: any) => ({
+    const sources = results.map((result) => ({
       title: result.title,
       url: result.url,
       snippet: result.description,
@@ -65,12 +76,12 @@ export async function searchBrave(
 
     // Extract images
     const images = results
-      .filter((result: any) => result.thumbnail?.src)
-      .map((result: any) => result.thumbnail.src);
+      .filter((result) => result.thumbnail?.src)
+      .map((result) => result.thumbnail!.src);
 
     // Build content
     const content = results.length > 0
-      ? results.map((result: any) => result.description).join("\n\n")
+      ? results.map((result) => result.description).join("\n\n")
       : "No results found";
 
     const latencyMs = performance.now() - startTime;

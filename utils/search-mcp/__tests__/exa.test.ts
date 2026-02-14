@@ -393,4 +393,57 @@ describe("searchExa", () => {
 
     expect(capturedOptions?.category).toBe("news");
   });
+
+  test("throws timeout error after 30s", async () => {
+    const fakeClient: ExaClient = {
+      search: async (_query, _options) => {
+        // Simulate AbortController abort by throwing AbortError
+        const error = new DOMException("The operation was aborted", "AbortError");
+        throw error;
+      },
+    };
+
+    const input: SearchInput = {
+      query: "test query",
+      provider: "exa",
+    };
+
+    await expect(searchExa(input, {}, { client: fakeClient, timeoutMs: 1 })).rejects.toThrow(
+      "exa error (timeout): Request timed out after 30s"
+    );
+  });
+
+  test("normalizes client errors to exa error format", async () => {
+    const fakeClient: ExaClient = {
+      search: async () => {
+        throw new Error("Invalid API key");
+      },
+    };
+
+    const input: SearchInput = {
+      query: "test query",
+      provider: "exa",
+    };
+
+    await expect(searchExa(input, {}, { client: fakeClient })).rejects.toThrow(
+      "exa error: Invalid API key"
+    );
+  });
+
+  test("normalizes non-Error exceptions to exa error format", async () => {
+    const fakeClient: ExaClient = {
+      search: async () => {
+        throw "string error";
+      },
+    };
+
+    const input: SearchInput = {
+      query: "test query",
+      provider: "exa",
+    };
+
+    await expect(searchExa(input, {}, { client: fakeClient })).rejects.toThrow(
+      "exa error: string error"
+    );
+  });
 });

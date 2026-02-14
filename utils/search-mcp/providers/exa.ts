@@ -18,9 +18,10 @@ export interface ExaClient {
 export async function searchExa(
   input: SearchInput,
   options: ExaOptions,
-  deps: { client: ExaClient }
+  deps: { client: ExaClient; timeoutMs?: number }
 ): Promise<SearchResult> {
   const startTime = Date.now();
+  const timeoutMs = deps.timeoutMs ?? 30_000;
 
   // Build Exa search options
   const searchOptions: Record<string, unknown> = {};
@@ -59,8 +60,25 @@ export async function searchExa(
     searchOptions.numResults = clampedResults;
   }
 
-  // Execute search
-  const response = await deps.client.search(input.query, searchOptions);
+  let response;
+  try {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new DOMException("The operation was aborted", "AbortError"));
+      }, timeoutMs);
+    });
+
+    response = await Promise.race([
+      deps.client.search(input.query, searchOptions),
+      timeoutPromise,
+    ]);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("exa error (timeout): Request timed out after 30s");
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`exa error: ${message}`);
+  }
 
   // Calculate latency
   const latencyMs = response.searchTime ?? (Date.now() - startTime);
