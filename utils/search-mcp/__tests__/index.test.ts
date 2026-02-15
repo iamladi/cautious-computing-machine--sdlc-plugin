@@ -104,4 +104,9 @@ describe("buildToolDescription", () => {
     expect(desc).not.toContain("exa");
     expect(desc).not.toContain("brave");
   });
+
+  test("differentiates from built-in WebSearch", () => {
+    const desc = buildToolDescription(["exa", "brave"], "exa");
+    expect(desc).toContain("Provides deeper, more configurable results than built-in WebSearch");
+  });
 });

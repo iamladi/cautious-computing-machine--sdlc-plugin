@@ -416,7 +416,7 @@ Configure in `.mcp.json`:
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
     },
-    "search": {
+    "fast_deep_search": {
       "command": "bun",
       "args": ["${CLAUDE_PLUGIN_ROOT}/utils/search-mcp/index.ts"],
       "env": {

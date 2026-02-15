@@ -69,7 +69,7 @@ export function buildToolDescription(
   const providerList = available
     .map((p) => (p === defaultProvider ? `${p} (default)` : p))
     .join(", ");
-  return `Search the web using multiple providers. Available: ${providerList}. Omit 'provider' to use ${defaultProvider}.`;
+  return `Search via Exa, Brave, or Perplexity APIs. Provides deeper, more configurable results than built-in WebSearch. Available: ${providerList}. Omit 'provider' to use ${defaultProvider}.`;
 }
 
 // --- Server startup (only runs when executed directly) ---
@@ -91,10 +91,10 @@ function startServer() {
     exaClient = new Exa(envKeys.EXA_API_KEY) as unknown as ExaClient;
   }
 
-  const server = new McpServer({ name: "search", version: "1.0.0" });
+  const server = new McpServer({ name: "fast_deep_search", version: "1.0.0" });
 
   server.registerTool(
-    "search_web",
+    "fast_deep_search",
     {
       description: buildToolDescription(available, defaultProvider),
       inputSchema: {
