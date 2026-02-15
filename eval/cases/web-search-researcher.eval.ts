@@ -8,7 +8,7 @@ const evalCase: EvalCase = {
     ...commonStructural(),
     {
       name: 'has-web-search-tools',
-      test: (content) => /^---[\s\S]*?tools:.*(?:WebSearch|WebFetch|Perplexity|Context7)/m.test(content)
+      test: (content) => /^---[\s\S]*?tools:.*(?:WebSearch|WebFetch|fast_deep_search|Context7)/m.test(content)
     },
     {
       name: 'has-search-strategies-section',

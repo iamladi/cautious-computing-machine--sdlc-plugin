@@ -5,6 +5,19 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.23.0] - 2026-02-15
+
+### Changed
+
+- **Renamed search MCP tool** from `search_web` to `fast_deep_search` — resolves name collision with Claude Code's built-in `WebSearch` that prevented Exa/Brave providers from being called
+- **Renamed MCP server** from `search` to `fast_deep_search` in `.mcp.json` (underscores for consistent qualification; agent-context name: `mcp__fast_deep_search__fast_deep_search`)
+- **Updated tool description** to clearly differentiate from built-in `WebSearch`: "Search via Exa, Brave, or Perplexity APIs. Provides deeper, more configurable results than built-in WebSearch."
+- **web-search-researcher agent** now uses primary/fallback strategy — calls `fast_deep_search` first, falls back to `WebSearch` only on error or tool unavailability (previously called both in parallel)
+
+### Breaking Changes
+
+- MCP tool name changed: `search_web` → `fast_deep_search` (agent-context: `mcp__fast_deep_search__fast_deep_search`, full plugin-qualified: `mcp__plugin_sdlc_fast_deep_search__fast_deep_search`)
+
 ## [1.22.0] - 2026-02-14
 
 ### Changed
