@@ -72,7 +72,7 @@ Load reference: `Glob("**/tdd/references/interface-design.md", path: "~/.claude/
 
 ### Phase 2: Tracer Bullet
 
-Prove one end-to-end path through the system.
+Prove one end-to-end path using Red-Green-Refactor:
 
 1. Write ONE test for the highest-priority behavior
 2. Verify it FAILS (RED) — a passing test before implementation is a false positive
