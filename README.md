@@ -33,6 +33,10 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **tdd** - TDD enforcement during implementation (strict/soft/off modes via CLAUDE.md)
 - **finish-branch** - Post-merge cleanup: switches to main, pulls, runs tests, removes worktree
 - **agent-change-walkthrough** - Narrative walkthrough of AI-authored code changes after implementation; explains what changed, why, and how it behaves
+- **x-search** - Search X/Twitter for real-time developer discourse, product feedback, community sentiment, and expert opinions
+- **judgment-eval** - Evaluates agent judgment quality through scenario-based testing in-conversation
+- **constitution-compliance-review** - Scores plugin commands, agents, and skills against Anthropic Constitutional AI principles; identifies rule-based vs reasoning-based spectrum improvements
+- **system-prompt-clinic** - Interactive diagnostic that transforms rule-based system prompts to reasoning-based using Constitutional AI principles
 
 ### 🔌 Integrations
 
@@ -461,11 +465,15 @@ sdlc-plugin/
 ├── skills/
 │   ├── agent-change-walkthrough/SKILL.md  # Narrative walkthrough of AI code changes
 │   ├── codex/SKILL.md
+│   ├── constitution-compliance-review/SKILL.md
 │   ├── finish-branch/SKILL.md   # Post-merge cleanup
 │   ├── gemini/SKILL.md
 │   ├── interview/SKILL.md
+│   ├── judgment-eval/SKILL.md
+│   ├── system-prompt-clinic/SKILL.md
 │   ├── tdd/SKILL.md             # TDD enforcement
-│   └── test/SKILL.md
+│   ├── test/SKILL.md
+│   └── x-search/SKILL.md
 ├── utils/
 │   └── search-mcp/
 │       ├── index.ts         # Multi-provider search MCP server
