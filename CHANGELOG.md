@@ -5,6 +5,17 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.1] - 2026-02-27
+
+### Added
+
+- **x-search wired into web-search-researcher** — when `X_BEARER_TOKEN` is set, x-search runs in parallel with `fast_deep_search` for library/framework/product queries; surfaces community discourse as a dedicated findings section
+- **`Use when` triggers on all 4 previously undiscoverable skills** — `x-search`, `judgment-eval`, `constitution-compliance-review`, and `system-prompt-clinic` now have explicit trigger phrases so the model knows when to invoke them
+
+### Changed
+
+- **web-search-researcher agent** — added `Bash` tool to enable x-search CLI execution; added x-search strategy section
+
 ## [1.25.0] - 2026-02-27
 
 ### Added
