@@ -5,6 +5,15 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.0] - 2026-02-27
+
+### Added
+
+- **Scope Challenge Checkpoint** — mandatory pre-interview step that assesses existing code overlap and minimum footprint before research begins; agent must explicitly choose SCOPE REDUCTION or PROCEED
+- **What Already Exists summary** — after codebase exploration, classifies each relevant abstraction as REUSE / EXTEND / REPLACE with one-line justification before authoring Solution Design
+- **Per-codepath risk assessment** — each new codepath in the Implementation Plan gets a structured one-liner: failure condition, symptom, and fallback
+- **TODOS.md deferred tracking** — out-of-scope items from the plan are appended to `TODOS.md` with why/context/dependencies instead of being silently dropped
+
 ## [1.24.0] - 2026-02-27
 
 ### Added
