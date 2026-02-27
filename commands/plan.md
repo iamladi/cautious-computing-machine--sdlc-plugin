@@ -90,6 +90,18 @@ Load these files before proceeding (use Glob with path `~/.claude/plugins`):
 
 ## Workflow
 
+**Scope Challenge Checkpoint** _(mandatory, never skip)_
+Before interviewing or researching, answer these questions from codebase context:
+1. What does existing code already handle that overlaps with this request?
+2. What is the minimum file/class footprint to satisfy the goal?
+3. Flag if estimated scope exceeds 8 files or 2 new abstractions (smell, not a block — but document it).
+
+Based on findings, choose one path:
+- **SCOPE REDUCTION** — Existing code already solves this or the ask can be reframed to a smaller change. Stop and present a reduced proposal to the user before proceeding.
+- **PROCEED** — Scope is justified. Continue to Interview.
+
+Document the scope decision (what exists, what's new, why the chosen path) in the Notes & Context section of the plan.
+
 **Interview Checkpoint**
 Find and read the interview protocol using Glob:
 - Pattern: `**/sdlc/**/skills/interview/SKILL.md`
@@ -105,14 +117,29 @@ Read README.md to understand architecture patterns and conventions, then explore
 
 Spawn `web-search-researcher` subagent in parallel with codebase exploration to research best practices, alternatives, and current documentation relevant to the task. The web-search-researcher must complete or timeout (3 minutes) before the Solution Design and Alternatives Considered sections are authored, to ensure web findings are available. If web search fails or returns no results, proceed with codebase-only findings.
 
+After exploration completes, produce a **"What Already Exists"** summary before authoring the Solution Design:
+- List existing abstractions, utilities, or patterns that partially or fully address the task
+- For each: note whether to REUSE, EXTEND, or REPLACE, with one-line justification
+- This prevents designing solutions that duplicate or conflict with existing code
+
 **Draft Plan Checkpoint**
 Load the PRD template and fill every section completely. Save to `plans/<name>.md`.
+
+For each new codepath in the Implementation Plan, add one sentence to the Risk Assessment covering: what fails, how it manifests, and the fallback. Format: `[Codepath] — fails when [condition]; manifests as [symptom]; fallback: [recovery]`.
 
 **Blindspot Review Checkpoint**
 Load the blindspot review protocol, then run Codex and Gemini critics in parallel. Consolidate their feedback (deduplicate, flag consensus issues, sort by severity), then refine the plan by addressing, deferring, or dismissing each concern with justification.
 
 **Finalization Checkpoint**
 Update frontmatter to mark `reviewed: true`, add `reviewers: ["codex", "gemini"]`, and set `status: Ready for Implementation`. Commit to branch `plan/feature-name` to create an audit trail, then run `/github:create-issue-from-plan plans/<name>.md` to make the work trackable.
+
+Append deferred items from the plan's "Out of Scope / Future Considerations" section to `TODOS.md` in the project root (create if absent). Each entry format:
+```
+## <item-title>
+Why: <why it matters>
+Context: <what to know when revisiting>
+Dependencies: <what must exist first>
+```
 
 ## Task
 
