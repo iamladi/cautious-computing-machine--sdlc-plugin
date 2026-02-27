@@ -12,7 +12,7 @@ Depth (multi-perspective) > Accuracy (consensus validation) > Concision
 
 ## Goal
 
-Execute 3-phase multi-LLM research (Discovery → Analysis → Synthesis) on a codebase topic, producing a comprehensive document with LLM attribution markers showing which findings came from Claude, Gemini, and/or Codex.
+Execute 4-phase multi-LLM research (Discovery → Independent Analysis → Cross-Pollination Refinement → Synthesis) on a codebase topic, producing a comprehensive document with LLM attribution markers showing which findings came from Claude, Gemini, and/or Codex.
 
 ## CRITICAL: Parse Flags and Route
 
@@ -161,32 +161,89 @@ If cleanup itself fails, inform the user but continue to Phase 2: "Team cleanup 
 
 ---
 
-### Phase 2: Analysis (3 LLMs in parallel)
+### Phase 2: Independent Analysis (3 LLMs in parallel)
 
 This phase is **unchanged** regardless of `--swarm` flag. It always reads from `context.md`.
 
-- Embed `context.md` in analysis prompts
-- Launch simultaneously: Claude (Task agent), Gemini CLI (background), Codex CLI (background)
-- 10-minute timeout per external LLM
-- Graceful degradation: continue with successful analyses (minimum: Claude)
-- Save each to `{llm}-analysis.md`
+Each LLM gets `context.md` embedded in its prompt plus enhanced instructions for independent, thorough research.
 
-### Phase 3: Synthesis
+#### Analysis Prompt Guidelines
 
-- Spawn research-synthesizer agent to merge analyses
-- Use LLM attribution: `[Consensus: 3/3]`, `[Consensus: 2/3]`, `[Claude]`, `[Gemini]`, `[Codex]`
+Each LLM's analysis prompt MUST include these instructions:
+- **Breadth first, depth second**: Identify ALL subtopics and angles before deep-diving into any single area
+- **"Use web search EXTENSIVELY — do NOT rely solely on your training data"**
+- **Iterative research**: Continue researching until genuinely done, then append `<!-- RESEARCH_COMPLETE -->` as a completion signal
+- **Gap identification**: On each continuation, explicitly identify what's MISSING from the analysis so far before adding new content
+
+#### Concrete Invocations
+
+Launch all three simultaneously:
+
+- **Claude**: Task agent with `max_turns: 50` and `subagent_type: "general-purpose"`. Prompt includes: "When your research is genuinely complete — all subtopics covered, sources verified, gaps addressed — append `<!-- RESEARCH_COMPLETE -->` at the end of your output."
+- **Gemini**: `timeout 600 gemini -m gemini-3.1-pro-preview --approval-mode yolo` with the research prompt piped to stdin via Bash (background)
+- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m gpt-5.3-codex --reasoning-effort xhigh --full-auto 2>/dev/null` via Bash (background)
+
+Save outputs to `{llm}-analysis.md`. 10-minute timeout per external LLM. Graceful degradation: continue with successful analyses (minimum: Claude).
+
+#### Fatal Error Detection
+
+After launching Gemini and Codex in background, poll their output every 10 seconds. If logs contain fatal patterns matching `quota.*exhausted|rate.?limit|unauthorized|authentication failed|API key.*(invalid|expired)`, kill the agent proactively rather than waiting for the full timeout. Log the detected pattern and continue with remaining LLMs.
+
+---
+
+### Phase 3: Cross-Pollination Refinement (NEW)
+
+After all Phase 2 analyses are saved, launch a refinement round where each surviving LLM reads ALL analyses (its own + peers') and produces a refined version.
+
+#### Refinement Prompt
+
+Each LLM gets a prompt with ALL `{llm}-analysis.md` files embedded, plus these instructions:
+
+1. Read your own analysis — understand its strengths and weaknesses
+2. Read peer analyses **with healthy skepticism** — look for missed angles, deeper coverage, weakly sourced claims, contradictions, unique sources
+3. **Conduct NEW research** on avenues inspired by peer work, contradictions needing resolution, shared gaps
+4. Write a refined version that is **strictly better** than the original
+
+Critical rules included in the prompt:
+- "Do NOT simply copy content from peer analyses"
+- "Do NOT accept peer claims at face value — verify independently via web search"
+- "Use peer findings as a SPRINGBOARD for NEW investigation"
+- "Explore territory that NEITHER analysis adequately covered"
+- "Maintain your unique perspective — don't homogenize"
+
+#### Concrete Invocations
+
+Same CLI patterns as Phase 2:
+- **Claude**: Task agent with `max_turns: 50`, `subagent_type: "general-purpose"`
+- **Gemini**: `timeout 600 gemini -m gemini-3.1-pro-preview --approval-mode yolo` (background)
+- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m gpt-5.3-codex --reasoning-effort xhigh --full-auto 2>/dev/null` (background)
+
+Save to `{llm}-refined.md`. Same timeout and fatal error detection rules as Phase 2. If refinement fails for any LLM, fall back to its original `{llm}-analysis.md` for synthesis.
+
+Only LLMs that produced a successful Phase 2 analysis participate in Phase 3.
+
+---
+
+### Phase 4: Synthesis
+
+- Spawn research-synthesizer agent to merge refined reports (or originals if refinement failed)
+- Synthesis organizes findings by **theme**, not by source LLM
+- Use LLM attribution inline within themed sections: `[Consensus: 3/3]`, `[Consensus: 2/3]`, `[Claude]`, `[Gemini]`, `[Codex]`
 - **If `SWARM_MODE` was active**: Also include team attribution alongside LLM attribution. In the synthesis document, note that Discovery used an agent team and which teammates contributed. Team attribution (`[Locator]`, `[Analyzer]`, `[Pattern Finder]`) appears in the Discovery findings sections; LLM attribution appears in the Analysis sections.
 - Save to `research/research-{topic-kebab-case}-deep.md` with YAML frontmatter
 - Add GitHub permalinks if applicable
-- Report which LLMs contributed and highlight consensus vs unique discoveries
+- Report which LLMs contributed, which phases succeeded, and highlight consensus vs unique discoveries
 
 **Storage structure:**
 ```
 research/.deep-research-[timestamp]/
-├── context.md          # Discovery output (from subagents OR team)
-├── claude-analysis.md  # Claude's analysis
-├── gemini-analysis.md  # Gemini's analysis
-└── codex-analysis.md   # Codex's analysis
+├── context.md              # Discovery output (from subagents OR team)
+├── claude-analysis.md      # Phase 2: Claude independent analysis
+├── gemini-analysis.md      # Phase 2: Gemini independent analysis
+├── codex-analysis.md       # Phase 2: Codex independent analysis
+├── claude-refined.md       # Phase 3: Claude cross-pollinated refinement
+├── gemini-refined.md       # Phase 3: Gemini cross-pollinated refinement
+└── codex-refined.md        # Phase 3: Codex cross-pollinated refinement
 ```
 
 ## References

@@ -18,6 +18,14 @@ const evalCase: EvalCase = {
       name: 'has-output-format-with-frontmatter',
       test: (content) => /output.*format.*frontmatter|frontmatter.*output/is.test(content) ||
                           (/^## Output/m.test(content) && /---.*\ndate:/s.test(content))
+    },
+    {
+      name: 'has-theme-based-organization',
+      test: (content) => /by.*theme|organized by.*theme|THEME.*not.*source/i.test(content)
+    },
+    {
+      name: 'has-cross-pollination-section',
+      test: (content) => /cross.pollination|novel.*insights.*refinement/i.test(content)
     }
   ]
 }

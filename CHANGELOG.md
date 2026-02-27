@@ -5,6 +5,21 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.24.0] - 2026-02-27
+
+### Added
+
+- **Cross-pollination refinement phase** — new Phase 3 where each LLM reads all peer analyses with skepticism, conducts new research, and produces refined `*-refined.md` output (inspired by hamelsmu/research-council)
+- **Iterative research with completion marker** — LLMs continue until self-signaling `<!-- RESEARCH_COMPLETE -->`, with explicit gap identification on each continuation
+- **Fatal error detection** — polls external LLM output every 10s, proactively kills on quota/auth/rate-limit patterns instead of waiting for timeout
+- **Theme-based synthesis** — synthesizer organizes findings by theme instead of by source LLM; new sections for Areas of Consensus, Areas of Disagreement, and Novel Insights from Cross-Pollination
+- **New eval assertions** — `has-four-phases`, `has-cross-pollination`, `has-completion-marker`, `has-fatal-error-detection`, `has-refined-outputs`, `has-theme-based-synthesis`
+
+### Changed
+
+- **4-phase pipeline** — Discovery → Independent Analysis → Cross-Pollination Refinement → Synthesis (was 3-phase)
+- **research-synthesizer agent** rewritten for theme-based organization with cross-pollination awareness
+
 ## [1.23.0] - 2026-02-15
 
 ### Changed
