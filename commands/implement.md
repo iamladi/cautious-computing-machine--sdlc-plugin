@@ -257,6 +257,12 @@ Verify tasks complete, update Issue checkboxes, status update. Continue if multi
 - `git diff --stat`
 - "Run `/review` for thorough analysis"
 
+**Change walkthrough**: Find and read the walkthrough skill:
+- Pattern: `**/sdlc/**/skills/agent-change-walkthrough/SKILL.md`
+- Search path: `~/.claude/plugins`
+
+Execute the walkthrough protocol across all tasks completed in this session. The topic is the full set of changes made: use `git diff HEAD~{n}` where `n` is the number of commits made this session (or `git diff {base-branch}...HEAD` if branch tracking is available).
+
 **Swarm mode additions**: When `--swarm` was used, include:
 - Number of tasks parallelized vs serialized
 - Any runtime file overlaps detected and resolved
