@@ -13,7 +13,7 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **implementer** - Fresh-context task implementer for subagent workflow (TDD-aware, self-reviews)
 - **spec-reviewer** - Verifies implementation matches spec exactly (nothing missing, nothing extra)
 - **code-quality-reviewer** - Quick sanity check for obvious bugs and code smells
-- **research-synthesizer** - Merges multiple research reports into comprehensive document with consensus tracking
+- **research-synthesizer** - Merges multiple research reports into comprehensive document with theme-based synthesis; surfaces consensus findings, disagreements, and novel insights from cross-pollination
 
 ### ⚡ Commands
 
@@ -32,6 +32,11 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **interview** - Deep interviews about any topic with iterative questioning (uses Opus)
 - **tdd** - TDD enforcement during implementation (strict/soft/off modes via CLAUDE.md)
 - **finish-branch** - Post-merge cleanup: switches to main, pulls, runs tests, removes worktree
+- **agent-change-walkthrough** - Narrative walkthrough of AI-authored code changes after implementation; explains what changed, why, and how it behaves
+- **x-search** - Search X/Twitter for real-time developer discourse, product feedback, community sentiment, and expert opinions
+- **judgment-eval** - Evaluates agent judgment quality through scenario-based testing in-conversation
+- **constitution-compliance-review** - Scores plugin commands, agents, and skills against Anthropic Constitutional AI principles; identifies rule-based vs reasoning-based spectrum improvements
+- **system-prompt-clinic** - Interactive diagnostic that transforms rule-based system prompts to reasoning-based using Constitutional AI principles
 
 ### 🔌 Integrations
 
@@ -113,6 +118,12 @@ Generates comprehensive PRD including:
 - Risk assessment and rollback plan
 - Links to related research files (in frontmatter)
 
+**Scope guardrails built in:**
+- **Scope Challenge Checkpoint** — assesses existing code overlap before research; explicitly chooses SCOPE REDUCTION or PROCEED
+- **What Already Exists summary** — classifies relevant abstractions as REUSE / EXTEND / REPLACE before solution design
+- **Per-codepath risk assessment** — each new codepath gets a one-liner: failure condition, symptom, fallback
+- **TODOS.md deferred tracking** — out-of-scope items appended to `TODOS.md` with why/context/dependencies
+
 **What happens next:**
 ```bash
 /github:create-issue-from-plan plans/oauth-authentication.md
@@ -181,15 +192,14 @@ Performs AI-powered research using project context and web search.
 /research-deep "How does the authentication system work?"
 ```
 
-Runs **3 independent research instances** in parallel, then merges findings:
-- **Instance 1 (Breadth)**: Casts wide net, finds all relevant files and entry points
-- **Instance 2 (Depth)**: Deep analysis of core components, traces data flow
-- **Instance 3 (Patterns)**: Finds similar patterns elsewhere, discovers edge cases
+Runs a **4-phase pipeline** for thorough coverage of complex codebases:
 
-The synthesis identifies:
-- **Consensus findings** (discovered by multiple instances = high confidence)
-- **Unique discoveries** (found by only one instance = valuable additions)
-- Any conflicts between research reports
+1. **Discovery** — 3 parallel agents (Breadth, Depth, Patterns) do independent analysis
+2. **Independent Analysis** — each agent self-signals completion with `<!-- RESEARCH_COMPLETE -->`
+3. **Cross-Pollination Refinement** — each agent reads peer analyses with skepticism, conducts follow-up research, and produces a refined `*-refined.md` output
+4. **Synthesis** — theme-based consolidation with sections for Areas of Consensus, Areas of Disagreement, and Novel Insights from Cross-Pollination
+
+Also includes fatal error detection: polls LLM output every 10s and proactively kills on quota/auth/rate-limit patterns.
 
 Use when a single research run might miss important aspects of complex codebases.
 
@@ -453,12 +463,17 @@ sdlc-plugin/
 │   ├── submit.md
 │   └── verify.md
 ├── skills/
+│   ├── agent-change-walkthrough/SKILL.md  # Narrative walkthrough of AI code changes
 │   ├── codex/SKILL.md
+│   ├── constitution-compliance-review/SKILL.md
 │   ├── finish-branch/SKILL.md   # Post-merge cleanup
 │   ├── gemini/SKILL.md
 │   ├── interview/SKILL.md
+│   ├── judgment-eval/SKILL.md
+│   ├── system-prompt-clinic/SKILL.md
 │   ├── tdd/SKILL.md             # TDD enforcement
-│   └── test/SKILL.md
+│   ├── test/SKILL.md
+│   └── x-search/SKILL.md
 ├── utils/
 │   └── search-mcp/
 │       ├── index.ts         # Multi-provider search MCP server
@@ -641,7 +656,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 - **Documentation**: [Claude Code Plugin Reference](https://docs.claude.com/en/docs/claude-code/plugins-reference)
-- **Issues**: [GitHub Issues](https://github.com/iamladi/sdlc-plugin/issues)
+- **Issues**: [GitHub Issues](https://github.com/iamladi/cautious-computing-machine--sdlc-plugin/issues)
 - **Author**: [Ladislav Martincik](https://github.com/iamladi)
 
 ## Changelog
