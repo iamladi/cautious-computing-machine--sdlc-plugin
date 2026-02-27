@@ -1,6 +1,6 @@
 ---
 name: x-search
-description: Search X/Twitter for real-time developer discourse, product feedback, community sentiment, and expert opinions. Use when user says "x search", "search x for", "search twitter for", "what are people saying about", or needs recent X discourse for context (library releases, API changes, product launches, industry discussion).
+description: Search X/Twitter for real-time developer discourse, product feedback, community sentiment, and expert opinions. Use when user says "x search", "search x for", "search twitter for", "what are people saying about", or needs recent X discourse for context (library releases, API changes, product launches, industry discussion). Also use when researching a library, framework, API, or product to supplement web search with real-time community signal — e.g. "research Bun", "what do devs think of Hono", "is Turso production-ready".
 argument-hint: <query> | profile <user> | thread <id>
 ---
 

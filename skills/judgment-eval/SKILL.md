@@ -1,6 +1,6 @@
 ---
 name: judgment-eval
-description: Evaluates agent judgment quality through scenario-based testing in-conversation
+description: Evaluates agent judgment quality through scenario-based testing in-conversation. Use when the user wants to test, validate, or stress-test an agent, skill, or command definition — e.g. "test this agent", "evaluate this skill", "does this prompt handle edge cases", "check this agent's judgment", or after writing or modifying any agent/skill/command .md file.
 ---
 
 # Judgment Evaluation Skill

@@ -1,6 +1,6 @@
 ---
 name: constitution-compliance-review
-description: Evaluate plugin commands, agents, and skills against Anthropic Constitution principles. Score alignment on reasoning-based vs rule-based instruction spectrum, identify improvement opportunities.
+description: Evaluate plugin commands, agents, and skills against Anthropic Constitution principles. Score alignment on reasoning-based vs rule-based instruction spectrum, identify improvement opportunities. Use when the user wants to audit, score, or review the quality of a command, agent, or skill — e.g. "review this skill", "audit this command", "is this agent well-written", "score this against constitutional principles", or "check this for rule-based patterns".
 argument-hint: [file path to .md command/agent/skill]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: system-prompt-clinic
-description: Interactive skill that diagnoses and transforms system prompts from rule-based to reasoning-based using Constitutional AI principles
+description: Interactive skill that diagnoses and transforms system prompts from rule-based to reasoning-based using Constitutional AI principles. Use when the user wants to improve, rewrite, or transform any system prompt, command, agent, or skill — e.g. "improve this prompt", "make this less rigid", "transform this rule-based command", "optimize this agent", or "this skill keeps breaking on edge cases".
 tools: Read
 model: sonnet
 ---
