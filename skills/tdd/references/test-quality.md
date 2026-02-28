@@ -100,6 +100,33 @@ test('registered user receives welcome email', async () => {
 })
 ```
 
+### Test What the Type System Already Guarantees
+
+```typescript
+// BAD: TypeScript already guarantees this — test adds zero value
+test('login returns a string token', async () => {
+  const { auth } = setup()
+  const token = await auth.login('user@test.com', 'pass')
+  expect(typeof token).toBe('string')
+})
+
+// BAD: Checking shape that the return type declares
+test('user object has id and email', async () => {
+  const user = await getUser(1)
+  expect(user).toHaveProperty('id')
+  expect(user).toHaveProperty('email')
+})
+
+// BETTER: Test behavioral properties the type system cannot express
+test('login returns a non-expired token', async () => {
+  const { auth } = setup()
+  const { token, expiresAt } = await auth.login('user@test.com', 'pass')
+  expect(expiresAt.getTime()).toBeGreaterThan(Date.now())
+})
+```
+
+**Rule**: If a test could only fail due to a type error (wrong shape, wrong primitive type), the type system already catches it at compile time. Delete the test — it's noise, not specification.
+
 ### Test Private Methods
 
 ```typescript

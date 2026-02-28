@@ -117,6 +117,7 @@ After every RED-GREEN pair, verify:
 - [ ] **Survives refactor**: Would this test break if internals changed but behavior stayed the same?
 - [ ] **Minimal code**: Implementation is the simplest thing that passes — no speculative features
 - [ ] **No horizontal drift**: Did you write only ONE test before implementing? If you wrote multiple, STOP and revert to one.
+- [ ] **No type theater**: Does this test verify something the type system doesn't already guarantee? If the only way it could fail is a type error, delete it.
 
 ## Pre-Existing RED State
 
