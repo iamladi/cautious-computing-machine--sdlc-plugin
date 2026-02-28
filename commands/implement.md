@@ -263,6 +263,17 @@ Verify tasks complete, update Issue checkboxes, status update. Continue if multi
 
 Execute the walkthrough protocol across all tasks completed in this session. The topic is the full set of changes made: use `git diff HEAD~{n}` where `n` is the number of commits made this session (or `git diff {base-branch}...HEAD` if branch tracking is available).
 
+**De-slop gate**: Run a lightweight check for AI artifacts introduced during implementation:
+
+1. `uvx desloppify scan --path .` — capture the strict score
+2. Report the score in the summary
+3. If issues found, present a brief summary and ask: "Fix slop now or later?"
+   - "Now": invoke the de-slop skill's iterative fix loop (`uvx desloppify next` → fix → repeat until clean), then re-scan to confirm score improved
+   - "Later": record a note in the summary and end session
+4. If `desloppify` is unavailable (command fails), skip this step silently
+
+This gate is non-blocking — it never prevents session completion.
+
 **Swarm mode additions**: When `--swarm` was used, include:
 - Number of tasks parallelized vs serialized
 - Any runtime file overlaps detected and resolved
