@@ -27,6 +27,7 @@ This returns the absolute path regardless of installed version. The model then u
 | `prd-template.md` | `commands/plan.md` | ~430 | plan.md |
 | `blindspot-review-protocol.md` | `commands/plan.md` | ~80 | plan.md |
 | `documentarian-constraints.md` | 5 agent files + 2 commands | ~15 | 7 files |
+| `production-failure-patterns.md` | "The Bug That Shipped" research | ~90 | review.md |
 
 Skill-level references are in `skills/<name>/references/`:
 
