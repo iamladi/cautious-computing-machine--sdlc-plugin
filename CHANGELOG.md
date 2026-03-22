@@ -5,6 +5,18 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.0] - 2026-03-22
+
+### Changed
+
+- **`/review` rewritten as adversarial review with targeted failure probing** — based on "The Bug That Shipped" research (3,700+ trials) showing LLMs catch only 13% of production bugs in undirected review but 100% when asked targeted questions; three-phase architecture: context & probe generation, divergent perspective reviews (Codex as Failure Mode Analyst, Gemini as Production Environment Analyst), adversarial consolidation with cross-examination of clean verdicts
+- **Anti-hallucination guards** — both reviewers must quote exact code lines, trace execution paths, and verify claims against actual implementation; "default to UNSAFE" posture replaces implicit "default to approve"
+- **Report structure** — adds Contradictions (one model praised what the other flagged), Probes with Clean Verdicts, and What Was NOT Checked sections for full transparency
+
+### Added
+
+- **`references/production-failure-patterns.md`** — library of 12 production failure patterns (thundering herd, OOM, N+1, connection pool exhaustion, cron double-execution, cache stampede, etc.) organized by undirected catch rate tier with probe questions and diff trigger keywords
+
 ## [1.26.0] - 2026-02-28
 
 ### Added
