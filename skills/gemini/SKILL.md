@@ -1,6 +1,6 @@
 ---
 name: gemini
-description: Use when the user asks to run Gemini CLI for code review, plan review, or big context (>200k) processing. Ideal for comprehensive analysis requiring large context windows. Uses Gemini 3 Pro by default for state-of-the-art reasoning and coding.
+description: Use when the user asks to run Gemini CLI for code review, plan review, or big context (>200k) processing. Ideal for comprehensive analysis requiring large context windows. Resolves the latest flagship model from the model registry.
 ---
 
 # Gemini Skill
@@ -8,6 +8,13 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 ## Priorities
 
 Approval mode correctness > Model selection > Background execution safety
+
+## Model Registry
+
+Load current models before executing — this overrides any model names in the tables below:
+- `Glob(pattern: "**/sdlc/**/config/model-registry.md", path: "~/.claude/plugins")` → Read result
+- Use `gemini-flagship` as the default model. Offer user `gemini-fast` for speed-critical tasks.
+- If registry load fails, fall back to the tables below.
 
 ## Goal
 
@@ -18,10 +25,9 @@ Execute Gemini CLI for comprehensive code review, plan analysis, or large-contex
 - NEVER use `--approval-mode default` in background or non-interactive shells (Claude Code tool calls). It hangs indefinitely waiting for user input.
 - ALWAYS use `--approval-mode yolo` for automated/background tasks or wrap with timeout: `timeout 300 gemini ...`
 - Ask user for model selection via AskUserQuestion before running commands.
-- Requires Gemini CLI v0.16.0+ for Gemini 3 model support.
 - After Gemini completes, inform user they can start a new session for follow-up analysis.
 
-## Model Selection
+## Model Selection (fallback — prefer registry)
 
 Ask user which model to use via AskUserQuestion:
 
@@ -33,7 +39,7 @@ Ask user which model to use via AskUserQuestion:
 | `gemini-2.5-flash` | Legacy: Cost-efficient, high-volume tasks | 1M input / 65k output | Best price ($0.15/M), thinking mode |
 | `gemini-2.5-flash-lite` | Legacy: Fastest processing, high throughput | 1M input / 65k output | Maximum speed, minimal latency |
 
-Gemini 3 Advantages: 35% higher accuracy in software engineering, state-of-the-art on SWE-bench (76.2%), knowledge cutoff January 2025.
+These model names may be outdated. Always prefer model-registry.md values when available.
 
 ## References
 

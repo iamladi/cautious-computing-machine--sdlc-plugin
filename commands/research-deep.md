@@ -163,6 +163,12 @@ If cleanup itself fails, inform the user but continue to Phase 2: "Team cleanup 
 
 ### Phase 2: Independent Analysis (3 LLMs in parallel)
 
+#### Model Resolution
+
+Before launching LLMs, load the model registry:
+- `Glob(pattern: "**/sdlc/**/config/model-registry.md", path: "~/.claude/plugins")` → Read result
+- Use `gemini-flagship` and `codex-flagship` from the registry in the commands below.
+
 This phase is **unchanged** regardless of `--swarm` flag. It always reads from `context.md`.
 
 Each LLM gets `context.md` embedded in its prompt plus enhanced instructions for independent, thorough research.
@@ -180,8 +186,8 @@ Each LLM's analysis prompt MUST include these instructions:
 Launch all three simultaneously:
 
 - **Claude**: Task agent with `max_turns: 50` and `subagent_type: "general-purpose"`. Prompt includes: "When your research is genuinely complete — all subtopics covered, sources verified, gaps addressed — append `<!-- RESEARCH_COMPLETE -->` at the end of your output."
-- **Gemini**: `timeout 600 gemini -m gemini-3.1-pro-preview --approval-mode yolo` with the research prompt piped to stdin via Bash (background)
-- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m gpt-5.3-codex --reasoning-effort xhigh --full-auto 2>/dev/null` via Bash (background)
+- **Gemini**: `timeout 600 gemini -m <gemini-flagship from registry> --approval-mode yolo` with the research prompt piped to stdin via Bash (background)
+- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m <codex-flagship from registry> --reasoning-effort xhigh --full-auto 2>/dev/null` via Bash (background)
 
 Save outputs to `{llm}-analysis.md`. 10-minute timeout per external LLM. Graceful degradation: continue with successful analyses (minimum: Claude).
 
@@ -213,10 +219,10 @@ Critical rules included in the prompt:
 
 #### Concrete Invocations
 
-Same CLI patterns as Phase 2:
+Same CLI patterns as Phase 2 (use the same resolved model IDs from the registry):
 - **Claude**: Task agent with `max_turns: 50`, `subagent_type: "general-purpose"`
-- **Gemini**: `timeout 600 gemini -m gemini-3.1-pro-preview --approval-mode yolo` (background)
-- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m gpt-5.3-codex --reasoning-effort xhigh --full-auto 2>/dev/null` (background)
+- **Gemini**: `timeout 600 gemini -m <gemini-flagship from registry> --approval-mode yolo` (background)
+- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m <codex-flagship from registry> --reasoning-effort xhigh --full-auto 2>/dev/null` (background)
 
 Save to `{llm}-refined.md`. Same timeout and fatal error detection rules as Phase 2. If refinement fails for any LLM, fall back to its original `{llm}-analysis.md` for synthesis.
 

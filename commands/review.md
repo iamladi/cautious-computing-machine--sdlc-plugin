@@ -64,11 +64,17 @@ Build two outputs:
 
 ## Phase 2: Divergent Perspective Reviews
 
+### Model Resolution
+
+Before spawning reviewers, load the model registry:
+- `Glob(pattern: "**/sdlc/**/config/model-registry.md", path: "~/.claude/plugins")` → Read result
+- Use `codex-flagship` for Codex and `gemini-flagship` for Gemini in the commands below.
+
 Spawn both reviewers **simultaneously in a single message**. Each gets the same diff but a **different perspective, different mandatory probes, and different posture**.
 
 ### Codex: Failure Mode Analyst
 
-Use `codex` skill with model `gpt-5.3-codex`, reasoning `xhigh`, sandbox `read-only`, full auto mode.
+Use `codex` skill with `codex-flagship` model from registry, reasoning `xhigh`, sandbox `read-only`, full auto mode.
 
 Prompt framing:
 
@@ -124,7 +130,7 @@ End with:
 
 ### Gemini: Production Environment Analyst
 
-Use `gemini` skill with model `gemini-3-pro-preview`, approval `yolo`, 300s timeout.
+Use `gemini` skill with `gemini-flagship` model from registry, approval `yolo`, 300s timeout.
 
 Prompt framing:
 
@@ -249,7 +255,7 @@ Findings without execution paths or code citations are demoted to "unverified."
 
 ```markdown
 # Code Review: [scope]
-**Date**: [timestamp] | **Reviewers**: GPT-5.3-Codex (Failure Mode Analyst), Gemini 3 Pro (Production Environment Analyst)
+**Date**: [timestamp] | **Reviewers**: [codex-flagship] (Failure Mode Analyst), [gemini-flagship] (Production Environment Analyst)
 
 ## System Context
 [Auto-detected deployment topology, framework, database, scale indicators]
