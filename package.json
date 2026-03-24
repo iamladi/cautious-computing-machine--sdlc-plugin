@@ -13,7 +13,9 @@
     "validate:versions": "bun run scripts/validate-versions.ts",
     "release:patch": "bun run scripts/release.ts patch",
     "release:minor": "bun run scripts/release.ts minor",
-    "release:major": "bun run scripts/release.ts major"
+    "release:major": "bun run scripts/release.ts major",
+    "resolve-models": "bun run scripts/resolve-models.ts",
+    "resolve-models:dry": "bun run scripts/resolve-models.ts --dry-run"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

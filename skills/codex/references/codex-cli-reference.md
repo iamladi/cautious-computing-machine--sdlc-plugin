@@ -1,5 +1,6 @@
 <!-- Codex CLI Reference - Extracted from skills/codex/SKILL.md -->
 <!-- Used by: /codex skill -->
+<!-- NOTE: Model IDs in examples may be outdated. Check config/model-registry.md for current assignments. -->
 
 ## Quick Reference
 
@@ -11,7 +12,7 @@
 | Resume recent session | Inherited from original | `echo "prompt" \| codex exec --skip-git-repo-check resume --last 2>/dev/null` (no flags allowed) |
 | Run from another directory | Match task needs | `-C <DIR>` plus other flags `2>/dev/null` |
 
-## Model Options
+## Model Options (fallback reference — check model-registry.md)
 
 | Model | Best for | Context window | Key features |
 | --- | --- | --- | --- |

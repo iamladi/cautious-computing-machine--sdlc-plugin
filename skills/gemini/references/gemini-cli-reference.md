@@ -1,5 +1,6 @@
 <!-- Gemini CLI Reference - Extracted from skills/gemini/SKILL.md -->
 <!-- Used by: /gemini skill -->
+<!-- NOTE: Model IDs in examples may be outdated. Check config/model-registry.md for current assignments. -->
 
 ## Quick Reference
 
@@ -16,7 +17,7 @@
 | Multi-directory analysis | `yolo` (if background) | `--include-directories <DIR1> --include-directories <DIR2>` |
 | Interactive with prompt | `auto_edit` or `default` | `-i "prompt" --approval-mode <mode>` |
 
-## Model Selection Guide
+## Model Selection Guide (fallback reference — check model-registry.md)
 
 | Model | Best for | Context window | Key features |
 | --- | --- | --- | --- |

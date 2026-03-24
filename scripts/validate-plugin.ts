@@ -117,6 +117,37 @@ async function validateReadmeCommands() {
   }
 }
 
+async function checkModelRegistryStaleness() {
+  const registryPath = join(process.cwd(), 'config', 'model-registry.md');
+
+  if (!existsSync(registryPath)) {
+    console.warn('⚠️  Model registry not found at config/model-registry.md — run `bun run resolve-models`');
+    return;
+  }
+
+  try {
+    const content = await readFile(registryPath, 'utf-8');
+    const match = content.match(/<!-- Last updated: (.+?) -->/);
+    if (!match) {
+      console.warn('⚠️  Model registry has no timestamp — run `bun run resolve-models`');
+      return;
+    }
+
+    const updated = new Date(match[1]);
+    const daysOld = (Date.now() - updated.getTime()) / (1000 * 60 * 60 * 24);
+
+    if (daysOld > 14) {
+      console.warn(`⚠️  Model registry is ${Math.floor(daysOld)} days old — run \`bun run resolve-models\` or \`/update-models\``);
+    } else {
+      console.log(`✅ Model registry is fresh (${Math.floor(daysOld)} days old)`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.warn('⚠️  Could not check model registry:', error.message);
+    }
+  }
+}
+
 async function main() {
   // Version synchronization check (run first)
   const versionResult = await validateVersions();
@@ -134,6 +165,7 @@ async function main() {
 
   await validatePlugin();
   await validateReadmeCommands();
+  await checkModelRegistryStaleness();
 }
 
 main();

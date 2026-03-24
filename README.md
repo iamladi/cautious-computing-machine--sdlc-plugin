@@ -27,8 +27,9 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 
 ### 🎯 Skills
 
-- **codex** - OpenAI Codex integration (GPT-5.3) for code analysis, review, refactoring, and automated editing
-- **gemini** - Google Gemini 3 Pro integration for code review, plan analysis, and big context (>200k) processing
+- **codex** - OpenAI Codex integration for code analysis, review, refactoring, and automated editing (model auto-resolved from registry)
+- **gemini** - Google Gemini integration for code review, plan analysis, and big context (>200k) processing (model auto-resolved from registry)
+- **update-models** - Re-resolve the model registry by querying OpenAI, Google AI, and Oracle CLI for latest models
 - **interview** - Deep interviews about any topic with iterative questioning (uses Opus)
 - **tdd** - TDD enforcement during implementation (strict/soft/off modes via CLAUDE.md)
 - **finish-branch** - Post-merge cleanup: switches to main, pulls, runs tests, removes worktree
