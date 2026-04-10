@@ -193,7 +193,26 @@ Save outputs to `{llm}-analysis.md`. 10-minute timeout per external LLM. Gracefu
 
 #### Fatal Error Detection
 
-After launching Gemini and Codex in background, poll their output every 10 seconds. If logs contain fatal patterns matching `quota.*exhausted|rate.?limit|unauthorized|authentication failed|API key.*(invalid|expired)`, kill the agent proactively rather than waiting for the full timeout. Log the detected pattern and continue with remaining LLMs.
+After launching Gemini and Codex in background, start a Monitor for each to detect fatal errors early. For each external LLM, after launching via `Bash` with `run_in_background`, start a Monitor:
+
+```
+Monitor (one per LLM):
+  description: "Fatal error watch: {llm_name}"
+  timeout_ms: 600000
+  persistent: false
+  command: |
+    OUTPUT_FILE="{output_file_path}"
+    for i in $(seq 1 30); do [ -f "$OUTPUT_FILE" ] && break; sleep 1; done
+    [ ! -f "$OUTPUT_FILE" ] && echo "FATAL|{llm_name}|output file never created" && exit 1
+    tail -f "$OUTPUT_FILE" 2>/dev/null \
+      | grep --line-buffered -iE 'quota.*exhausted|rate.?limit|unauthorized|authentication failed|API key.*(invalid|expired)' \
+      | while IFS= read -r line; do
+          echo "FATAL|{llm_name}|$line"
+          exit 0
+        done
+```
+
+On `FATAL|{llm_name}|{pattern}` notification: kill the corresponding background process, log the detected pattern, mark that LLM as failed, and continue with remaining LLMs.
 
 ---
 

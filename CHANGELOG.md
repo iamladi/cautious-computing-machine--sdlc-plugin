@@ -5,6 +5,14 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.1] - 2026-04-10
+
+### Changed
+- Replace fatal error polling with Monitor tool in `research-deep` — per-LLM monitors tail output files for auth/quota errors immediately via `grep --line-buffered`
+
+### Fixed
+- Update all hardcoded Codex model references from `gpt-5.3-codex` to `gpt-5.4` in skill fallback tables, examples, and reference docs
+
 ## [1.27.0] - 2026-03-22
 
 ### Changed

@@ -12,7 +12,7 @@
 - Reasoning effort? (high, medium, low)
 
 **Default configuration:**
-- Model: gpt-5.3-codex (automatic default)
+- Model: gpt-5.4 (automatic default)
 - Effort: high
 - Sandbox: read-only (default for analysis)
 
@@ -24,7 +24,7 @@
 
 **HAL will run:**
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.3-codex --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
+codex exec --skip-git-repo-check -m gpt-5.4 --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
 ```
 
 ## Reasoning Effort Levels
@@ -242,7 +242,7 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 ## Model Selection Guide
 
-### gpt-5.3-codex ⭐⭐ (Default)
+### gpt-5.4 ⭐⭐ (Default)
 
 **Best for:**
 - Software engineering and code review
@@ -251,36 +251,14 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 - Complex refactoring and architecture changes
 
 **Characteristics:**
-- 25% faster inference than 5.1
+- Latest frontier model
 - Best agentic coding capabilities
-- Multi-step engineering
 - Optimized for code
 
 **Specs:**
 - Context: 400K input / 128K output
-- Pricing: $1.75/$14.00 per 1M tokens
-- 90% cache discount
 
-### gpt-5.1-codex ⭐
-
-**Best for:**
-- Software engineering (76.3% SWE-bench)
-- Code refactoring
-- Agentic coding workflows
-- Cost-conscious tasks ($1.25/$10.00)
-
-**Characteristics:**
-- Optimized for code
-- 30% faster than GPT-5
-- Adaptive reasoning
-- Better tool handling
-
-**Specs:**
-- Context: 400K input / 128K output
-- Pricing: $1.25/$10.00 per 1M tokens
-- 90% cache discount
-
-### gpt-5.1-codex-mini
+### gpt-5.4-mini
 
 **Best for:**
 - Cost-sensitive projects
@@ -288,29 +266,11 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 - Standard refactoring
 
 **Characteristics:**
-- 4x more usage allowance
+- Smaller frontier model
 - Near state-of-the-art performance
-- Slight capability tradeoff
 
 **Specs:**
 - Context: 400K input / 128K output
-- Pricing: $0.25/$2.00 per 1M tokens
-
-### gpt-5.1-thinking
-
-**Best for:**
-- Ultra-complex reasoning
-- Deep problem analysis
-- Critical security audits
-
-**Characteristics:**
-- Adaptive thinking depth
-- Runs 2x slower on hardest tasks
-- 2x faster on simple tasks
-
-**Specs:**
-- Context: 400K input / 128K output
-- Pricing: $1.25/$10.00 per 1M tokens
 
 ## Tips for Effective Codex Usage
 
@@ -330,13 +290,13 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 | Task Type | Model | Reasoning | Sandbox |
 |-----------|-------|-----------|---------|
-| Code review | gpt-5.3-codex | xhigh | read-only |
-| Security audit | gpt-5.1-thinking | high | read-only |
-| Simple refactor | gpt-5.3-codex | medium | workspace-write |
-| Complex migration | gpt-5.3-codex | high | workspace-write |
-| Add types | gpt-5.3-codex | low | workspace-write |
-| Install deps | gpt-5.3-codex | medium | danger-full-access |
-| High-volume tasks | gpt-5.1-codex-mini | medium | workspace-write |
+| Code review | gpt-5.4 | xhigh | read-only |
+| Security audit | gpt-5.4 | high | read-only |
+| Simple refactor | gpt-5.4 | medium | workspace-write |
+| Complex migration | gpt-5.4 | high | workspace-write |
+| Add types | gpt-5.4 | low | workspace-write |
+| Install deps | gpt-5.4 | medium | danger-full-access |
+| High-volume tasks | gpt-5.4-mini | medium | workspace-write |
 
 ### Use Session Continuity
 
