@@ -37,11 +37,9 @@ These model names may be outdated. Always prefer model-registry.md values when a
 
 | Model | Best for | Context window | Key features |
 | --- | --- | --- | --- |
-| `gpt-5.3-codex` | Software engineering, code review, agentic coding | 400K input / 128K output | 25% faster, best agentic coding, $1.75/$14.00 |
-| `gpt-5.3-codex-spark` | Research preview: ultra-fast inference via Cerebras | 400K input / 128K output | 1000+ tokens/s, experimental |
-| `gpt-5.2-codex` | Code review, security analysis | 400K input / 128K output | 79% SWE-bench Pro |
-| `gpt-5.1-codex` | Software engineering, agentic coding workflows | 400K input / 128K output | 76.3% SWE-bench, $1.25/$10.00 |
-| `gpt-5.1-codex-mini` | Cost-efficient coding (4x more usage allowance) | 400K input / 128K output | Near SOTA performance, $0.25/$2.00 |
+| `gpt-5.4` | **Flagship**: Software engineering, code review, agentic coding | 400K input / 128K output | Latest frontier model |
+| `gpt-5.4-mini` | Cost-efficient coding | 400K input / 128K output | Smaller frontier model |
+| `gpt-5.3-codex` | Previous flagship | 400K input / 128K output | 25% faster than 5.1, $1.75/$14.00 |
 
 ## References
 
