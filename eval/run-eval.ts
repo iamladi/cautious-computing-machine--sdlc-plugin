@@ -201,7 +201,116 @@ async function rateLimit(requestsPerMinute: number) {
   await new Promise(resolve => setTimeout(resolve, delayMs))
 }
 
-// Main eval runner
+interface RunCaseOpts {
+  mode: EvalMode
+  anthropic: Anthropic | null
+  totalCost: number
+}
+
+interface RunCaseResult {
+  results: EvalResult[]
+  cost: number
+  skipped: boolean
+}
+
+// Run a single eval case and return its results, cost, and whether it was skipped
+async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<RunCaseResult> {
+  const { mode, anthropic, totalCost } = opts
+  const caseResults: EvalResult[] = []
+  let caseCost = 0
+
+  console.log(`Testing: ${evalCase.promptFile}`)
+  console.log(`  ${evalCase.description}`)
+
+  try {
+    // Read prompt content
+    const content = await readPromptFile(evalCase.promptFile)
+
+    // Run structural assertions
+    if (mode === 'structural' || mode === 'all') {
+      const structuralResults = runStructuralAssertions(evalCase, content)
+      caseResults.push(...structuralResults)
+
+      const passed = structuralResults.filter(r => r.passed).length
+      const failed = structuralResults.filter(r => !r.passed).length
+      console.log(`  Structural: ${passed} passed, ${failed} failed`)
+    }
+
+    // Run behavioral assertions
+    if ((mode === 'llm' || mode === 'all') && anthropic && evalCase.behavioral) {
+      // Check spend guard
+      if (totalCost >= config.maxSpendPerRun) {
+        console.warn(`  ⚠️  Spend limit reached ($${config.maxSpendPerRun}). Skipping LLM eval.`)
+        console.log()
+        return { results: caseResults, cost: 0, skipped: true }
+      }
+
+      // Rate limit
+      await rateLimit(config.maxRequestsPerMinute)
+
+      const { results: behavioralResults, cost } = await runBehavioralAssertions(
+        evalCase,
+        content,
+        anthropic
+      )
+      caseResults.push(...behavioralResults)
+      caseCost = cost
+
+      const passed = behavioralResults.filter(r => r.passed).length
+      const failed = behavioralResults.filter(r => !r.passed).length
+      console.log(`  Behavioral: ${passed} passed, ${failed} failed (cost: $${cost.toFixed(4)})`)
+    }
+  } catch (error) {
+    console.error(`  ✗ Error: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  console.log()
+  return { results: caseResults, cost: caseCost, skipped: false }
+}
+
+// Format and persist the eval report, returning the path it was written to
+async function generateReport(
+  results: EvalResult[],
+  mode: EvalMode,
+  totalCases: number,
+  skippedCount: number,
+  totalCost: number
+): Promise<string> {
+  const report: EvalReport = {
+    timestamp: new Date().toISOString(),
+    mode,
+    totalCases,
+    totalAssertions: results.length,
+    passed: results.filter(r => r.passed).length,
+    failed: results.filter(r => !r.passed).length,
+    skipped: skippedCount,
+    estimatedCost: totalCost,
+    results
+  }
+
+  // Write report to results directory
+  await mkdir(RESULTS_DIR, { recursive: true })
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const reportPath = join(RESULTS_DIR, `eval-${timestamp}.json`)
+  const { writeFile } = await import('fs/promises')
+  await writeFile(reportPath, JSON.stringify(report, null, 2))
+
+  // Print summary
+  console.log('=== Summary ===')
+  console.log(`Total cases: ${report.totalCases}`)
+  console.log(`Total assertions: ${report.totalAssertions}`)
+  console.log(`Passed: ${report.passed}`)
+  console.log(`Failed: ${report.failed}`)
+  console.log(`Skipped: ${report.skipped}`)
+  if (totalCost > 0) {
+    console.log(`Estimated cost: $${totalCost.toFixed(4)}`)
+  }
+  console.log(`\nReport saved to: ${reportPath}\n`)
+
+  return reportPath
+}
+
+// Main eval runner — arg parsing, case loading, orchestration, exit code
 async function runEval() {
   const { mode, filter } = parseArgs()
 
@@ -234,95 +343,22 @@ async function runEval() {
     }
   }
 
-  // Run evals
+  // Run evals case-by-case
   const allResults: EvalResult[] = []
   let totalCost = 0
   let skippedCount = 0
 
   for (const evalCase of cases) {
-    console.log(`Testing: ${evalCase.promptFile}`)
-    console.log(`  ${evalCase.description}`)
-
-    try {
-      // Read prompt content
-      const content = await readPromptFile(evalCase.promptFile)
-
-      // Run structural assertions
-      if (mode === 'structural' || mode === 'all') {
-        const structuralResults = runStructuralAssertions(evalCase, content)
-        allResults.push(...structuralResults)
-
-        const passed = structuralResults.filter(r => r.passed).length
-        const failed = structuralResults.filter(r => !r.passed).length
-        console.log(`  Structural: ${passed} passed, ${failed} failed`)
-      }
-
-      // Run behavioral assertions
-      if ((mode === 'llm' || mode === 'all') && anthropic && evalCase.behavioral) {
-        // Check spend guard
-        if (totalCost >= config.maxSpendPerRun) {
-          console.warn(`  ⚠️  Spend limit reached ($${config.maxSpendPerRun}). Skipping LLM eval.`)
-          skippedCount++
-          continue
-        }
-
-        // Rate limit
-        await rateLimit(config.maxRequestsPerMinute)
-
-        const { results: behavioralResults, cost } = await runBehavioralAssertions(
-          evalCase,
-          content,
-          anthropic
-        )
-        allResults.push(...behavioralResults)
-        totalCost += cost
-
-        const passed = behavioralResults.filter(r => r.passed).length
-        const failed = behavioralResults.filter(r => !r.passed).length
-        console.log(`  Behavioral: ${passed} passed, ${failed} failed (cost: $${cost.toFixed(4)})`)
-      }
-
-    } catch (error) {
-      console.error(`  ✗ Error: ${error instanceof Error ? error.message : String(error)}`)
-    }
-
-    console.log()
+    const { results, cost, skipped } = await runCase(evalCase, { mode, anthropic, totalCost })
+    allResults.push(...results)
+    totalCost += cost
+    if (skipped) skippedCount++
   }
 
-  // Generate report
-  const report: EvalReport = {
-    timestamp: new Date().toISOString(),
-    mode,
-    totalCases: cases.length,
-    totalAssertions: allResults.length,
-    passed: allResults.filter(r => r.passed).length,
-    failed: allResults.filter(r => !r.passed).length,
-    skipped: skippedCount,
-    estimatedCost: totalCost,
-    results: allResults
-  }
+  // Generate and persist the report, then decide exit code
+  await generateReport(allResults, mode, cases.length, skippedCount, totalCost)
 
-  // Write report to results directory
-  await mkdir(RESULTS_DIR, { recursive: true })
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-  const reportPath = join(RESULTS_DIR, `eval-${timestamp}.json`)
-  const { writeFile } = await import('fs/promises')
-  await writeFile(reportPath, JSON.stringify(report, null, 2))
-
-  // Print summary
-  console.log('=== Summary ===')
-  console.log(`Total cases: ${report.totalCases}`)
-  console.log(`Total assertions: ${report.totalAssertions}`)
-  console.log(`Passed: ${report.passed}`)
-  console.log(`Failed: ${report.failed}`)
-  console.log(`Skipped: ${report.skipped}`)
-  if (totalCost > 0) {
-    console.log(`Estimated cost: $${totalCost.toFixed(4)}`)
-  }
-  console.log(`\nReport saved to: ${reportPath}\n`)
-
-  // Exit with failure if any assertions failed
-  if (report.failed > 0) {
+  if (allResults.filter(r => !r.passed).length > 0) {
     process.exit(1)
   }
 }

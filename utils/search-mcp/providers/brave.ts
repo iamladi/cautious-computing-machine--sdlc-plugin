@@ -23,11 +23,11 @@ const FRESHNESS_MAP: Record<Recency, string> = {
 
 export async function searchBrave(
   input: SearchInput,
-  _options: BraveOptions,
-  deps: { apiKey: string; baseUrl?: string; fetchFn?: FetchFn }
+  options: BraveOptions,
+  deps: { apiKey: string; baseUrl?: string; fetchFn?: FetchFn; timeoutMs?: number }
 ): Promise<SearchResult> {
   const startTime = performance.now();
-  const { apiKey, baseUrl = "https://api.search.brave.com/res/v1/web/search", fetchFn = fetch } = deps;
+  const { apiKey, baseUrl = "https://api.search.brave.com/res/v1/web/search", fetchFn = fetch, timeoutMs = 30_000 } = deps;
 
   // Build query params
   const params = new URLSearchParams();
@@ -42,11 +42,15 @@ export async function searchBrave(
     params.set("freshness", FRESHNESS_MAP[input.recency]);
   }
 
+  if (options.result_filter) {
+    params.set("result_filter", options.result_filter);
+  }
+
   const url = `${baseUrl}?${params.toString()}`;
 
-  // Create AbortController with 30s timeout
+  // Create AbortController with configurable timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetchFn(url, {
@@ -99,7 +103,7 @@ export async function searchBrave(
     clearTimeout(timeoutId);
 
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("brave error (timeout): Request timed out after 30s");
+      throw new Error(`brave error (timeout): Request timed out after ${timeoutMs / 1000}s`);
     }
 
     throw error;
