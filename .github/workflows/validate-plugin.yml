@@ -24,3 +24,9 @@ jobs:
 
       - name: Validate plugin (versions, schema, docs)
         run: bun run validate
+
+      - name: Type-check
+        run: bunx tsc --noEmit
+
+      - name: Run tests
+        run: bun test

@@ -5,6 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "bun test",
     "eval": "bun run eval/run-eval.ts --mode structural",
     "eval:llm": "bun run eval/run-eval.ts --mode all",
     "eval:baseline": "bun run eval/run-eval.ts --mode structural && cp eval/results/$(ls -t eval/results/ | head -1) eval/results/baseline/structural-baseline.json",

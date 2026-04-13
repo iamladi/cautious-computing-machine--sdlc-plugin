@@ -264,9 +264,10 @@ export async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<Ru
     console.error(`  ✗ Error: ${error instanceof Error ? error.message : String(error)}`)
     // Append a synthetic failed result so the harness exits non-zero
     caseResults.push({
-      case: evalCase.promptFile,
+      promptFile: evalCase.promptFile,
+      description: evalCase.description,
       assertion: 'case_execution',
-      type: 'structural',
+      mode: 'structural',
       passed: false,
       details: `Case failed to execute: ${error instanceof Error ? error.message : String(error)}`
     })
