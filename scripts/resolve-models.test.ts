@@ -28,17 +28,17 @@ describe("resolveCodexModels", () => {
 
   test("picks first visible mini model as fast variant", () => {
     const result = resolveCodexModels(codexCache);
-    expect(result.fast.id).toBe("gpt-5.4-mini");
+    expect(result.fast!.id).toBe("gpt-5.4-mini");
   });
 
   test("picks next visible non-mini model as previous", () => {
     const result = resolveCodexModels(codexCache);
-    expect(result.previous.id).toBe("gpt-5.3-codex");
+    expect(result.previous!.id).toBe("gpt-5.3-codex");
   });
 
   test("ignores hidden models", () => {
     const result = resolveCodexModels(codexCache);
-    const ids = [result.flagship.id, result.fast.id, result.previous.id];
+    const ids = [result.flagship.id, result.fast!.id, result.previous!.id];
     expect(ids).not.toContain("gpt-5.1-codex");
     expect(ids).not.toContain("gpt-5-codex-mini");
   });
@@ -88,12 +88,12 @@ describe("resolveGeminiModels", () => {
 
   test("picks highest-version flash model as fast (excluding lite)", () => {
     const result = resolveGeminiModels(geminiModels);
-    expect(result.fast.id).toBe("gemini-3-flash");
+    expect(result.fast!.id).toBe("gemini-3-flash");
   });
 
   test("filters out non-gemini models", () => {
     const result = resolveGeminiModels(geminiModels);
-    const allIds = [result.flagship.id, result.fast.id];
+    const allIds = [result.flagship.id, result.fast!.id];
     expect(allIds.every((id) => id.startsWith("gemini-"))).toBe(true);
   });
 
