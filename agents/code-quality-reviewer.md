@@ -26,7 +26,7 @@ Quick sanity check for obvious issues before further workflow stages. Catch clea
 
 **Code smells**: functions >100 lines, nesting >4 levels, exact duplicates, magic numbers, unused code
 
-**Anti-patterns**: callback hell, sync I/O in async, swallowed errors, mutated params, global state modification
+**Anti-patterns**: callback hell, sync I/O in async, swallowed errors, mutated params, global state modification, default-value masking of required data (`data.field ?? 0` where field must exist), try/catch inside business logic that returns null/undefined instead of propagating, hardcoded lookup tables (`if (x === 1000) return 100` with 3+ literal branches fitting test data)
 
 ## Output Format
 ### PASS

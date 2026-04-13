@@ -47,6 +47,8 @@ Fixable in the code itself, usually 1-5 lines, but models miss them because the 
 | **DNS/timeout cascade** | "If the upstream service is slow (not down), does this service back up? Is there a timeout? Does it shed load or block all workers?" | http client, fetch, axios, request, got, timeout not set, no AbortController |
 | **Log-and-throw antipattern** | "Is the same error logged at multiple levels as it propagates up the call stack?" | logger.error + throw, console.error + throw, log then rethrow |
 | **Resource leak on error path** | "If an error occurs after acquiring this resource (file handle, connection, stream), is it still released?" | open + close, acquire + release, createReadStream, try without finally |
+| **Default value masking** | "Does this `??` / `||` / default value hide data that should never be missing? Would a thrown error reveal an upstream bug faster?" | `?? 0`, `?? ""`, `?? []`, `\|\| ""`, `\|\| 0`, `?? "Unknown"`, getOrDefault |
+| **Hardcoded lookup table** | "Is this implementation hardcoding specific values instead of computing results algorithmically? Would it produce correct results for inputs NOT in the test suite?" | `if (x === <literal>) return <literal>`, switch with literal returns, hardcoded map matching test values exactly |
 
 ### Probe Generation Rules
 

@@ -26,6 +26,12 @@ Focus on finding what the plan author may have MISSED:
 - Testing gaps (untested paths, missing integration scenarios)
 - Sequence issues (steps in wrong order, missing prerequisites)
 
+If this plan involves databases, replication, partitioning, distributed state, or event streaming, also check:
+- Is the replication strategy appropriate for the consistency requirements?
+- Are partition/shard keys chosen to avoid hotspots?
+- Is the isolation level sufficient for the concurrency model?
+- Are error handling boundaries defined? (catch at API edge, not in business logic)
+
 DO NOT:
 - Suggest general improvements or best practices
 - Critique writing style
@@ -62,6 +68,12 @@ Focus on finding what the plan author may have MISSED:
 - Scope creep signals (does this touch more than intended?)
 - Testing gaps (untested paths, missing integration scenarios)
 - Sequence issues (steps in wrong order, missing prerequisites)
+
+If this plan involves databases, replication, partitioning, distributed state, or event streaming, also check:
+- Is the replication strategy appropriate for the consistency requirements?
+- Are partition/shard keys chosen to avoid hotspots?
+- Is the isolation level sufficient for the concurrency model?
+- Are error handling boundaries defined? (catch at API edge, not in business logic)
 
 DO NOT:
 - Suggest general improvements or best practices

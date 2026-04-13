@@ -406,65 +406,67 @@ Format: Use gh pr create with markdown sections (## Summary, ## Test plan) for r
 **Level 2 (Rule-Heavy):**
 ```markdown
 Error Handling Rules:
-1. Always use try-catch blocks
-2. Log errors with console.error()
-3. Return error object with shape: {error: true, message: string}
-4. Never throw exceptions in async functions
-5. Always include stack traces in logs
+1. Use try-catch only at system boundaries (API handlers, queue consumers, cron entry points)
+2. Let errors propagate through business logic — do not catch and return null
+3. Log errors with console.error() at the boundary where you catch them
+4. Return error object with shape: {error: true, message: string} from boundary handlers
+5. Always include stack traces in error logs
 ```
 
 **Level 5 (Hybrid):**
 ```markdown
 Error Handling:
 
-Use try-catch blocks to handle errors gracefully.
+Catch errors at system boundaries (API route handlers, message queue consumers, cron jobs) — not inside business logic functions.
 
-When catching errors:
-- Log them for debugging (include stack trace)
-- Return a consistent error shape: {error: true, message: string}
+At boundaries:
+- Log the full error for debugging (include stack trace and request context)
+- Return a consistent error shape to the caller: {error: true, message: string}
 - Don't let exceptions crash the process
 
-Avoid throwing exceptions in async functions as they can cause unhandled promise rejections.
+Inside business logic, let errors propagate naturally. A function that catches an error and returns null hides the failure from every caller above it.
 ```
 
 **Level 7 (Mostly Reasoning):**
 ```markdown
 Error Handling:
 
-Goal: Fail gracefully with useful debugging information.
+Goal: Surface failures quickly with useful debugging information. Errors caught too early (inside business logic) hide bugs; errors caught too late (nowhere) crash processes.
 
-Handle errors so:
+The sweet spot is **system boundaries** — API handlers, queue consumers, cron entry points. These are where you translate internal errors into external responses:
 - Users get actionable messages (what went wrong, what to try)
 - Developers get debugging information (stack traces, context)
 - The process doesn't crash unexpectedly
 
-Pattern: Use try-catch for operations that might fail. Log the full error (stack trace) for debugging, but return a clean error object to callers with a user-friendly message.
+Inside business logic, let errors propagate. If `getUser()` fails, the caller should see the error — not a silent `null` that causes a confusing failure three layers up.
 
-Avoid throwing in async functions because unhandled promise rejections can crash the process. Return error objects instead.
+Exception: operations where partial failure is expected and recovery is defined (e.g., batch processing with per-item error handling).
 ```
 
 **Level 9 (Constitution-Aligned):**
 ```markdown
 Error Handling:
 
-Goal: Fail gracefully with information useful for both users and developers.
+Goal: Fail fast in business logic, fail gracefully at system edges.
 
-Good error handling:
-- Catches failures that might occur (file not found, network timeout, invalid input)
-- Logs full error details for debugging (stack trace, context, input values)
-- Returns actionable messages to users (what failed, why, what to try next)
-- Doesn't crash the process unexpectedly
+The core principle: errors should propagate through business logic untouched, then be caught and handled at system boundaries where you control the response format.
 
-Pattern: try-catch for fallible operations, log the error with context, return a clean error object.
+**System boundaries** (catch here):
+- API route handlers → log + return error response
+- Queue consumers → log + nack/retry
+- Cron entry points → log + alert
 
-Use your judgment:
-- For user-facing errors: focus on clarity ("File not found: config.json")
-- For developer-facing errors: include technical details ("Failed to parse JSON: unexpected token at line 5")
-- For retry-able failures: indicate that ("Network timeout; retry might succeed")
+**Business logic** (don't catch here):
+- Let errors propagate naturally — callers need to see failures
+- A function that catches and returns null hides bugs from every layer above it
+- If `getUser()` can fail, the caller must handle that possibility — don't mask it
 
-In async functions, prefer returning error objects over throwing because unhandled promise rejections can crash the process. Throw only when the caller is expected to catch immediately.
+Use your judgment on granularity:
+- A missing optional config file might warn and use defaults
+- A missing required file should throw clearly — don't `?? fallback` required data
+- Batch processing may catch per-item to continue processing remaining items
 
-Match error handling granularity to failure impact: a missing optional config file might warn and use defaults; a missing required file should error clearly.
+Match error handling to failure impact: the higher the impact, the faster it should surface.
 ```
 
 ---

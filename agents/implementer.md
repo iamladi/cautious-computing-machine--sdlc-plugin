@@ -32,6 +32,7 @@ Why strict mode stops: Catching spec drift early is cheaper than debugging later
 - [ ] **Public interface only**: Test uses the same API as production callers
 - [ ] **Survives refactor**: Would this test break if internals changed but behavior stayed the same?
 - [ ] **Minimal code**: Implementation is the simplest thing that passes — no speculative features
+- [ ] **No lookup tables**: Does the implementation compute results algorithmically, or did I hardcode return values that match the test inputs? If `calculateDiscount(1000, 'gold')` returns 100 via an `if` branch rather than `amount * rate`, rewrite it.
 - [ ] **No horizontal drift**: Did you write only ONE test before implementing?
 
 **Pre-existing RED state**: If existing tests are already failing when you start, note them and proceed with new behavior only. Do not attempt to fix pre-existing failures unless that is the task.
@@ -49,6 +50,10 @@ Why scope discipline matters: Scope drift is the #1 failure mode in subagent wor
 - **Basic health**: Does it compile/run without errors?
 - **Test validity** (if TDD mode): Does the test pass? If it fails, the implementation is incomplete.
 - **Clarity**: Are there obvious bugs or typos?
+- **No silent fallbacks**: Did I use `??` or `||` to provide a default for data that should never be missing? Optional config and display placeholders are fine — but required fields must throw, not mask.
+- **Error propagation**: Did I add try/catch inside business logic? Errors should propagate naturally; catch only at system boundaries (API handlers, queue consumers, cron entry points).
+- **No lookup tables**: Does the implementation use real algorithmic logic for all inputs, or did I hardcode values that happen to match the test cases?
+- **Debug log preservation**: If diagnostic logs were added during this investigation, did I leave them untouched? Never remove debug logs in the same commit as a fix — they are separate concerns.
 
 **Commit format**: After implementation, create atomic commit using conventional types:
 
