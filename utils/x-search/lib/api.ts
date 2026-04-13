@@ -42,6 +42,20 @@ export interface Tweet {
   tweet_url: string;
 }
 
+export interface TwitterUser {
+  id: string;
+  username: string;
+  name: string;
+  description?: string;
+  created_at?: string;
+  public_metrics?: {
+    followers_count: number;
+    following_count: number;
+    tweet_count: number;
+    listed_count?: number;
+  };
+}
+
 interface RawResponse {
   data?: any[];
   includes?: { users?: any[] };
@@ -228,8 +242,8 @@ export async function thread(
         }
       }
     }
-  } catch (e: any) {
-    console.error(`(root tweet ${conversationId}: ${e.message})`);
+  } catch (e: unknown) {
+    console.error(`(root tweet ${conversationId}: ${e instanceof Error ? e.message : String(e)})`);
   }
 
   return tweets;
@@ -241,7 +255,7 @@ export async function thread(
 export async function profile(
   username: string,
   opts: { count?: number; includeReplies?: boolean } = {}
-): Promise<{ user: any; tweets: Tweet[] }> {
+): Promise<{ user: TwitterUser; tweets: Tweet[] }> {
   const userUrl = `${BASE}/users/by/username/${username}?user.fields=public_metrics,description,created_at`;
   const userData = await apiGet(userUrl);
 
@@ -249,7 +263,7 @@ export async function profile(
     throw new Error(`User @${username} not found`);
   }
 
-  const user = (userData as any).data;
+  const user = (userData as unknown as { data: TwitterUser }).data;
   await sleep(RATE_DELAY_MS);
 
   const replyFilter = opts.includeReplies ? "" : " -is:reply";

@@ -5,6 +5,34 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.0] - 2026-04-13
+
+### Added
+- AI coding discipline rules in implementer agent self-review (silent fallbacks, boundary-only catch, lookup tables, debug log preservation)
+- "No lookup tables" check in TDD per-cycle checklists (implementer + TDD skill)
+- DDIA probes with relevance gate in blindspot review protocol (replication, partitioning, isolation, error boundaries)
+- 2 new Tier 3 production failure probes (default value masking, hardcoded lookup tables)
+- 3 new anti-pattern categories in code-quality-reviewer
+- CI now runs type-checking and unit tests (previously only plugin validation)
+- 109 new unit tests across 7 test files (release, validate-versions, validate-plugin, run-eval, cache, format)
+- `test` script in package.json
+
+### Changed
+- Scoring rubric error handling examples updated to promote boundary-only catching at all 4 levels
+- search-mcp: `startServer()` decomposed into `handleSearchRequest()` + orchestration
+- search-mcp: exhaustive switch default in provider dispatch
+- search-mcp/brave: `result_filter` from BraveOptions now applied to HTTP request
+- search-mcp/brave: timeout configurable via `deps.timeoutMs` (was hardcoded 30s)
+- eval: `runEval()` decomposed into `runCase()` + `generateReport()`
+- x-search: `TwitterUser` interface replaces `any` in profile/format
+
+### Fixed
+- Eval harness now emits synthetic failed result on case execution errors (was silently passing)
+- `formatProfileTelegram` shows "metrics unavailable" instead of fake zeros when `public_metrics` absent
+- `thread()` catch typing improved from `any` to `unknown`
+- `release.ts` JSON.parse guarded with try/catch
+- Pre-existing type errors in resolve-models.test.ts and brave.test.ts
+
 ## [1.27.1] - 2026-04-10
 
 ### Changed

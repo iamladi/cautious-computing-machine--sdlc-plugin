@@ -116,6 +116,7 @@ After every RED-GREEN pair, verify:
 - [ ] **Public interface only**: Test uses the same API as production callers
 - [ ] **Survives refactor**: Would this test break if internals changed but behavior stayed the same?
 - [ ] **Minimal code**: Implementation is the simplest thing that passes — no speculative features
+- [ ] **No lookup tables**: Does the implementation compute results algorithmically, or did I hardcode return values that match the test inputs? If swapping test values would break the implementation, it's a lookup table — rewrite with real logic.
 - [ ] **No horizontal drift**: Did you write only ONE test before implementing? If you wrote multiple, STOP and revert to one.
 - [ ] **No type theater**: Does this test verify something the type system doesn't already guarantee? If the only way it could fail is a type error, delete it.
 

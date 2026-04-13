@@ -9,6 +9,7 @@ import type {
   PerplexityOptions,
   ExaOptions,
   BraveOptions,
+  ToolOutput,
 } from "./types";
 import { validateProviderParams } from "./types";
 import { formatResponse } from "./format";
@@ -72,6 +73,127 @@ export function buildToolDescription(
   return `Search via Exa, Brave, or Perplexity APIs. Provides deeper, more configurable results than built-in WebSearch. Available: ${providerList}. Omit 'provider' to use ${defaultProvider}.`;
 }
 
+// --- Request handler (extracted for testability) ---
+
+interface SearchDeps {
+  available: SearchProvider[];
+  envKeys: {
+    OPENROUTER_API_KEY: string;
+    OPENROUTER_MODEL: string;
+    EXA_API_KEY: string;
+    BRAVE_API_KEY: string;
+  };
+  exaClient: ExaClient | undefined;
+  defaultProvider: SearchProvider;
+}
+
+export async function handleSearchRequest(
+  args: Record<string, unknown>,
+  deps: SearchDeps
+): Promise<ToolOutput> {
+  const { available, envKeys, exaClient, defaultProvider } = deps;
+  const provider = ((args.provider ?? defaultProvider) as SearchProvider);
+
+  // Check provider availability
+  if (!available.includes(provider)) {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `Provider '${provider}' is not available. Available: ${available.join(", ")}. Set ${ENV_KEY_MAP[provider]} to enable.`,
+        },
+      ],
+      isError: true,
+    };
+  }
+
+  // Validate provider-specific params (FR-7)
+  const paramErrors = validateProviderParams(provider, args);
+  if (paramErrors.length > 0) {
+    return {
+      content: [{ type: "text" as const, text: paramErrors.join("\n") }],
+      isError: true,
+    };
+  }
+
+  const input: SearchInput = {
+    query: args.query as string,
+    provider,
+    recency: args.recency as SearchInput["recency"],
+    num_results: args.num_results as number | undefined,
+  };
+
+  try {
+    let result;
+
+    switch (provider) {
+      case "perplexity": {
+        const perplexityOpts: PerplexityOptions = {
+          model: args.model as string | undefined,
+          temperature: args.temperature as number | undefined,
+          top_p: args.top_p as number | undefined,
+          top_k: args.top_k as number | undefined,
+          max_tokens: args.max_tokens as number | undefined,
+          frequency_penalty: args.frequency_penalty as number | undefined,
+          presence_penalty: args.presence_penalty as number | undefined,
+        };
+        result = await searchPerplexity(input, perplexityOpts, {
+          apiKey: envKeys.OPENROUTER_API_KEY,
+          defaultModel: envKeys.OPENROUTER_MODEL,
+        });
+        break;
+      }
+
+      case "exa": {
+        if (!exaClient) {
+          return {
+            content: [{ type: "text" as const, text: "Exa client not initialized. Set EXA_API_KEY to enable." }],
+            isError: true,
+          };
+        }
+        const exaOpts: ExaOptions = {
+          search_type: args.search_type as ExaOptions["search_type"],
+          include_domains: args.include_domains as string[] | undefined,
+          exclude_domains: args.exclude_domains as string[] | undefined,
+          category: args.category as string | undefined,
+          include_text: args.include_text as boolean | undefined,
+        };
+        result = await searchExa(input, exaOpts, {
+          client: exaClient,
+        });
+        break;
+      }
+
+      case "brave": {
+        const braveOpts: BraveOptions = {
+          result_filter: args.result_filter as BraveOptions["result_filter"],
+        };
+        result = await searchBrave(input, braveOpts, {
+          apiKey: envKeys.BRAVE_API_KEY,
+        });
+        break;
+      }
+
+      default: {
+        const _exhaustive: never = provider;
+        throw new Error(`Unknown provider: ${_exhaustive}`);
+      }
+    }
+
+    return formatResponse(result);
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: `${provider} error: ${error instanceof Error ? error.message : String(error)}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+}
+
 // --- Server startup (only runs when executed directly) ---
 
 function startServer() {
@@ -90,6 +212,8 @@ function startServer() {
   if (available.includes("exa")) {
     exaClient = new Exa(envKeys.EXA_API_KEY) as unknown as ExaClient;
   }
+
+  const searchDeps: SearchDeps = { available, envKeys, exaClient, defaultProvider };
 
   const server = new McpServer({ name: "fast_deep_search", version: "1.0.0" });
 
@@ -149,103 +273,7 @@ function startServer() {
           .describe("Result type filter (Brave only). Only 'web' supported."),
       },
     },
-    async (args) => {
-      const provider = (args.provider ?? defaultProvider) as SearchProvider;
-
-      // Check provider availability
-      if (!available.includes(provider)) {
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `Provider '${provider}' is not available. Available: ${available.join(", ")}. Set ${ENV_KEY_MAP[provider]} to enable.`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      // Validate provider-specific params (FR-7)
-      const paramErrors = validateProviderParams(provider, args);
-      if (paramErrors.length > 0) {
-        return {
-          content: [{ type: "text" as const, text: paramErrors.join("\n") }],
-          isError: true,
-        };
-      }
-
-      const input: SearchInput = {
-        query: args.query,
-        provider,
-        recency: args.recency as SearchInput["recency"],
-        num_results: args.num_results,
-      };
-
-      try {
-        let result;
-
-        switch (provider) {
-          case "perplexity": {
-            const perplexityOpts: PerplexityOptions = {
-              model: args.model,
-              temperature: args.temperature,
-              top_p: args.top_p,
-              top_k: args.top_k,
-              max_tokens: args.max_tokens,
-              frequency_penalty: args.frequency_penalty,
-              presence_penalty: args.presence_penalty,
-            };
-            result = await searchPerplexity(input, perplexityOpts, {
-              apiKey: envKeys.OPENROUTER_API_KEY,
-              defaultModel: envKeys.OPENROUTER_MODEL,
-            });
-            break;
-          }
-
-          case "exa": {
-            if (!exaClient) {
-              return {
-                content: [{ type: "text" as const, text: "Exa client not initialized. Set EXA_API_KEY to enable." }],
-                isError: true,
-              };
-            }
-            const exaOpts: ExaOptions = {
-              search_type: args.search_type as ExaOptions["search_type"],
-              include_domains: args.include_domains,
-              exclude_domains: args.exclude_domains,
-              category: args.category,
-              include_text: args.include_text,
-            };
-            result = await searchExa(input, exaOpts, {
-              client: exaClient,
-            });
-            break;
-          }
-
-          case "brave": {
-            const braveOpts: BraveOptions = {
-              result_filter: args.result_filter as BraveOptions["result_filter"],
-            };
-            result = await searchBrave(input, braveOpts, {
-              apiKey: envKeys.BRAVE_API_KEY,
-            });
-            break;
-          }
-        }
-
-        return formatResponse(result);
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `${provider} error: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-    }
+    (args) => handleSearchRequest(args as Record<string, unknown>, searchDeps)
   );
 
   async function main() {

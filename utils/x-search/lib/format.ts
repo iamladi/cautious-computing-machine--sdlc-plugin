@@ -4,7 +4,7 @@
  * Adapted from rohunvora/x-research-skill (public repo, no explicit license).
  */
 
-import type { Tweet } from "./api";
+import type { Tweet, TwitterUser } from "./api";
 
 function compactNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -139,10 +139,12 @@ export function formatResearchMarkdown(
 /**
  * Format a user profile for Telegram.
  */
-export function formatProfileTelegram(user: any, tweets: Tweet[]): string {
-  const m = user.public_metrics || {};
+export function formatProfileTelegram(user: TwitterUser, tweets: Tweet[]): string {
+  const m = user.public_metrics;
   let out = `@${user.username} — ${user.name}\n`;
-  out += `${compactNumber(m.followers_count || 0)} followers · ${compactNumber(m.tweet_count || 0)} tweets\n`;
+  out += m
+    ? `${compactNumber(m.followers_count)} followers · ${compactNumber(m.tweet_count)} tweets\n`
+    : `metrics unavailable\n`;
   if (user.description) {
     out += `${user.description.slice(0, 150)}\n`;
   }

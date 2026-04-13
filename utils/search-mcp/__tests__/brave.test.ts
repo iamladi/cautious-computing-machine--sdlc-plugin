@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { searchBrave } from "../providers/brave";
 import type { SearchInput, BraveOptions } from "../types";
 
+type FetchFn = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
 describe("searchBrave", () => {
   test("returns SearchResult from Brave response", async () => {
     const mockResponse = {
@@ -17,7 +19,7 @@ describe("searchBrave", () => {
       },
     };
 
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       return new Response(JSON.stringify(mockResponse), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -67,7 +69,7 @@ describe("searchBrave", () => {
       },
     };
 
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       return new Response(JSON.stringify(mockResponse), { status: 200 });
     };
 
@@ -109,7 +111,7 @@ describe("searchBrave", () => {
       },
     };
 
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       return new Response(JSON.stringify(mockResponse), { status: 200 });
     };
 
@@ -126,7 +128,7 @@ describe("searchBrave", () => {
   test("maps recency to freshness param in URL", async () => {
     const capturedUrls: string[] = [];
 
-    const fakeFetch: typeof fetch = async (input: RequestInfo | URL) => {
+    const fakeFetch: FetchFn = async (input: RequestInfo | URL) => {
       capturedUrls.push(input.toString());
       return new Response(JSON.stringify({ web: { results: [] } }), { status: 200 });
     };
@@ -157,7 +159,7 @@ describe("searchBrave", () => {
   test("clamps num_results to max 20", async () => {
     const capturedUrls: string[] = [];
 
-    const fakeFetch: typeof fetch = async (input: RequestInfo | URL) => {
+    const fakeFetch: FetchFn = async (input: RequestInfo | URL) => {
       capturedUrls.push(input.toString());
       return new Response(JSON.stringify({ web: { results: [] } }), { status: 200 });
     };
@@ -178,7 +180,7 @@ describe("searchBrave", () => {
       web: {},
     };
 
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       return new Response(JSON.stringify(mockResponse), { status: 200 });
     };
 
@@ -213,7 +215,7 @@ describe("searchBrave", () => {
       },
     };
 
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       return new Response(JSON.stringify(mockResponse), { status: 200 });
     };
 
@@ -228,7 +230,7 @@ describe("searchBrave", () => {
   });
 
   test("measures latencyMs", async () => {
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
       return new Response(JSON.stringify({ web: { results: [] } }), { status: 200 });
     };
@@ -244,7 +246,7 @@ describe("searchBrave", () => {
   });
 
   test("throws on non-OK response with status", async () => {
-    const fakeFetch: typeof fetch = async () => {
+    const fakeFetch: FetchFn = async () => {
       return new Response(JSON.stringify({ error: "Invalid API key" }), { status: 401 });
     };
 
@@ -261,7 +263,7 @@ describe("searchBrave", () => {
   test(
     "throws on timeout",
     async () => {
-      const fakeFetch: typeof fetch = async (_url, options?: RequestInit) => {
+      const fakeFetch: FetchFn = async (_url, options?: RequestInit) => {
         return new Promise((resolve, reject) => {
           const signal = options?.signal;
           if (signal) {

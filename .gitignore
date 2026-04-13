@@ -92,6 +92,10 @@ research/
 # Test outputs
 test-results/
 playwright-report/
+eval/results/
+
+# Desloppify working state
+.desloppify/
 
 # x-search data (cache and watchlist are local runtime data)
 utils/x-search/data/cache/*.json
