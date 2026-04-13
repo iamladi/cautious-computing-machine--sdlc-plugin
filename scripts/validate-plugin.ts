@@ -5,7 +5,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { validateVersions } from './validate-versions';
 
-const PluginManifestSchema = z.object({
+export const PluginManifestSchema = z.object({
   name: z.string(),
   version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must follow semver format'),
   description: z.string(),
@@ -168,4 +168,6 @@ async function main() {
   await checkModelRegistryStaleness();
 }
 
-main();
+if (import.meta.main) {
+  main();
+}
