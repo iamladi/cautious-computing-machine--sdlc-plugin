@@ -18,7 +18,7 @@ import { join } from "path";
 
 type BumpType = "major" | "minor" | "patch";
 
-function bumpVersion(current: string, type: BumpType): string {
+export function bumpVersion(current: string, type: BumpType): string {
   const [major, minor, patch] = current.split(".").map(Number);
   switch (type) {
     case "major":
@@ -30,7 +30,7 @@ function bumpVersion(current: string, type: BumpType): string {
   }
 }
 
-function formatDate(): string {
+export function formatDate(): string {
   return new Date().toISOString().split("T")[0];
 }
 
@@ -97,11 +97,13 @@ async function release(type: BumpType) {
   console.log("  4. git push && git push --tags");
 }
 
-// Parse CLI args
-const type = process.argv[2] as BumpType;
-if (!["major", "minor", "patch"].includes(type)) {
-  console.error("Usage: bun run scripts/release.ts <major|minor|patch>");
-  process.exit(1);
-}
+if (import.meta.main) {
+  // Parse CLI args
+  const type = process.argv[2] as BumpType;
+  if (!["major", "minor", "patch"].includes(type)) {
+    console.error("Usage: bun run scripts/release.ts <major|minor|patch>");
+    process.exit(1);
+  }
 
-release(type);
+  release(type);
+}

@@ -196,7 +196,7 @@ async function runBehavioralAssertions(
 }
 
 // Rate limiter
-async function rateLimit(requestsPerMinute: number) {
+export async function rateLimit(requestsPerMinute: number) {
   const delayMs = (60 * 1000) / requestsPerMinute
   await new Promise(resolve => setTimeout(resolve, delayMs))
 }
@@ -214,7 +214,7 @@ interface RunCaseResult {
 }
 
 // Run a single eval case and return its results, cost, and whether it was skipped
-async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<RunCaseResult> {
+export async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<RunCaseResult> {
   const { mode, anthropic, totalCost } = opts
   const caseResults: EvalResult[] = []
   let caseCost = 0
@@ -269,7 +269,7 @@ async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<RunCaseRe
 }
 
 // Format and persist the eval report, returning the path it was written to
-async function generateReport(
+export async function generateReport(
   results: EvalResult[],
   mode: EvalMode,
   totalCases: number,
@@ -363,8 +363,10 @@ async function runEval() {
   }
 }
 
-// Run the eval
-runEval().catch(error => {
-  console.error('Fatal error:', error)
-  process.exit(1)
-})
+// Run the eval only when executed directly (not when imported for tests)
+if (import.meta.main) {
+  runEval().catch(error => {
+    console.error('Fatal error:', error)
+    process.exit(1)
+  })
+}
