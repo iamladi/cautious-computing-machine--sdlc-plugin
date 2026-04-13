@@ -328,8 +328,8 @@ describe("formatProfileTelegram", () => {
   test("handles missing public_metrics gracefully", () => {
     const user = makeUser({ public_metrics: undefined });
     const out = formatProfileTelegram(user, []);
-    expect(out).toContain("0 followers");
-    expect(out).toContain("0 tweets");
+    expect(out).toContain("metrics unavailable");
+    expect(out).not.toContain("followers");
   });
 
   test("includes recent tweets in output", () => {

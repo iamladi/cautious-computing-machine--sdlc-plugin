@@ -140,9 +140,11 @@ export function formatResearchMarkdown(
  * Format a user profile for Telegram.
  */
 export function formatProfileTelegram(user: TwitterUser, tweets: Tweet[]): string {
-  const m = user.public_metrics ?? { followers_count: 0, following_count: 0, tweet_count: 0 };
+  const m = user.public_metrics;
   let out = `@${user.username} — ${user.name}\n`;
-  out += `${compactNumber(m.followers_count || 0)} followers · ${compactNumber(m.tweet_count || 0)} tweets\n`;
+  out += m
+    ? `${compactNumber(m.followers_count)} followers · ${compactNumber(m.tweet_count)} tweets\n`
+    : `metrics unavailable\n`;
   if (user.description) {
     out += `${user.description.slice(0, 150)}\n`;
   }

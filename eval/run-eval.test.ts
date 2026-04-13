@@ -200,8 +200,10 @@ describe("runCase", () => {
       totalCost: 0,
     });
 
-    // File not found → caught, results remain empty
-    expect(result.results).toHaveLength(0);
+    // File not found → caught, synthetic failure result appended
+    expect(result.results).toHaveLength(1);
+    expect(result.results[0].passed).toBe(false);
+    expect(result.results[0].assertion).toBe("case_execution");
     expect(result.cost).toBe(0);
   });
 });
