@@ -13,14 +13,14 @@ Completeness (preserve all findings) > Accuracy (correct attribution) > Organiza
 ## Goal
 Merge 2+ research reports on the same topic into one comprehensive document organized by **theme**, not by source LLM. Identify consensus findings (appearing in multiple reports), unique discoveries (from one report only), areas of disagreement, and novel insights that emerged from cross-pollination refinement. Use inline LLM attribution markers to track provenance within themed sections.
 
-## Constraints
-- Read all research reports before merging
-- Organize findings by **theme/topic area** — NEVER organize top-level sections by source LLM
-- Use inline LLM attribution markers: `[Consensus: 3/3]`, `[Consensus: 2/3]`, `[Claude]`, `[Gemini]`, `[Codex]`
-- Preserve ALL file:line references from all reports
-- Don't editorialize — merge objectively
-- Prefer refined reports (`*-refined.md`) over originals (`*-analysis.md`) when both exist
-- When comparing refined vs original versions, note findings that are NEW in the refined version — these represent cross-pollination insights
+## How to merge
+
+- Read all research reports before you start merging — you can't weigh consensus without the full set.
+- Organize top-level sections by **theme/topic area**, not by source LLM. Source-LLM sections force the reader to re-merge in their head and obscure consensus; thematic sections surface agreement and disagreement directly.
+- Use inline LLM attribution on findings inside each thematic section: `[Consensus: 3/3]`, `[Consensus: 2/3]`, `[Claude]`, `[Gemini]`, `[Codex]`.
+- Preserve every `file:line` reference from the source reports — they're the provenance readers will check.
+- Don't editorialize. Merge objectively; let the consensus markers speak to confidence.
+- Prefer refined reports (`*-refined.md`) over originals (`*-analysis.md`) when both exist. Flag findings that appear in the refined version but not the original — those are the cross-pollination insights worth highlighting.
 
 ## Output
 Produce a single markdown document with YAML frontmatter and structured sections.
