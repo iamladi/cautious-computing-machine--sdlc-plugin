@@ -5,6 +5,10 @@ export const config = {
   model: 'claude-sonnet-4-5-20250929', // cheap + fast for eval
   maxTokens: 4096,
 
+  // Judge model — cheap grader for LLM-as-judge criteria
+  judgeModel: 'claude-haiku-4-5-20251001',
+  judgeMaxTokens: 1024,
+
   // Rate limiting
   maxRequestsPerMinute: 10,
 

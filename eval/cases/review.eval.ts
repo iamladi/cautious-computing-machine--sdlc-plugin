@@ -7,12 +7,12 @@ const evalCase: EvalCase = {
   structural: [
     ...commonStructural(),
     {
-      name: 'has-codex-review-section',
-      test: (content) => /codex.*review/i.test(content)
+      name: 'has-codex-reviewer',
+      test: (content) => /codex.*(review|analyst|failure mode)/is.test(content)
     },
     {
-      name: 'has-gemini-review-section',
-      test: (content) => /gemini.*review/i.test(content)
+      name: 'has-gemini-reviewer',
+      test: (content) => /gemini.*(review|analyst|production)/is.test(content)
     },
     {
       name: 'mentions-parallel-execution',

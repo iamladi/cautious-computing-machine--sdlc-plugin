@@ -8,6 +8,17 @@ export interface BehavioralAssertion {
   test: (output: string) => boolean
 }
 
+/** A binary yes/no criterion graded by a judge model against LLM output. */
+export interface JudgeCriterion {
+  name: string
+  /** Yes/no question the judge answers about the output. */
+  question: string
+}
+
+export interface JudgeConfig {
+  criteria: JudgeCriterion[]
+}
+
 export interface EvalCase {
   /** Which prompt file this tests (relative to sdlc-plugin/) */
   promptFile: string
@@ -17,6 +28,8 @@ export interface EvalCase {
   structural: StructuralAssertion[]
   /** Behavioral assertions checked against LLM output (optional, requires API key) */
   behavioral?: BehavioralAssertion[]
+  /** LLM-as-judge criteria graded against LLM output (optional, requires API key) */
+  judge?: JudgeConfig
   /** Test input to feed the model along with the prompt (for behavioral evals) */
   testInput?: string
 }
