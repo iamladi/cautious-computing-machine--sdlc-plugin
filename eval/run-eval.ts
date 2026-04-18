@@ -117,78 +117,170 @@ function runStructuralAssertions(
   return results
 }
 
-// Run behavioral assertions (requires API)
-async function runBehavioralAssertions(
+// Generate output once, shared between behavioral regex + judge
+async function generateOutput(
   evalCase: EvalCase,
   promptContent: string,
   anthropic: Anthropic
-): Promise<{ results: EvalResult[]; cost: number }> {
+): Promise<{ output: string; cost: number }> {
+  const userMessage = evalCase.testInput || 'Test input'
+  const fullPrompt = `${promptContent}\n\n---\n\n${userMessage}`
+
+  const response = await anthropic.messages.create({
+    model: config.model,
+    max_tokens: config.maxTokens,
+    messages: [{ role: 'user', content: fullPrompt }]
+  })
+
+  const output = response.content
+    .filter(block => block.type === 'text')
+    .map(block => (block as { type: 'text'; text: string }).text)
+    .join('\n')
+
+  // Sonnet 4.5: $3/MTok input, $15/MTok output
+  const cost = (response.usage.input_tokens / 1_000_000 * 3) +
+               (response.usage.output_tokens / 1_000_000 * 15)
+
+  return { output, cost }
+}
+
+// Run regex behavioral assertions against a pre-generated output
+function runBehavioralAssertionsOnOutput(
+  evalCase: EvalCase,
+  output: string
+): EvalResult[] {
   const results: EvalResult[] = []
+  if (!evalCase.behavioral) return results
 
-  if (!evalCase.behavioral || evalCase.behavioral.length === 0) {
-    return { results, cost: 0 }
-  }
-
-  try {
-    // Call Anthropic API with prompt
-    const userMessage = evalCase.testInput || 'Test input'
-    const fullPrompt = `${promptContent}\n\n---\n\n${userMessage}`
-
-    const response = await anthropic.messages.create({
-      model: config.model,
-      max_tokens: config.maxTokens,
-      messages: [{
-        role: 'user',
-        content: fullPrompt
-      }]
-    })
-
-    // Extract text output
-    const output = response.content
-      .filter(block => block.type === 'text')
-      .map(block => (block as { type: 'text'; text: string }).text)
-      .join('\n')
-
-    // Calculate cost (Sonnet 4.5: $3/MTok input, $15/MTok output)
-    const inputTokens = response.usage.input_tokens
-    const outputTokens = response.usage.output_tokens
-    const cost = (inputTokens / 1_000_000 * 3) + (outputTokens / 1_000_000 * 15)
-
-    // Run assertions against output
-    for (const assertion of evalCase.behavioral) {
-      try {
-        const passed = assertion.test(output)
-        results.push({
-          promptFile: evalCase.promptFile,
-          description: evalCase.description,
-          mode: 'behavioral',
-          assertion: assertion.name,
-          passed,
-          details: passed ? undefined : 'Assertion failed'
-        })
-      } catch (error) {
-        results.push({
-          promptFile: evalCase.promptFile,
-          description: evalCase.description,
-          mode: 'behavioral',
-          assertion: assertion.name,
-          passed: false,
-          details: `Error: ${error instanceof Error ? error.message : String(error)}`
-        })
-      }
-    }
-
-    return { results, cost }
-  } catch (error) {
-    // API call failed
-    for (const assertion of evalCase.behavioral) {
+  for (const assertion of evalCase.behavioral) {
+    try {
+      const passed = assertion.test(output)
+      results.push({
+        promptFile: evalCase.promptFile,
+        description: evalCase.description,
+        mode: 'behavioral',
+        assertion: assertion.name,
+        passed,
+        details: passed ? undefined : 'Assertion failed'
+      })
+    } catch (error) {
       results.push({
         promptFile: evalCase.promptFile,
         description: evalCase.description,
         mode: 'behavioral',
         assertion: assertion.name,
         passed: false,
-        details: `API Error: ${error instanceof Error ? error.message : String(error)}`
+        details: `Error: ${error instanceof Error ? error.message : String(error)}`
+      })
+    }
+  }
+
+  return results
+}
+
+// Run LLM-as-judge criteria against generated output
+async function runJudgeAssertions(
+  evalCase: EvalCase,
+  output: string,
+  anthropic: Anthropic
+): Promise<{ results: EvalResult[]; cost: number }> {
+  const results: EvalResult[] = []
+
+  if (!evalCase.judge || evalCase.judge.criteria.length === 0) {
+    return { results, cost: 0 }
+  }
+
+  const criteriaList = evalCase.judge.criteria
+    .map((c, i) => `${i + 1}. [${c.name}] ${c.question}`)
+    .join('\n')
+
+  const judgePrompt = `You are grading the output of a skill against a rubric.
+
+<output>
+${output}
+</output>
+
+<rubric>
+For each numbered criterion below, answer PASS or FAIL based strictly on what is visible in the output above. Do not infer or give benefit of the doubt.
+
+${criteriaList}
+</rubric>
+
+Respond with ONLY a JSON object mapping each criterion name to "PASS" or "FAIL". Example:
+{"criterion-name-1": "PASS", "criterion-name-2": "FAIL"}`
+
+  try {
+    const response = await anthropic.messages.create({
+      model: config.judgeModel,
+      max_tokens: config.judgeMaxTokens,
+      messages: [{ role: 'user', content: judgePrompt }]
+    })
+
+    const judgeText = response.content
+      .filter(block => block.type === 'text')
+      .map(block => (block as { type: 'text'; text: string }).text)
+      .join('\n')
+
+    // Haiku 4.5: $1/MTok input, $5/MTok output (approximate)
+    const cost = (response.usage.input_tokens / 1_000_000 * 1) +
+                 (response.usage.output_tokens / 1_000_000 * 5)
+
+    // Extract JSON from judge response (tolerate surrounding prose)
+    const jsonMatch = judgeText.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      for (const criterion of evalCase.judge.criteria) {
+        results.push({
+          promptFile: evalCase.promptFile,
+          description: evalCase.description,
+          mode: 'behavioral',
+          assertion: `judge:${criterion.name}`,
+          passed: false,
+          details: `Judge returned no JSON: ${judgeText.slice(0, 200)}`
+        })
+      }
+      return { results, cost }
+    }
+
+    let verdicts: Record<string, string>
+    try {
+      verdicts = JSON.parse(jsonMatch[0])
+    } catch (err) {
+      for (const criterion of evalCase.judge.criteria) {
+        results.push({
+          promptFile: evalCase.promptFile,
+          description: evalCase.description,
+          mode: 'behavioral',
+          assertion: `judge:${criterion.name}`,
+          passed: false,
+          details: `Judge JSON parse error: ${err instanceof Error ? err.message : String(err)}`
+        })
+      }
+      return { results, cost }
+    }
+
+    for (const criterion of evalCase.judge.criteria) {
+      const verdict = verdicts[criterion.name]
+      const passed = verdict === 'PASS'
+      results.push({
+        promptFile: evalCase.promptFile,
+        description: evalCase.description,
+        mode: 'behavioral',
+        assertion: `judge:${criterion.name}`,
+        passed,
+        details: passed ? undefined : `Judge verdict: ${verdict ?? 'missing'}`
+      })
+    }
+
+    return { results, cost }
+  } catch (error) {
+    for (const criterion of evalCase.judge.criteria) {
+      results.push({
+        promptFile: evalCase.promptFile,
+        description: evalCase.description,
+        mode: 'behavioral',
+        assertion: `judge:${criterion.name}`,
+        passed: false,
+        details: `Judge API error: ${error instanceof Error ? error.message : String(error)}`
       })
     }
     return { results, cost: 0 }
@@ -236,8 +328,10 @@ export async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<Ru
       console.log(`  Structural: ${passed} passed, ${failed} failed`)
     }
 
-    // Run behavioral assertions
-    if ((mode === 'llm' || mode === 'all') && anthropic && evalCase.behavioral) {
+    // Run behavioral + judge (share one generated output)
+    const needsOutput = (mode === 'llm' || mode === 'all') && anthropic &&
+                        (evalCase.behavioral || evalCase.judge)
+    if (needsOutput) {
       // Check spend guard
       if (totalCost >= config.maxSpendPerRun) {
         console.warn(`  ⚠️  Spend limit reached ($${config.maxSpendPerRun}). Skipping LLM eval.`)
@@ -245,20 +339,65 @@ export async function runCase(evalCase: EvalCase, opts: RunCaseOpts): Promise<Ru
         return { results: caseResults, cost: 0, skipped: true }
       }
 
-      // Rate limit
+      // Rate limit before generation call
       await rateLimit(config.maxRequestsPerMinute)
 
-      const { results: behavioralResults, cost } = await runBehavioralAssertions(
-        evalCase,
-        content,
-        anthropic
-      )
-      caseResults.push(...behavioralResults)
-      caseCost = cost
+      try {
+        const { output, cost: genCost } = await generateOutput(evalCase, content, anthropic!)
+        caseCost += genCost
 
-      const passed = behavioralResults.filter(r => r.passed).length
-      const failed = behavioralResults.filter(r => !r.passed).length
-      console.log(`  Behavioral: ${passed} passed, ${failed} failed (cost: $${cost.toFixed(4)})`)
+        // Regex behavioral
+        if (evalCase.behavioral) {
+          const behavioralResults = runBehavioralAssertionsOnOutput(evalCase, output)
+          caseResults.push(...behavioralResults)
+          const passed = behavioralResults.filter(r => r.passed).length
+          const failed = behavioralResults.filter(r => !r.passed).length
+          console.log(`  Behavioral: ${passed} passed, ${failed} failed`)
+        }
+
+        // LLM-as-judge
+        if (evalCase.judge) {
+          await rateLimit(config.maxRequestsPerMinute)
+          const { results: judgeResults, cost: judgeCost } = await runJudgeAssertions(
+            evalCase,
+            output,
+            anthropic!
+          )
+          caseResults.push(...judgeResults)
+          caseCost += judgeCost
+          const passed = judgeResults.filter(r => r.passed).length
+          const failed = judgeResults.filter(r => !r.passed).length
+          console.log(`  Judge: ${passed} passed, ${failed} failed`)
+        }
+
+        console.log(`  LLM cost: $${caseCost.toFixed(4)}`)
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        if (evalCase.behavioral) {
+          for (const assertion of evalCase.behavioral) {
+            caseResults.push({
+              promptFile: evalCase.promptFile,
+              description: evalCase.description,
+              mode: 'behavioral',
+              assertion: assertion.name,
+              passed: false,
+              details: `API Error: ${msg}`
+            })
+          }
+        }
+        if (evalCase.judge) {
+          for (const criterion of evalCase.judge.criteria) {
+            caseResults.push({
+              promptFile: evalCase.promptFile,
+              description: evalCase.description,
+              mode: 'behavioral',
+              assertion: `judge:${criterion.name}`,
+              passed: false,
+              details: `API Error: ${msg}`
+            })
+          }
+        }
+      }
     }
   } catch (error) {
     console.error(`  ✗ Error: ${error instanceof Error ? error.message : String(error)}`)

@@ -206,4 +206,44 @@ describe("runCase", () => {
     expect(result.results[0].assertion).toBe("case_execution");
     expect(result.cost).toBe(0);
   });
+
+  test("EvalCase accepts optional judge field with criteria", () => {
+    // Type-level verification — if this compiles, the shape is valid
+    const evalCase: EvalCase = {
+      promptFile: "skills/interview/SKILL.md",
+      description: "judge shape check",
+      structural: [],
+      judge: {
+        criteria: [
+          { name: "has-recommendation", question: "Did the output include a recommendation?" },
+          { name: "surfaces-tradeoffs", question: "Did the output cite a tradeoff for each option?" },
+        ],
+      },
+      testInput: "Interview me about adding OAuth.",
+    };
+    expect(evalCase.judge?.criteria).toHaveLength(2);
+    expect(evalCase.judge?.criteria[0].name).toBe("has-recommendation");
+  });
+
+  test("llm mode skips judge when no anthropic client provided", async () => {
+    const evalCase: EvalCase = {
+      promptFile: "__nonexistent__.md",
+      description: "judge without API key",
+      structural: [],
+      judge: {
+        criteria: [{ name: "any", question: "Any?" }],
+      },
+      testInput: "test",
+    };
+
+    const result = await runCase(evalCase, {
+      mode: "llm",
+      anthropic: null,
+      totalCost: 0,
+    });
+
+    // No judge results when client absent — file read fails first, synthetic error only
+    const judgeResults = result.results.filter((r) => r.assertion.startsWith("judge:"));
+    expect(judgeResults).toHaveLength(0);
+  });
 });
