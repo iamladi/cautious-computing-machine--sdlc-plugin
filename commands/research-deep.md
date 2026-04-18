@@ -1,199 +1,96 @@
 # Multi-LLM Deep Research
 
-## Session Naming
+## Role
 
-Before starting, rename this session:
-- If `$ARGUMENTS` provided: `/rename "Deep Research: $ARGUMENTS"`
-- Otherwise wait for topic, then `/rename "Deep Research: {topic}"`
+You orchestrate a four-phase research pipeline (Discovery → Independent Analysis → Cross-Pollination Refinement → Synthesis) over a codebase topic, coordinating Claude, Gemini, and Codex. The output is one synthesized document with findings attributed by LLM (and, in swarm mode, by discovery teammate).
 
 ## Priorities
 
 Depth (multi-perspective) > Accuracy (consensus validation) > Concision
 
-## Goal
+## Session setup
 
-Execute 4-phase multi-LLM research (Discovery → Independent Analysis → Cross-Pollination Refinement → Synthesis) on a codebase topic, producing a comprehensive document with LLM attribution markers showing which findings came from Claude, Gemini, and/or Codex.
+Rename the session up front: `/rename "Deep Research: $ARGUMENTS"` — or, if no topic was supplied, ask for one and then rename.
 
-## CRITICAL: Parse Flags and Route
+## Routing
 
-BEFORE doing anything else, parse `$ARGUMENTS` for flags:
-1. Check if `--swarm` appears as a standalone token (not inside quotes)
-2. If found: set `SWARM_MODE=true`, remove all `--swarm` tokens from the argument string
-3. The remaining text (trimmed) is the research topic
-4. If the topic is empty after removing `--swarm`: prompt the user "Please provide a research question." and stop
+The default mode is `--no-swarm` equivalent: one Claude discovery subagent. Pass `--swarm` to use an agent team for discovery (Locator + Analyzer + Pattern Finder sharing findings in real time via `SendMessage`). Strip `--swarm` from the arg string and treat what remains as the topic. If the topic is empty after stripping, ask the user for a research question.
 
-## Constraints
-
-### Phase 1: Discovery
-
-If `SWARM_MODE=true`: skip directly to **Swarm Discovery** below. Do NOT execute Standard Discovery.
-If `SWARM_MODE` is not set: skip directly to **Standard Discovery** below. Do NOT execute Swarm Discovery.
-
-#### Swarm Discovery (Agent Team)
-
-**IMPORTANT: Steps 6 and 7 below are mandatory. If any step before Step 7 fails (including Step 6), you MUST still execute Step 7 (Cleanup Team) before proceeding to Phase 2 or reporting the error.**
-
-##### Step 1: Create Team (validates prerequisites)
-
-Create the agent team with a unique timestamped name. This also validates that agent teams are available:
-- Team name: `research-deep-{topic-kebab}-{YYYYMMDD-HHMMSS}` (e.g., `research-deep-auth-flow-20260207-143052`)
-- Call `TeamCreate` with this name and description: "Deep Research Discovery: {topic}"
-- **If TeamCreate fails or the tool is unavailable**: Output this error message and execute the Standard Discovery workflow instead (topic is already parsed with `--swarm` removed):
-  ```
-  Swarm mode requires agent teams. Set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in settings.json or environment.
-  Falling back to standard discovery mode.
-  ```
-
-##### Step 2: Create Working Directory
-
-- Create `research/.deep-research-$(date +%Y%m%d-%H%M%S)/`
-- Read any user-mentioned files FULLY (no limit/offset) before spawning teammates
-
-##### Step 3: Create Research Tasks
-
-Use `TaskCreate` to create tasks for the shared task list:
-1. **Locate relevant files** — Find all files, directories, and components related to the research topic
-2. **Analyze implementation details** — Trace data flow, understand how components interact, document with file:line refs
-3. **Find patterns and conventions** — Identify reusable patterns, similar implementations, and coding conventions
-
-##### Step 4: Spawn Teammates
-
-Spawn 3 teammates via the `Task` tool with `team_name` parameter and `subagent_type: "general-purpose"`:
-
-**Teammate 1: Locator**
+If swarm mode is requested but `TeamCreate` fails or the tool is unavailable, tell the user:
 ```
-You are a codebase locator on a deep research team investigating: "{topic}"
-
-Your role: Find ALL files, directories, and components relevant to this topic.
-
-Instructions:
-1. Check TaskList for your assigned task
-2. Use Glob and Grep to search with multiple naming patterns and extensions
-3. Categorize findings: Implementation Files, Test Files, Configuration, Type Definitions, Documentation
-4. Include directory counts ("Contains X files")
-5. Share important discoveries with teammates via SendMessage — especially if you find files that the Analyzer or Pattern Finder should examine
-6. When done, update your task via TaskUpdate (mark completed)
-7. Send a message to the team lead: "RESEARCH COMPLETE"
-
-Do NOT read file contents in depth — focus on locating and categorizing.
-All findings must include full file paths.
+Swarm mode requires agent teams. Set CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 in settings.json or environment.
+Falling back to standard discovery mode.
 ```
+Then continue with the standard workflow — the topic is already parsed.
 
-**Teammate 2: Analyzer**
-```
-You are a codebase analyzer on a deep research team investigating: "{topic}"
+## Phase 1 — Discovery
 
-Your role: Analyze implementation details, trace data flow, and document how components interact.
+Create `research/.deep-research-$(date +%Y%m%d-%H%M%S)/` and read any user-mentioned files fully (no limit/offset) before spawning.
 
-Instructions:
-1. Check TaskList for your assigned task
-2. Read files thoroughly before making statements
-3. Trace actual code paths — don't assume
-4. Include file:line references for ALL claims
-5. Focus on "how" it works: entry points, core logic, data flow, error handling
-6. Share important discoveries with teammates via SendMessage — especially patterns you notice (for Pattern Finder) or files that need locating (for Locator)
-7. When done, update your task via TaskUpdate (mark completed)
-8. Send a message to the team lead: "RESEARCH COMPLETE"
+**Standard discovery** spawns one general-purpose subagent that runs `codebase-locator`, `codebase-analyzer`, and `codebase-pattern-finder` in sequence, plus a parallel `web-search-researcher` subagent. Output goes to `context.md`.
 
-Document: Entry Points, Core Implementation, Data Flow, Key Patterns, Configuration, Error Handling.
-```
+**Swarm discovery** creates an agent team named `research-deep-{topic-kebab}-{YYYYMMDD-HHMMSS}` and registers three shared tasks via `TaskCreate`:
+- Locate relevant files
+- Analyze implementation details
+- Find patterns and conventions
 
-**Teammate 3: Pattern Finder**
-```
-You are a codebase pattern finder on a deep research team investigating: "{topic}"
+Spawn three `general-purpose` teammates via `Task` with the `team_name` parameter. Each uses `SendMessage` to share discoveries in real time. In parallel, spawn `web-search-researcher` as a plain subagent (no `team_name`) — web findings supplement but never block.
 
-Your role: Find similar implementations, usage examples, and existing patterns that illuminate the topic.
+Wait for all three teammates to send `RESEARCH COMPLETE`. Cap each at 10 minutes wall clock. Web research gets up to 2 extra minutes after teammates finish, then proceeds without it.
 
-Instructions:
-1. Check TaskList for your assigned task
-2. Show working code examples, not just snippets
-3. Include file:line references for all code examples
-4. Show multiple variations when they exist
-5. Categorize: API patterns, Data patterns, Component patterns, Testing patterns
-6. Share important discoveries with teammates via SendMessage — especially if you find patterns the Analyzer should trace or files the Locator missed
-7. When done, update your task via TaskUpdate (mark completed)
-8. Send a message to the team lead: "RESEARCH COMPLETE"
+### Teammate briefs (swarm mode)
 
-Include test patterns alongside implementation patterns where they exist.
-```
+<example name="Locator">
+You are the codebase locator on a deep-research team investigating "{topic}". Check `TaskList` for your assigned task. Find all files, directories, and components relevant to the topic using Glob and Grep with multiple naming patterns and extensions. Categorize as Implementation / Test / Configuration / Types / Documentation, with directory counts. Share discoveries with the Analyzer and Pattern Finder via `SendMessage` — especially files they should examine. Don't read file contents in depth — locate and categorize. All findings include full file paths. Mark your task completed via `TaskUpdate` and send `RESEARCH COMPLETE` to the lead.
+</example>
 
-##### Step 4b: Web Research
+<example name="Analyzer">
+You are the codebase analyzer on a deep-research team investigating "{topic}". Check `TaskList` for your assigned task. Read files thoroughly; trace actual code paths rather than assuming. Every claim cites `file:line`. Focus on how it works: entry points, core logic, data flow, error handling. Share patterns with the Pattern Finder and missing files with the Locator via `SendMessage`. Document: Entry Points, Core Implementation, Data Flow, Key Patterns, Configuration, Error Handling. Mark your task completed and send `RESEARCH COMPLETE`.
+</example>
 
-Spawn `web-search-researcher` as a subagent (NOT a teammate) in parallel with the team. Use the Task tool WITHOUT the `team_name` parameter. Include its findings when writing `context.md` in Step 6 as a concise summary (max 500 words) to avoid exceeding Phase 2 LLM context budgets. If web search fails or returns no results, proceed with codebase-only findings.
+<example name="Pattern Finder">
+You are the codebase pattern finder on a deep-research team investigating "{topic}". Check `TaskList` for your assigned task. Show working code examples (not just snippets), with `file:line` references and multiple variations where they exist. Categorize as API / Data / Component / Testing patterns. Include test patterns alongside implementation. Share leads with the Analyzer and Locator via `SendMessage`. Mark your task completed and send `RESEARCH COMPLETE`.
+</example>
 
-##### Step 5: Wait for Completion
+### context.md
 
-Wait for all 3 teammates to send "RESEARCH COMPLETE" messages. Timeout: 10 minutes from when each teammate was spawned (so max 10 minutes wall clock, not 30 cumulative). Also wait for the web-search-researcher subagent spawned in Step 4b.
+Merge all teammate (or solo-agent) findings plus the web summary (capped ~500 words) into `context.md`, targeting under 50K characters for CLI compatibility. Preserve every `file:line` reference. In swarm mode, tag findings with `[Locator]`, `[Analyzer]`, `[Pattern Finder]`.
 
-- If all complete: proceed with all findings
-- If any teammate times out: proceed with available findings, note which teammates timed out
-- If web researcher is still running when teammates finish: wait up to 2 more minutes, then proceed without it. Web research is supplementary — it always runs but never blocks command completion.
+### Cleanup invariant (swarm mode)
 
-##### Step 6: Write context.md
+**The team must be deleted before Phase 2 starts, regardless of whether Phase 1 succeeded.** Skipping leaks team slots and orphans the shared task list.
 
-**CRITICAL: This step must complete BEFORE starting Phase 2.** Phase 2 LLMs read from `context.md`.
-
-Collect all teammate findings and write them to `context.md` in the working directory:
-- Merge findings from all teammates into a single discovery document
-- Target <50K characters for CLI compatibility (same as Standard Discovery)
-- Include team attribution: `[Locator]`, `[Analyzer]`, `[Pattern Finder]` alongside findings
-- All file:line references preserved
-
-##### Step 7: Cleanup Team
-
-**CRITICAL: Execute this step regardless of outcome. Whether Step 6 succeeded or failed — ALWAYS clean up before proceeding to Phase 2.**
-
-1. Send shutdown requests to all teammates via `SendMessage` with `type: "shutdown_request"`
+1. `SendMessage` with `type: "shutdown_request"` to each teammate
 2. Wait briefly for shutdown confirmations
-3. Call `TeamDelete` to remove the team and its task list
+3. `TeamDelete` to remove the team
 
-If cleanup itself fails, inform the user but continue to Phase 2: "Team cleanup incomplete. You may need to check for lingering team resources."
+If cleanup itself errors, tell the user `"Team cleanup incomplete. You may need to check for lingering team resources."` and continue — Phase 2 still runs.
 
-#### Standard Discovery (Claude only)
+## Phase 2 — Independent Analysis
 
-- Read any user-mentioned files first
-- Create `research/.deep-research-$(date +%Y%m%d-%H%M%S)/`
-- Spawn one discovery agent using codebase-locator, codebase-analyzer, and codebase-pattern-finder
-- Spawn `web-search-researcher` subagent in parallel with codebase discovery agents. If web search is still running when codebase discovery completes, wait up to 2 additional minutes before proceeding without it.
-- Target <50K characters for CLI compatibility
-- Merge web search findings into `context.md` as a concise summary (max 500 words) to avoid exceeding Phase 2 LLM context budgets. If web search fails or returns no results, proceed with codebase-only findings.
-- Save to `context.md`
+Three LLMs read `context.md` and produce independent analyses in parallel. This phase is identical in both modes.
 
----
-
-### Phase 2: Independent Analysis (3 LLMs in parallel)
-
-#### Model Resolution
-
-Before launching LLMs, load the model registry:
+Load the model registry first:
 - `Glob(pattern: "**/sdlc/**/config/model-registry.md", path: "~/.claude/plugins")` → Read result
-- Use `gemini-flagship` and `codex-flagship` from the registry in the commands below.
+- Use `gemini-flagship` and `codex-flagship` IDs from the registry.
 
-This phase is **unchanged** regardless of `--swarm` flag. It always reads from `context.md`.
+Each LLM's prompt includes:
+- **Breadth first, depth second** — identify all subtopics before deep-diving.
+- **Use web search extensively — don't rely solely on training data.**
+- **Iterate until genuinely done, then append `<!-- RESEARCH_COMPLETE -->` as a completion signal.**
+- **On each continuation, name the gap you're closing before adding content.**
 
-Each LLM gets `context.md` embedded in its prompt plus enhanced instructions for independent, thorough research.
+### Invocations (all three launched simultaneously)
 
-#### Analysis Prompt Guidelines
+- **Claude**: `Task` agent, `subagent_type: "general-purpose"`, `max_turns: 50`. Prompt ends with the `RESEARCH_COMPLETE` signal instruction.
+- **Gemini**: `timeout 600 gemini -m <gemini-flagship> --approval-mode yolo`, prompt piped to stdin via Bash (background).
+- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m <codex-flagship> --reasoning-effort xhigh --full-auto 2>/dev/null` via Bash (background).
 
-Each LLM's analysis prompt MUST include these instructions:
-- **Breadth first, depth second**: Identify ALL subtopics and angles before deep-diving into any single area
-- **"Use web search EXTENSIVELY — do NOT rely solely on your training data"**
-- **Iterative research**: Continue researching until genuinely done, then append `<!-- RESEARCH_COMPLETE -->` as a completion signal
-- **Gap identification**: On each continuation, explicitly identify what's MISSING from the analysis so far before adding new content
+Save outputs to `{llm}-analysis.md`. 10-minute timeout per external LLM. Continue with whatever succeeded — minimum floor is Claude.
 
-#### Concrete Invocations
+### Fatal-error watch
 
-Launch all three simultaneously:
-
-- **Claude**: Task agent with `max_turns: 50` and `subagent_type: "general-purpose"`. Prompt includes: "When your research is genuinely complete — all subtopics covered, sources verified, gaps addressed — append `<!-- RESEARCH_COMPLETE -->` at the end of your output."
-- **Gemini**: `timeout 600 gemini -m <gemini-flagship from registry> --approval-mode yolo` with the research prompt piped to stdin via Bash (background)
-- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m <codex-flagship from registry> --reasoning-effort xhigh --full-auto 2>/dev/null` via Bash (background)
-
-Save outputs to `{llm}-analysis.md`. 10-minute timeout per external LLM. Graceful degradation: continue with successful analyses (minimum: Claude).
-
-#### Fatal Error Detection
-
-After launching Gemini and Codex in background, start a Monitor for each to detect fatal errors early. For each external LLM, after launching via `Bash` with `run_in_background`, start a Monitor:
+For each external LLM, start a `Monitor` after launching the background process. This catches quota/auth errors early so you can stop waiting:
 
 ```
 Monitor (one per LLM):
@@ -212,71 +109,54 @@ Monitor (one per LLM):
         done
 ```
 
-On `FATAL|{llm_name}|{pattern}` notification: kill the corresponding background process, log the detected pattern, mark that LLM as failed, and continue with remaining LLMs.
+On a `FATAL|{llm_name}|{pattern}` notification, kill the background process, log the pattern, mark that LLM failed, and proceed with the survivors.
 
----
+## Phase 3 — Cross-Pollination Refinement
 
-### Phase 3: Cross-Pollination Refinement (NEW)
+Each LLM that produced a Phase 2 analysis reads all surviving analyses (its own + peers') and writes a strictly-better refined version. Only Phase-2 survivors participate.
 
-After all Phase 2 analyses are saved, launch a refinement round where each surviving LLM reads ALL analyses (its own + peers') and produces a refined version.
+Refinement prompt instructions:
 
-#### Refinement Prompt
+1. Read your own analysis — know its strengths and weaknesses.
+2. Read peers **with healthy skepticism** — look for missed angles, deeper coverage, weakly sourced claims, contradictions, unique sources.
+3. Conduct *new* research on avenues peers inspired, contradictions needing resolution, shared gaps.
+4. Produce a refined version that is strictly better than the original.
 
-Each LLM gets a prompt with ALL `{llm}-analysis.md` files embedded, plus these instructions:
+Rules embedded in the prompt:
+- Don't copy content from peers.
+- Don't accept peer claims at face value — verify via web search.
+- Use peer findings as a springboard for new investigation, not a summary target.
+- Cover territory neither analysis adequately addressed.
+- Keep your unique perspective — don't homogenize.
 
-1. Read your own analysis — understand its strengths and weaknesses
-2. Read peer analyses **with healthy skepticism** — look for missed angles, deeper coverage, weakly sourced claims, contradictions, unique sources
-3. **Conduct NEW research** on avenues inspired by peer work, contradictions needing resolution, shared gaps
-4. Write a refined version that is **strictly better** than the original
+Invocations mirror Phase 2 (same registry IDs). Save to `{llm}-refined.md`. Same timeouts and fatal-error watch. If refinement fails for any LLM, fall back to its `{llm}-analysis.md` for synthesis.
 
-Critical rules included in the prompt:
-- "Do NOT simply copy content from peer analyses"
-- "Do NOT accept peer claims at face value — verify independently via web search"
-- "Use peer findings as a SPRINGBOARD for NEW investigation"
-- "Explore territory that NEITHER analysis adequately covered"
-- "Maintain your unique perspective — don't homogenize"
+## Phase 4 — Synthesis
 
-#### Concrete Invocations
+Spawn the `research-synthesizer` agent with all refined reports (or originals where refinement failed). The synthesizer organizes findings by **theme**, not by source LLM, and inline-attributes using:
+- `[Consensus: 3/3]`, `[Consensus: 2/3]` for agreement
+- `[Claude]`, `[Gemini]`, `[Codex]` for single-source findings
 
-Same CLI patterns as Phase 2 (use the same resolved model IDs from the registry):
-- **Claude**: Task agent with `max_turns: 50`, `subagent_type: "general-purpose"`
-- **Gemini**: `timeout 600 gemini -m <gemini-flagship from registry> --approval-mode yolo` (background)
-- **Codex**: `echo "<prompt>" | codex exec --skip-git-repo-check -m <codex-flagship from registry> --reasoning-effort xhigh --full-auto 2>/dev/null` (background)
+In swarm mode, discovery-phase findings also carry `[Locator]` / `[Analyzer]` / `[Pattern Finder]` tags; the synthesizer preserves them in the Discovery section.
 
-Save to `{llm}-refined.md`. Same timeout and fatal error detection rules as Phase 2. If refinement fails for any LLM, fall back to its original `{llm}-analysis.md` for synthesis.
+Save to `research/research-{topic-kebab}-deep.md` with YAML frontmatter. Add GitHub permalinks where applicable. Close with a short report: which LLMs contributed, which phases succeeded, and which findings are consensus vs unique.
 
-Only LLMs that produced a successful Phase 2 analysis participate in Phase 3.
+### Storage layout
 
----
-
-### Phase 4: Synthesis
-
-- Spawn research-synthesizer agent to merge refined reports (or originals if refinement failed)
-- Synthesis organizes findings by **theme**, not by source LLM
-- Use LLM attribution inline within themed sections: `[Consensus: 3/3]`, `[Consensus: 2/3]`, `[Claude]`, `[Gemini]`, `[Codex]`
-- **If `SWARM_MODE` was active**: Also include team attribution alongside LLM attribution. In the synthesis document, note that Discovery used an agent team and which teammates contributed. Team attribution (`[Locator]`, `[Analyzer]`, `[Pattern Finder]`) appears in the Discovery findings sections; LLM attribution appears in the Analysis sections.
-- Save to `research/research-{topic-kebab-case}-deep.md` with YAML frontmatter
-- Add GitHub permalinks if applicable
-- Report which LLMs contributed, which phases succeeded, and highlight consensus vs unique discoveries
-
-**Storage structure:**
 ```
 research/.deep-research-[timestamp]/
-├── context.md              # Discovery output (from subagents OR team)
-├── claude-analysis.md      # Phase 2: Claude independent analysis
-├── gemini-analysis.md      # Phase 2: Gemini independent analysis
-├── codex-analysis.md       # Phase 2: Codex independent analysis
-├── claude-refined.md       # Phase 3: Claude cross-pollinated refinement
-├── gemini-refined.md       # Phase 3: Gemini cross-pollinated refinement
-└── codex-refined.md        # Phase 3: Codex cross-pollinated refinement
+├── context.md              # Discovery output (from subagent or team)
+├── claude-analysis.md      # Phase 2
+├── gemini-analysis.md      # Phase 2
+├── codex-analysis.md       # Phase 2
+├── claude-refined.md       # Phase 3
+├── gemini-refined.md       # Phase 3
+└── codex-refined.md        # Phase 3
 ```
 
-## References
+## Scope
 
-Load documentarian constraints via:
-- `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` → Read result
-
-Fallback if file not found: Document codebase as it exists. Do not suggest improvements, propose enhancements, or critique implementation.
+This command documents the codebase as it is. Don't propose improvements or critique implementation unless the user explicitly asks — that's what `/review` is for. Load the canonical constraints via `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` and read the result; if the file isn't found, apply the rule inline: document what is, not what should be.
 
 ## Topic
 
