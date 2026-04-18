@@ -5,6 +5,22 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.29.0] - 2026-04-18
+
+### Added
+- `OPUS_4_7_PROMPTING.md` — canonical workspace reference for writing prompts that get the best out of Claude Opus 4.7. Covers 12 principles (onboarding structure, explain-why, drop compensation phrases, find/filter split, etc.), the breaking-change checklist (removed `temperature`/`top_p`/`top_k`/`budget_tokens`/prefill), before/after examples, and primary source URLs. Referenced by system-prompt-clinic.
+
+### Changed
+- `commands/research-deep.md` rewritten for Opus 4.7 (283 → 163 lines). Collapsed Step 1-7 scaffolding into goal + cleanup invariant; flattened swarm/standard branching; stripped `CRITICAL`/`MUST`/`DO NOT` in favor of reasoned prose.
+- `commands/implement.md` rewritten for Opus 4.7 (292 → 198 lines). Replaced subagent workflow step-list with role + success criteria; implementers trusted with TDD reference docs directly rather than pre-digested rule bullets.
+- `commands/research.md` rewritten for Opus 4.7 (197 → 140 lines). Cleaned routing logic; replaced `YOUR ONLY JOB` caps-wall with reasoned scope paragraph.
+- `commands/plan.md` rewritten for Opus 4.7 (151 → 106 lines). Compressed Constraints block; folded each rule's rationale into the relevant checkpoint.
+- `skills/judgment-eval/SKILL.md` rewritten for Opus 4.7 (202 → 167 lines). Restructured as role + effort + scope; added find/filter discipline so 4.7 doesn't suppress surprising-but-defensible observations during evaluation.
+- `skills/system-prompt-clinic/SKILL.md` rewritten for Opus 4.7 (188 → 167 lines). Aligned with `OPUS_4_7_PROMPTING.md` as canonical reference; added dedicated "Opus 4.7 alignment" section covering the breaking-change checklist.
+- `agents/research-synthesizer.md` — "NEVER organize top-level sections by source LLM" rephrased with rationale (thematic > per-source for consensus surfacing).
+- `references/blindspot-review-protocol.md` — softened `IMPORTANT`/`CRITICAL` gates with reason-attached prose.
+- `skills/gemini/SKILL.md` + `gemini-cli-reference.md` — `NEVER`/`ALWAYS` on approval-mode replaced with reasoned hang-on-stdin explanation.
+
 ## [1.28.0] - 2026-04-13
 
 ### Added

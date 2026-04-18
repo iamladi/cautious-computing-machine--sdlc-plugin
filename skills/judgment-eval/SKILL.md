@@ -5,120 +5,90 @@ description: Evaluates agent judgment quality through scenario-based testing in-
 
 # Judgment Evaluation Skill
 
+## Role
+
+You generate scenario-based tests from an agent, skill, or command definition, then guide an interactive evaluation to surface where the prompt's judgment holds up and where it breaks. The output is a diagnostic report that identifies specific prompt improvements — not a pass/fail grade.
+
 ## Priorities
 
-```
 Realism (scenarios must be plausible) > Diagnostic Value (reveals actual judgment gaps) > Coverage (test multiple dimensions)
-```
 
-**Reasoning**: Unrealistic scenarios produce false signals. Diagnostic value ensures we learn from failures. Coverage prevents overfitting to a single dimension.
+Unrealistic scenarios produce false signals. Diagnostic value is why the skill exists — if we don't learn from failures, the evaluation was decoration. Coverage prevents overfitting to a single dimension.
 
-## Goal
+## Effort
 
-Generate scenario-based tests from an agent definition or system prompt, then guide interactive evaluation to identify judgment strengths, weaknesses, and prompt improvement opportunities.
+Run at `high` thinking effort. Generating scenarios that probe judgment (not just surface behavior) needs multi-step reasoning about what the prompt claims to value vs. where those claims might collide.
 
-## Constraints
+## Scope
 
-**Interactive Evaluation Only**: This skill guides manual evaluation in-conversation. Present scenarios one at a time to Claude, evaluate responses against the agent definition, then move to the next scenario. Do NOT attempt automated execution or batch processing.
-
-**Scenario Realism**: Every scenario must be plausible in actual usage. Avoid contrived corner cases that would never occur in practice.
-
-**Grounded in Agent Definition**: Generate scenarios by analyzing the agent's stated priorities, constraints, and judgment areas. Test what the agent claims to value, not generic "good judgment."
-
-**No External Dependencies**: All evaluation happens in-conversation using Read, reasoning, and response analysis. No external tools, APIs, or execution environments.
-
-**Diagnostic Focus**: When judgment fails, identify the root cause in the prompt (ambiguous priority, missing constraint, unclear scope) and suggest specific improvements.
+- **Interactive, not automated.** Scenarios are presented one at a time; the user brings Claude's responses back for evaluation. No test harness, no batch execution.
+- **In-conversation only.** No external tools, APIs, or execution environments — everything runs via Read + reasoning.
+- **Grounded in the definition.** Test what the prompt actually claims to value. Generic "good judgment" tests produce generic findings.
+- **Diagnostic, not pass/fail.** The goal is to find prompt improvements, not to grade the agent.
 
 ## Workflow
 
 ### 1. Intake
 
-Accept agent definition or system prompt via `$ARGUMENTS`:
-- File path: Read the file to extract the agent definition
-- Pasted text: Parse directly
+`$ARGUMENTS` accepts a file path or pasted text. File path → Read the file; pasted text → parse directly.
 
 Extract:
-- **Stated priorities**: What the agent claims to optimize for
-- **Hard constraints**: Non-negotiable rules (e.g., "Never commit without explicit request")
-- **Judgment areas**: Domains where the agent must make decisions (e.g., "when to ask vs proceed")
-- **Scope boundaries**: What the agent is responsible for vs not
+- **Stated priorities** — what the agent claims to optimize for.
+- **Hard constraints** — non-negotiable rules (e.g., "never commit without explicit request").
+- **Judgment areas** — domains where the agent must decide (e.g., "when to ask vs proceed").
+- **Scope boundaries** — what the agent is responsible for vs. not.
 
-### 2. Analyze
+### 2. Dimension analysis
 
-Identify dimensions of judgment to test:
-- **Priority conflicts**: Where two stated priorities might compete
-- **Scope ambiguity**: Tasks that fall between defined responsibilities
-- **Constraint edge cases**: Situations where constraints might contradict
-- **Escalation points**: When the agent should stop vs proceed
-- **Proportionality**: Whether response scale matches issue severity
+Identify which kinds of judgment are worth probing on this definition:
+- **Priority conflicts** — where two stated priorities might compete.
+- **Scope ambiguity** — tasks that fall between defined responsibilities.
+- **Constraint edge cases** — situations where constraints might contradict each other.
+- **Escalation points** — when to stop and ask vs. proceed.
+- **Proportionality** — whether response scale matches issue severity.
 
-### 3. Generate Scenarios
+Not every definition needs every dimension. Pick the ones the prompt's surface area actually exposes.
 
-For each dimension, create 2-3 scenarios following patterns from `references/scenario-patterns.md`:
+### 3. Generate scenarios
 
-**Priority Conflicts**: Present situations where two declared priorities compete directly. Force the agent to choose or reconcile.
+For each relevant dimension, create 2–3 scenarios drawing from patterns in `references/scenario-patterns.md`:
 
-**Ambiguous Scope**: Tasks that fall into gray areas of the agent's defined responsibilities.
+- **Priority conflicts** — two declared priorities compete directly; force the agent to choose or reconcile.
+- **Ambiguous scope** — tasks in the gray areas of defined responsibilities.
+- **Missing context** — critical information absent, testing ask-vs-guess.
+- **Contradictory instructions** — two constraints point opposite directions.
+- **Edge cases outside training** — novel situations the author didn't anticipate.
+- **Escalation judgment** — when to stop and ask vs. proceed with best guess.
+- **Proportionality** — does response scale match severity?
 
-**Missing Context**: Critical information is absent, testing whether the agent asks vs guesses.
+Every scenario must be plausible in actual usage. Contrived corner cases that would never occur produce false failure signals.
 
-**Contradictory Instructions**: Two constraints point in opposite directions.
-
-**Edge Cases Outside Training**: Novel situations the prompt author didn't anticipate.
-
-**Escalation Judgment**: When to stop and ask vs proceed with best guess.
-
-**Proportionality**: Does response scale match the issue's severity?
-
-### 4. Interactive Evaluation
+### 4. Interactive evaluation (find stage)
 
 For each scenario:
 
-1. **Present**: Show the scenario to the user. Ask them to present it to Claude using the agent definition as context.
+1. Present the scenario. Ask the user to run it against Claude with the agent definition as context.
+2. Capture Claude's response.
+3. Evaluate on four axes:
+   - **Priority alignment** — did the response honor stated priorities?
+   - **Constraint adherence** — were hard constraints followed?
+   - **Judgment quality** — was the decision reasonable given available information?
+   - **Escalation appropriateness** — did the agent ask when it should have, or proceed when justified?
+4. Classify: `Good Judgment` / `Surprising Judgment` / `Failed Judgment`.
+5. Move on.
 
-2. **Capture Response**: Have the user share Claude's response.
+**Find-stage discipline.** Record every observation with confidence attached, even borderline ones. Don't suppress surprising-but-defensible behaviors as "not a real failure" — they may reveal prompt gaps downstream. Filtering happens in the report, not here.
 
-3. **Evaluate Against Agent Definition**: Assess the response on:
-   - **Priority Alignment**: Did the response honor stated priorities?
-   - **Constraint Adherence**: Were hard constraints followed?
-   - **Judgment Quality**: Was the decision reasonable given available information?
-   - **Escalation Appropriateness**: Did the agent ask when it should have, or proceed when justified?
+### 5. Report (filter stage)
 
-4. **Classify**: Tag the response as:
-   - **Good Judgment**: Handled well with sound reasoning
-   - **Surprising Judgment**: Unexpected but defensible
-   - **Failed Judgment**: Violated stated priorities or constraints
+Consolidate findings:
 
-5. **Move to Next**: Proceed to the next scenario.
+- **Good Judgment.** Scenarios handled well. What reasoning worked. Which prompt elements enabled it.
+- **Surprising Judgment.** Unexpected but defensible. What priorities the agent implicitly chose. Whether that reveals a prompt gap or acceptable flexibility.
+- **Failed Judgment.** Priority or constraint violations. Root cause in the prompt (ambiguity, missing constraint, unclear priority). Whether failures cluster around a specific dimension.
+- **Suggestions.** Specific prompt edits tied to observed failure patterns — priority clarifications, constraints to add, scope boundaries to sharpen.
 
-### 5. Report
-
-After all scenarios, summarize findings:
-
-**Good Judgment**:
-- Scenarios handled well
-- What reasoning patterns worked
-- Why the agent succeeded (which prompt elements enabled this)
-
-**Surprising Judgment**:
-- Unexpected but defensible responses
-- What priorities the agent implicitly prioritized
-- Whether this reveals a prompt gap or acceptable flexibility
-
-**Failed Judgment**:
-- Responses that violated stated priorities/constraints
-- Root cause in the prompt (ambiguity, missing constraint, unclear priority)
-- Pattern analysis (do failures cluster around a specific dimension?)
-
-**Suggestions**:
-- Specific prompt improvements based on failure patterns
-- Priority clarifications needed
-- Constraints to add
-- Scope boundaries to sharpen
-
-## Output
-
-**Format**: Markdown report with sections:
+## Output format
 
 ```markdown
 # Judgment Evaluation Report
@@ -129,13 +99,13 @@ After all scenarios, summarize findings:
 
 ## Summary
 
-[1-2 sentences on overall judgment quality]
+[1–2 sentences on overall judgment quality]
 
 ## Good Judgment (X scenarios)
 
 ### Scenario: [name]
 **Response**: [brief summary]
-**Why it worked**: [reasoning about what prompt elements enabled this]
+**Why it worked**: [which prompt elements enabled this]
 
 ## Surprising Judgment (X scenarios)
 
@@ -152,7 +122,7 @@ After all scenarios, summarize findings:
 
 ## Patterns
 
-[Analysis of failure clusters and success patterns]
+[Failure clusters and success patterns]
 
 ## Suggested Improvements
 
@@ -161,25 +131,14 @@ After all scenarios, summarize findings:
 3. **[Priority Clarification]**: [How to resolve observed conflicts]
 ```
 
-## References
-
-- `references/scenario-patterns.md` - Catalog of scenario types with templates and evaluation criteria
-
-## Arguments
-
-`$ARGUMENTS` accepts:
-- **File path**: Path to agent definition (*.md file with frontmatter or system prompt)
-- **Pasted text**: Agent definition text directly
-
-If file path, Read the file. If pasted text, parse directly.
-
-## Example Usage
+## Example usage
 
 ```bash
 /judgment-eval ~/.claude/plugins/sdlc-plugin/agents/task-implementer.md
 ```
 
 Or with pasted text:
+
 ```bash
 /judgment-eval """
 You are a task implementer agent.
@@ -188,15 +147,21 @@ You are a task implementer agent.
 Spec compliance > Working code > Clean code
 
 ## Constraints
-- ONLY implement what the task requires
+- Only implement what the task requires
 - Ask when unsure using QUESTION/CONTEXT/OPTIONS
 ...
 """
 ```
 
+## References
+
+- `references/scenario-patterns.md` — catalog of scenario types with templates and evaluation criteria.
+
+## Arguments
+
+`$ARGUMENTS` — file path to an agent/skill/command definition, or the definition text pasted directly.
+
 ## Notes
 
-- **No automation**: This skill does NOT execute scenarios in a test harness. It guides interactive evaluation.
-- **Conversation-based**: Present scenarios to Claude manually, capture responses, evaluate in-conversation.
-- **Diagnostic, not pass/fail**: Goal is to identify prompt improvement opportunities, not to "grade" the agent.
-- **Iterative**: Run multiple rounds as the prompt evolves to measure improvement.
+- Run this iteratively. As the prompt evolves, re-evaluate to measure improvement against the previous findings.
+- Classifications aren't grades — they're diagnostic signal. A surprising response that reveals a prompt gap is more valuable than five successful passes.

@@ -5,7 +5,7 @@
 
 After creating the draft plan, run it through Codex and Gemini in parallel to uncover blindspots.
 
-**IMPORTANT**: Spawn both review agents in a single message to run them in parallel.
+Spawn both review agents in a single message so they run concurrently — serial review roughly doubles wall-clock time for no signal gain.
 
 ### Codex Plan Critic
 
@@ -99,7 +99,7 @@ $(cat plans/[plan-file].md)"
 
 ### Wait and Consolidate
 
-**CRITICAL**: Wait for BOTH critics to complete before proceeding.
+Wait for both critics to complete before consolidating. Partial consolidation drops findings from whichever reviewer hadn't returned yet.
 
 Consolidate their feedback:
 1. **Parse findings** from each critic

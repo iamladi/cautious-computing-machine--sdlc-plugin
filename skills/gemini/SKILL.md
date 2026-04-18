@@ -20,12 +20,11 @@ Load current models before executing — this overrides any model names in the t
 
 Execute Gemini CLI for comprehensive code review, plan analysis, or large-context processing tasks. Ask user for model selection via AskUserQuestion. Choose approval mode based on execution context (yolo for background, default for interactive terminal only). Load CLI reference for detailed command patterns, troubleshooting, and use cases.
 
-## Constraints
+## Operating notes
 
-- NEVER use `--approval-mode default` in background or non-interactive shells (Claude Code tool calls). It hangs indefinitely waiting for user input.
-- ALWAYS use `--approval-mode yolo` for automated/background tasks or wrap with timeout: `timeout 300 gemini ...`
-- Ask user for model selection via AskUserQuestion before running commands.
-- After Gemini completes, inform user they can start a new session for follow-up analysis.
+- In background or non-interactive shells (Claude Code tool calls), don't use `--approval-mode default` — it hangs indefinitely waiting for user input. Use `--approval-mode yolo` for automated/background tasks, or wrap the call with `timeout 300 gemini ...` as a safety net.
+- Ask the user for model selection via `AskUserQuestion` before running commands.
+- After Gemini completes, tell the user they can start a new session for follow-up analysis.
 
 ## Model Selection (fallback — prefer registry)
 

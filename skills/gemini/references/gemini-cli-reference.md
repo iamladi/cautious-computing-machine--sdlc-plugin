@@ -114,10 +114,9 @@ ps aux | grep gemini | grep -v grep
 ```
 
 ### Prevention
-- **ALWAYS use `--approval-mode yolo` for background/automated tasks**
-- Add timeout wrapper for safety: `timeout 300 gemini ...`
-- Never use `--approval-mode default` in non-interactive shells
-- Monitor first run with `ps` to ensure process completes
+- Use `--approval-mode yolo` for background/automated tasks — `default` hangs waiting for user input in non-interactive shells.
+- Wrap with `timeout 300 gemini ...` as a safety net in case the process hangs on something else.
+- Monitor the first run with `ps` to confirm it completes.
 
 ## Tips for Large Context Processing
 
