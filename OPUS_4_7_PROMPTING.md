@@ -40,7 +40,16 @@ Compare:
 
 4.7 will not generalize "apply this formatting" to every section unless you say so. If you want a rule applied to a list, say "for every item" or "across all sections." If you want the model to fan out, say "for each." Assume nothing carries implicitly.
 
-**Family-boundary framing.** When an agent has siblings that share a controller — documentarian trio (locator/analyzer/pattern-finder dispatched by `/research`), reviewer pair (spec-reviewer + code-quality-reviewer dispatched by `/implement`), skill-agent pair (`test` skill + `test-writer` agent sharing `test-patterns.md`), or cross-platform research (web-search-researcher + x-search skill) — state scope by *naming what each sibling owns*, not just what the current agent does. Rule-list form can express "don't do X" but can't express "don't do X because sibling Y owns it"; the sibling citation converts a directive into a decidable judgment and makes scope-creep failures self-diagnosable by the agent at runtime. See `agents/spec-reviewer.md` and `agents/implementer.md` for the pattern.
+**Family-boundary framing.** When an agent has siblings that share a controller, state scope by *naming what each sibling owns*, not just what the current agent does. Rule-list form can express "don't do X" but can't express "don't do X because sibling Y owns it"; the sibling citation converts a directive into a decidable judgment and makes scope-creep failures self-diagnosable by the agent at runtime. See `agents/spec-reviewer.md` and `agents/implementer.md` for the pattern.
+
+Six family topologies appear in this workspace, each with a characteristic boundary:
+
+- **Documentarian trio** (locator/analyzer/pattern-finder dispatched by `/research`) — peer siblings split by question-type (where / how / prior-art).
+- **Reviewer pair** (spec-reviewer + code-quality-reviewer dispatched by `/implement`) — peer siblings split by check-class (spec-match / code-sanity).
+- **Implement triad** (implementer + spec-reviewer + code-quality-reviewer) — worker + peer reviewers; worker cites reviewer check-classes to pre-empt misses one loop cycle earlier.
+- **Skill-agent pair** (`test` skill + `test-writer` agent sharing `test-patterns.md`) — same reference contract, different invocation paths.
+- **Cross-platform research** (web-search-researcher + `x-search` skill) — boundary runs between data-source domains.
+- **Merge gate** (`research-synthesizer` consuming N collectors) — fan-in shape; boundary runs between gather and merge concerns, and the merge-gate owns thematic consolidation while collectors own gather/refine.
 
 ### 4. Drop compensation phrases.
 
@@ -147,6 +156,18 @@ Glob(pattern: "**/sdlc/**/references/<filename>.md", path: "~/.claude/plugins") 
 The `**/sdlc/**/` prefix survives the version segment; `~/.claude/plugins` resolves on any machine. See `references/README.md` for the full convention and the files currently under contract.
 
 **How to apply:** when editing a prompt, ask of every rigid shape and every reference pointer "what consumes this?" If the answer names a downstream parser, skill, or reader — that's a contract; preserve it and label the consumer. If nothing depends on the shape, it's decorative scaffolding — trim it per §6. For reference pointers specifically, also verify the path is portable before committing — an absolute dev path is the same class of contract violation as paraphrasing the reference, just harder to spot in review.
+
+### 14. Name the fabrication failure the agent's output invites.
+
+§13 pins the *shape* of downstream handoffs; this principle pins the *content*. When an agent's output lands in a controller or synthesis layer that cannot re-verify every claim, plausible-but-wrong output is indistinguishable from correct output — so the agent must know which fabrication pattern its role structurally invites and be told to resist that specific pattern. Rule-list form cannot express this ("don't fabricate" is too broad to operationalize); reasoned prose names the failure mode, which lets the agent catch itself at the moment of temptation.
+
+Three fabrication classes recur across agent migrations, each tied to an agent's surface:
+
+- **Reverse-AHA** (test-writer). When writing tests against real source, the temptation is to invent edge-cases the source can't actually produce, padding coverage with fictional inputs. The downstream reader can't distinguish a real edge-case from a fabricated one without re-reading the source themselves. Frame: "if the source can't produce it, the test is fiction."
+- **Citation discipline** (web-search-researcher). When searching, empty or thin results tempt the agent to backfill from training memory and present it as researched. The synthesis layer then attributes a fabricated claim to a real search surface. Frame: "a finding without a citation is indistinguishable from fabrication once it lands in synthesis."
+- **False consensus** (research-synthesizer). When merging N collector reports, genuine disagreement tempts the merger to paraphrase both sides into a consensus that neither actually held. The downstream reader loses dissent signal and treats the false consensus as settled. Frame: "preserve the disagreement verbatim; naming who disagreed is the finding."
+
+**How to apply:** for every agent whose output is consumed without independent verification, ask "what would plausibly-wrong output look like here?" Name that pattern inline with the framing the agent needs to self-diagnose — not a bare prohibition. New fabrication classes should be added to this taxonomy as they surface, since the set is open-ended across agent surfaces (a planning agent invites phantom-requirement fabrication, a refactor agent invites ghost-callsite fabrication, etc.).
 
 ## Breaking changes to scrub from older prompts
 
