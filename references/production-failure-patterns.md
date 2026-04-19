@@ -8,9 +8,9 @@ Models catch code-level bugs reliably but miss production-level failures 87-100%
 
 ### How to Use
 
-1. Scan the diff for **trigger patterns** (column 3)
-2. For each match, include the **probe question** (column 2) in the reviewer prompt
-3. The reviewer must answer the probe with specific code citations or explicitly state the code doesn't handle it
+1. Scan the diff for **trigger patterns** (column 3) — the trigger column is the cheap filter; it narrows 17 patterns down to the handful actually present in this change before the reviewer pays attention cost on each probe.
+2. For each match, include the **probe question** (column 2) verbatim in the reviewer prompt — phrasing matters: the research's near-100% catch rates come from asking the production-scale question directly, not from paraphrased variants that re-introduce the undirected-review blind spot.
+3. The reviewer must answer the probe with specific code citations or explicitly state the code doesn't handle it — "I checked" without evidence is indistinguishable from not-checked at synthesis time; forcing citation-or-denial converts confidence into audit trail downstream reviewers can re-walk.
 
 ### Patterns
 
@@ -54,7 +54,7 @@ Fixable in the code itself, usually 1-5 lines, but models miss them because the 
 
 When scanning a diff, apply these rules:
 
-1. **Match triggers loosely** — a diff touching `setTimeout(fn, delay * 2)` should trigger the thundering herd probe even if "retry" isn't mentioned
-2. **Always include Tier 1 probes** for any service-level code (not scripts/CLIs) — infrastructure bugs are the most missed and most damaging
-3. **Combine probes when patterns overlap** — a retry function touching a database connection should get both thundering herd AND connection pool probes
-4. **If no triggers match**, still probe for: silent error swallowing, partial write corruption, and resource leaks — these are universal
+1. **Match triggers loosely** — a diff touching `setTimeout(fn, delay * 2)` should trigger the thundering herd probe even if "retry" isn't mentioned. The trigger column enumerates common shapes, not an exhaustive vocabulary; strict matching silently drops renamed variables, custom helpers, and language-specific idioms that carry the same failure shape, and the failure modes don't care about naming.
+2. **Always include Tier 1 probes** for any service-level code (not scripts/CLIs) — infrastructure bugs are the most missed (0-8% undirected catch rate) and most damaging. Service code is inherently multi-instance at runtime even when the diff looks single-process, so cron/rolling-deploy/partition reasoning applies by default unless the code is clearly a one-shot script.
+3. **Combine probes when patterns overlap** — a retry function touching a database connection should get both thundering herd AND connection pool probes. Interaction bugs (retry-storm-exhausting-pool) only surface when both probes fire together; single-probe answers confirm each piece in isolation and miss the compounding shape.
+4. **If no triggers match**, still probe for: silent error swallowing, partial write corruption, and resource leaks — these are universal. Absence of a trigger keyword is not evidence of absence; these three patterns hide in normal-looking code (catch blocks, multi-step writes, file handles) that rarely earns a trigger match but fails in production at the same rate.
