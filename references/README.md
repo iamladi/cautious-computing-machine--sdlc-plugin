@@ -24,17 +24,17 @@ This returns the absolute path regardless of installed version. The model then u
 
 | File | Lines | Used By |
 |------|------:|---------|
-| `prd-template.md` | 430 | `commands/plan.md` |
-| `blindspot-review-protocol.md` | 80 | `commands/plan.md` |
-| `documentarian-constraints.md` | 15 | 3 documentarian agents + `commands/research.md`, `commands/plan.md` |
-| `production-failure-patterns.md` | 90 | `commands/review.md` |
+| `prd-template.md` | 431 | `commands/plan.md` |
+| `blindspot-review-protocol.md` | 144 | `commands/plan.md` |
+| `documentarian-constraints.md` | 20 | 3 documentarian agents + `commands/research.md`, `commands/plan.md` |
+| `production-failure-patterns.md` | 60 | `commands/review.md` |
 
 ## Skill-level references (`skills/<name>/references/`)
 
 | File | Lines | Used By |
 |------|------:|---------|
-| `skills/codex/references/codex-cli-reference.md` | 56 | `skills/codex/SKILL.md` |
-| `skills/gemini/references/gemini-cli-reference.md` | 131 | `skills/gemini/SKILL.md` |
+| `skills/codex/references/codex-cli-reference.md` | 61 | `skills/codex/SKILL.md` |
+| `skills/gemini/references/gemini-cli-reference.md` | 137 | `skills/gemini/SKILL.md` |
 | `skills/test/references/test-patterns.md` | 441 | `skills/test/SKILL.md`, `agents/test-writer.md` |
 | `skills/tdd/references/mocking.md` | 107 | `skills/tdd/SKILL.md`, `commands/implement.md`, `agents/test-writer.md` |
 | `skills/tdd/references/test-quality.md` | 171 | `skills/tdd/SKILL.md`, `commands/implement.md` |
@@ -61,3 +61,7 @@ Two `domain-model` contracts live at the skill root (not in a `references/` subd
 2. Decide: `references/` subdir for content the skill *loads via Glob+Read*, skill-root for content that is an *authored-output template*.
 3. Add the table row here with accurate line count (`wc -l`) and every consumer — the table is the index OPUS §13 points new skill authors to when they ask "what reference contracts exist in this plugin?"
 4. In the consuming skill/agent/command, use the portable Glob pointer (§13) so the reference resolves from any installed version.
+
+## Maintaining the index
+
+Line counts drift whenever a reference file is edited — style migrations (adding why-inline) and content additions both shift the numbers, but the index doesn't self-update. When touching a referenced file, re-run `wc -l` and update this table in the same change. A ≥10% drift between table and file means the index lies to the next reader about how expensive the reference is to load.
