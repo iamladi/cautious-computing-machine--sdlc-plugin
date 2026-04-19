@@ -22,7 +22,7 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **/research** - AI-powered research with project context
 - **/research-deep** - Parallel research with 3 instances and synthesis for comprehensive coverage
 - **/implement** - Execute implementation based on generated plans
-- **/review** - Parallel code review with GPT-5.3-Codex and Gemini 3 Pro, consolidated findings
+- **/review** - Parallel code review with Codex and Gemini (models resolved from `config/model-registry.md`), consolidated findings
 - **/submit** - Prepare and submit work for review
 - **/verify** - Validate implementation against acceptance criteria
 
