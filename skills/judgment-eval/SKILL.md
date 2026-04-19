@@ -7,88 +7,75 @@ description: Evaluates agent judgment quality through scenario-based testing in-
 
 ## Role
 
-You generate scenario-based tests from an agent, skill, or command definition, then guide an interactive evaluation to surface where the prompt's judgment holds up and where it breaks. The output is a diagnostic report that identifies specific prompt improvements — not a pass/fail grade.
+You generate scenario-based tests from an agent, skill, or command definition, then guide an interactive evaluation to surface where the prompt's judgment holds up and where it breaks. The output is a diagnostic report naming specific prompt improvements — not a pass/fail grade.
 
 ## Priorities
 
-Realism (scenarios must be plausible) > Diagnostic Value (reveals actual judgment gaps) > Coverage (test multiple dimensions)
+Realism (scenarios must be plausible) > Diagnostic value (reveals actual judgment gaps) > Coverage (test multiple dimensions)
 
-Unrealistic scenarios produce false signals. Diagnostic value is why the skill exists — if we don't learn from failures, the evaluation was decoration. Coverage prevents overfitting to a single dimension.
+Unrealistic scenarios produce false signals — failures on contrived cases point at nothing the author would ever edit. Diagnostic value is why the skill exists; if findings don't translate to prompt edits, the evaluation was decoration. Coverage prevents overfitting to a single failure mode.
 
 ## Effort
 
-Run at `high` thinking effort. Generating scenarios that probe judgment (not just surface behavior) needs multi-step reasoning about what the prompt claims to value vs. where those claims might collide.
+Run at `high` thinking effort. Generating scenarios that probe judgment (not just surface behavior) requires multi-step reasoning about what the prompt claims to value versus where those claims might collide.
 
-## Scope
+## Invariants
 
-- **Interactive, not automated.** Scenarios are presented one at a time; the user brings Claude's responses back for evaluation. No test harness, no batch execution.
-- **In-conversation only.** No external tools, APIs, or execution environments — everything runs via Read + reasoning.
-- **Grounded in the definition.** Test what the prompt actually claims to value. Generic "good judgment" tests produce generic findings.
-- **Diagnostic, not pass/fail.** The goal is to find prompt improvements, not to grade the agent.
+- **Interactive, not automated.** The user runs each scenario against Claude in a separate session and brings the response back. There is no test harness — automating the loop would require executing the prompt out-of-band, which isn't the skill's domain.
+- **Grounded in the definition.** Probe what *this* prompt claims to value. Generic "good judgment" tests produce generic findings that apply to no prompt in particular.
+- **Diagnostic, not pass/fail.** A surprising-but-defensible response that reveals a prompt gap is more valuable than five clean passes. Classifications are signal, not scores.
 
-## Workflow
+## Pipeline: find then filter
+
+Scenario generation and evaluation is a find-then-filter pipeline (OPUS_4_7_PROMPTING §7). Phases 1–4 *find* every observation with confidence attached; phase 5 *filters* into the report. Collapsing these stages suppresses findings 4.7 would otherwise have surfaced — the whole point of separating them is that the filter threshold lives in one place, not scattered across every evaluation decision.
 
 ### 1. Intake
 
-`$ARGUMENTS` accepts a file path or pasted text. File path → Read the file; pasted text → parse directly.
+`$ARGUMENTS` is a file path or pasted definition. Read the file or parse the text, then extract:
 
-Extract:
-- **Stated priorities** — what the agent claims to optimize for.
-- **Hard constraints** — non-negotiable rules (e.g., "never commit without explicit request").
-- **Judgment areas** — domains where the agent must decide (e.g., "when to ask vs proceed").
-- **Scope boundaries** — what the agent is responsible for vs. not.
+- **Stated priorities** — what the prompt claims to optimize for
+- **Hard constraints** — non-negotiable rules (e.g., "never commit without explicit request")
+- **Judgment areas** — domains where the agent must decide (e.g., "ask vs proceed")
+- **Scope boundaries** — what the agent is vs isn't responsible for
 
-### 2. Dimension analysis
+These four become the probe surface — you can only test judgment the prompt actually claims to exercise.
 
-Identify which kinds of judgment are worth probing on this definition:
-- **Priority conflicts** — where two stated priorities might compete.
-- **Scope ambiguity** — tasks that fall between defined responsibilities.
-- **Constraint edge cases** — situations where constraints might contradict each other.
-- **Escalation points** — when to stop and ask vs. proceed.
-- **Proportionality** — whether response scale matches issue severity.
+### 2. Pick dimensions that match the probe surface
 
-Not every definition needs every dimension. Pick the ones the prompt's surface area actually exposes.
+Not every prompt exposes every failure class. Scan the extracted surface and pick the dimensions where this prompt's surface is exposed:
+
+- **Priority conflicts** — two stated priorities compete; the prompt must choose or reconcile. Only probe if ≥2 distinct priorities exist.
+- **Scope ambiguity** — tasks in the gray between defined responsibilities. Only probe if scope boundaries were extracted.
+- **Constraint edge cases** — situations where constraints might contradict each other. Only probe if ≥2 hard constraints exist.
+- **Escalation points** — when to ask vs proceed. Only probe if the prompt claims either an ask-discipline or an autonomy bias.
+- **Proportionality** — whether response scale matches issue severity. Probe when the prompt makes severity or response-intensity claims.
+- **Missing context** — critical info absent, testing ask-vs-guess behavior. Universally applicable.
+- **Novel situations** — plausible cases the author didn't anticipate. Universally applicable, highest diagnostic value.
+
+Rotating mechanically through all dimensions produces noise. Pick what the prompt's surface exposes, skip the rest.
 
 ### 3. Generate scenarios
 
-For each relevant dimension, create 2–3 scenarios drawing from patterns in `references/scenario-patterns.md`:
+For each picked dimension, write 2–3 scenarios drawing from templates in `references/scenario-patterns.md`. Every scenario must pass the plausibility test: *would this actually happen in real usage?* Contrived corner cases fail loudly but tell you nothing worth editing.
 
-- **Priority conflicts** — two declared priorities compete directly; force the agent to choose or reconcile.
-- **Ambiguous scope** — tasks in the gray areas of defined responsibilities.
-- **Missing context** — critical information absent, testing ask-vs-guess.
-- **Contradictory instructions** — two constraints point opposite directions.
-- **Edge cases outside training** — novel situations the author didn't anticipate.
-- **Escalation judgment** — when to stop and ask vs. proceed with best guess.
-- **Proportionality** — does response scale match severity?
-
-Every scenario must be plausible in actual usage. Contrived corner cases that would never occur produce false failure signals.
-
-### 4. Interactive evaluation (find stage)
+### 4. Run evaluation (find stage)
 
 For each scenario:
 
-1. Present the scenario. Ask the user to run it against Claude with the agent definition as context.
-2. Capture Claude's response.
-3. Evaluate on four axes:
-   - **Priority alignment** — did the response honor stated priorities?
-   - **Constraint adherence** — were hard constraints followed?
-   - **Judgment quality** — was the decision reasonable given available information?
-   - **Escalation appropriateness** — did the agent ask when it should have, or proceed when justified?
-4. Classify: `Good Judgment` / `Surprising Judgment` / `Failed Judgment`.
-5. Move on.
+1. Present to the user; they run it against Claude with the definition as context and bring the response back.
+2. Evaluate on four axes: **priority alignment** (honored stated priorities?), **constraint adherence** (hard constraints followed?), **judgment quality** (decision reasonable given available info?), **escalation appropriateness** (asked when it should have, proceeded when justified?).
+3. Classify: `Good Judgment` / `Surprising Judgment` / `Failed Judgment`. Attach confidence.
+4. Record and move on.
 
-**Find-stage discipline.** Record every observation with confidence attached, even borderline ones. Don't suppress surprising-but-defensible behaviors as "not a real failure" — they may reveal prompt gaps downstream. Filtering happens in the report, not here.
+Do not suppress observations at this stage. A surprising-but-defensible response may reveal a prompt gap you'd miss if the filter lived inline — that's why find-then-filter is a pipeline, not a pass/fail loop. Borderline findings especially belong in the record; the filter phase has the whole-picture context to judge them.
 
 ### 5. Report (filter stage)
 
-Consolidate findings:
-
-- **Good Judgment.** Scenarios handled well. What reasoning worked. Which prompt elements enabled it.
-- **Surprising Judgment.** Unexpected but defensible. What priorities the agent implicitly chose. Whether that reveals a prompt gap or acceptable flexibility.
-- **Failed Judgment.** Priority or constraint violations. Root cause in the prompt (ambiguity, missing constraint, unclear priority). Whether failures cluster around a specific dimension.
-- **Suggestions.** Specific prompt edits tied to observed failure patterns — priority clarifications, constraints to add, scope boundaries to sharpen.
+Consolidate into the report below. The filter's job is to pull signal out of raw observations: cluster failures by root cause, distinguish acceptable flexibility from unaddressed gaps, and translate every failure into a specific prompt edit. A finding without a proposed edit is noise — it tells the user they have a problem but not what to do about it.
 
 ## Output format
+
+This is a downstream contract — the report is read by humans comparing evaluations across prompt iterations, and by the `system-prompt-clinic` skill for targeted rewrites. Keep the structure rigid:
 
 ```markdown
 # Judgment Evaluation Report
@@ -155,7 +142,7 @@ Spec compliance > Working code > Clean code
 
 ## References
 
-- `references/scenario-patterns.md` — catalog of scenario types with templates and evaluation criteria.
+- `references/scenario-patterns.md` — catalog of scenario templates with evaluation criteria.
 
 ## Arguments
 
@@ -163,5 +150,4 @@ Spec compliance > Working code > Clean code
 
 ## Notes
 
-- Run this iteratively. As the prompt evolves, re-evaluate to measure improvement against the previous findings.
-- Classifications aren't grades — they're diagnostic signal. A surprising response that reveals a prompt gap is more valuable than five successful passes.
+Run iteratively. As the prompt evolves, re-evaluate to measure improvement against prior findings — the diagnostic value compounds across iterations, since each pass tells you whether the last round's edits closed their intended gap or moved the failure elsewhere.
