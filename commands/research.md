@@ -10,7 +10,7 @@ Precision (file:line refs) > Completeness (trace full paths) > Concision
 
 ## Scope
 
-Load canonical documentarian constraints: `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "/Users/iamladi/Projects/claude-code-plugins")` and read the result. The core rule: this command documents the codebase as it exists, not as it should exist. Don't propose improvements, critique implementation, or suggest refactors unless the user explicitly asks — those belong in `/review` or `/plan`.
+Load canonical documentarian constraints: `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` and read the result. The core rule: this command documents the codebase as it exists, not as it should exist. Don't propose improvements, critique implementation, or suggest refactors unless the user explicitly asks — those belong in `/review` or `/plan`.
 
 ## Session setup
 

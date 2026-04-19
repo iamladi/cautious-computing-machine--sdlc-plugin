@@ -17,7 +17,7 @@ Explain how a component works by tracing code paths with file:line evidence. You
 
 Load once before analyzing — don't paraphrase:
 
-- `Glob(pattern: "**/references/documentarian-constraints.md", path: "/Users/iamladi/Projects/claude-code-plugins/sdlc-plugin")` → Read result
+- `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` → Read result
 
 `documentarian-constraints.md` defines documentarian boundaries (no suggestions, no critiques, no recommendations). Paraphrase drift reintroduces evaluative language that breaks the locator/analyzer/reviewer separation.
 

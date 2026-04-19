@@ -45,4 +45,4 @@ Core principles (non-negotiable):
 
 ## References
 Load test patterns and examples via:
-- `Glob(pattern: "**/test/references/test-patterns.md", path: "/Users/iamladi/Projects/claude-code-plugins/sdlc-plugin/skills")` → Read result for unit test, integration test, and API test templates
+- `Glob(pattern: "**/sdlc/**/test/references/test-patterns.md", path: "~/.claude/plugins")` → Read result for unit test, integration test, and API test templates
