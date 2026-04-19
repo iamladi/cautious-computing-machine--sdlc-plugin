@@ -135,7 +135,15 @@ Examples:
 - `skills/constitution-compliance-review/references/{scoring-rubric.md,baseline-scores.md}`
 - `skills/domain-model/{CONTEXT-FORMAT.md,ADR-FORMAT.md}`
 
-**How to apply:** when editing a prompt, ask of every rigid shape and every reference pointer "what consumes this?" If the answer names a downstream parser, skill, or reader — that's a contract; preserve it and label the consumer. If nothing depends on the shape, it's decorative scaffolding — trim it per §6.
+**Reference pointers must use the portable Glob form, not absolute dev paths.** Plugins install to a versioned cache (`~/.claude/plugins/cache/<plugin>/sdlc/<VERSION>/`) where the version segment changes each install, so any hard-coded `/Users/<dev>/Projects/...` path resolves only on the author's laptop. Downstream consumers then load an empty result and silently fabricate around the missing contract — indistinguishable from paraphrase drift, but worse because the reference file still exists on disk. Use this exact shape:
+
+```
+Glob(pattern: "**/sdlc/**/references/<filename>.md", path: "~/.claude/plugins") → Read result
+```
+
+The `**/sdlc/**/` prefix survives the version segment; `~/.claude/plugins` resolves on any machine. See `references/README.md` for the full convention and the files currently under contract.
+
+**How to apply:** when editing a prompt, ask of every rigid shape and every reference pointer "what consumes this?" If the answer names a downstream parser, skill, or reader — that's a contract; preserve it and label the consumer. If nothing depends on the shape, it's decorative scaffolding — trim it per §6. For reference pointers specifically, also verify the path is portable before committing — an absolute dev path is the same class of contract violation as paraphrasing the reference, just harder to spot in review.
 
 ## Breaking changes to scrub from older prompts
 
