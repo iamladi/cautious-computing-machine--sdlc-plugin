@@ -13,6 +13,7 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **implementer** - Fresh-context task implementer for subagent workflow (TDD-aware, self-reviews)
 - **spec-reviewer** - Verifies implementation matches spec exactly (nothing missing, nothing extra)
 - **code-quality-reviewer** - Quick sanity check for obvious bugs and code smells
+- **test-writer** - Dispatched delegate paired with the `test` skill; writes tests following Kent C. Dodds shape rules (flat structure, factories, disposables)
 - **research-synthesizer** - Merges multiple research reports into comprehensive document with theme-based synthesis; surfaces consensus findings, disagreements, and novel insights from cross-pollination
 
 ### ⚡ Commands
@@ -32,6 +33,8 @@ A comprehensive Claude Code plugin that enhances your software development lifec
 - **update-models** - Re-resolve the model registry by querying OpenAI, Google AI, and Oracle CLI for latest models
 - **interview** - Deep interviews about any topic with iterative questioning (uses Opus)
 - **tdd** - TDD enforcement during implementation (strict/soft/off modes via CLAUDE.md)
+- **test** - Write or review tests following Kent C. Dodds principles (flat structure, composable setup, disposable fixtures); paired with the `test-writer` agent
+- **domain-model** - Grill plan language against the target repo's `CONTEXT.md`; surface vocabulary conflicts, lazily create `CONTEXT.md`, and offer ADRs when architectural decisions meet the 3-criteria bar
 - **finish-branch** - Post-merge cleanup: switches to main, pulls, runs tests, removes worktree
 - **agent-change-walkthrough** - Narrative walkthrough of AI-authored code changes after implementation; explains what changed, why, and how it behaves
 - **x-search** - Search X/Twitter for real-time developer discourse, product feedback, community sentiment, and expert opinions
@@ -225,7 +228,7 @@ Executes the implementation plan with guided steps. Updates GitHub Issue checkbo
 /review origin/main...HEAD   # Review all commits on branch
 ```
 
-Runs parallel code reviews with GPT-5.3-Codex (xhigh reasoning) and Gemini 3 Pro:
+Runs parallel code reviews with Codex (at `xhigh` reasoning) and Gemini — models resolved from `config/model-registry.md` (currently `codex-flagship` and `gemini-flagship`) so upgrades don't require a README edit:
 - Analyzes git diff for correctness, performance, security, maintainability
 - Deduplicates findings when both reviewers flag the same issue
 - Prioritizes by severity (P0-P3)
@@ -453,12 +456,14 @@ sdlc-plugin/
 │   ├── codebase-pattern-finder.md
 │   ├── code-quality-reviewer.md  # Quick quality sanity check
 │   ├── implementer.md            # Fresh-context task implementer
+│   ├── research-synthesizer.md   # Merge gate for parallel research
 │   ├── spec-reviewer.md          # Spec compliance reviewer
 │   ├── test-writer.md
 │   └── web-search-researcher.md
 ├── commands/
 │   ├── plan.md
 │   ├── research.md
+│   ├── research-deep.md     # Parallel research + synthesis
 │   ├── implement.md         # Subagent-driven workflow
 │   ├── review.md
 │   ├── submit.md
@@ -467,6 +472,7 @@ sdlc-plugin/
 │   ├── agent-change-walkthrough/SKILL.md  # Narrative walkthrough of AI code changes
 │   ├── codex/SKILL.md
 │   ├── constitution-compliance-review/SKILL.md
+│   ├── domain-model/SKILL.md    # CONTEXT.md alignment + ADR gate
 │   ├── finish-branch/SKILL.md   # Post-merge cleanup
 │   ├── gemini/SKILL.md
 │   ├── interview/SKILL.md
@@ -474,6 +480,7 @@ sdlc-plugin/
 │   ├── system-prompt-clinic/SKILL.md
 │   ├── tdd/SKILL.md             # TDD enforcement
 │   ├── test/SKILL.md
+│   ├── update-models/SKILL.md   # Refresh model-registry.md
 │   └── x-search/SKILL.md
 ├── utils/
 │   └── search-mcp/
