@@ -4,10 +4,11 @@ This is the workspace reference for writing prompts (commands, agents, skills) t
 
 Canonical reference files — when in doubt, model after these:
 - `sdlc-plugin/skills/interview/SKILL.md` — onboarding-doc structure, `<thinking>` example
-- `sdlc-plugin/commands/review.md` — evidence-backed protocol, find-then-filter split
-- `sdlc-plugin/agents/implementer.md` — lean role + success criteria
+- `sdlc-plugin/commands/review.md` — evidence-backed protocol, find-then-filter split (§7)
+- `sdlc-plugin/agents/implementer.md` — multi-surface worker: scope-boundaries, family-boundary framing, rigid-output contract (§13)
+- `sdlc-plugin/agents/spec-reviewer.md` + `sdlc-plugin/agents/code-quality-reviewer.md` — sibling reviewers citing each other's scope so scope-leaks are self-diagnosable
 - `primitives-plugin/skills/prompt-as-onboarding/SKILL.md` — canonical onboarding-doc skill
-- `primitives-plugin/skills/de-slop/SKILL.md` — tool-delegation pattern
+- `primitives-plugin/skills/de-slop/SKILL.md` — tool-delegation pattern (§9)
 
 ## Why this document exists
 
@@ -38,6 +39,8 @@ Compare:
 ### 3. State scope explicitly.
 
 4.7 will not generalize "apply this formatting" to every section unless you say so. If you want a rule applied to a list, say "for every item" or "across all sections." If you want the model to fan out, say "for each." Assume nothing carries implicitly.
+
+**Family-boundary framing.** When an agent has siblings that share a controller — documentarian trio (locator/analyzer/pattern-finder dispatched by `/research`), reviewer pair (spec-reviewer + code-quality-reviewer dispatched by `/implement`), skill-agent pair (`test` skill + `test-writer` agent sharing `test-patterns.md`), or cross-platform research (web-search-researcher + x-search skill) — state scope by *naming what each sibling owns*, not just what the current agent does. Rule-list form can express "don't do X" but can't express "don't do X because sibling Y owns it"; the sibling citation converts a directive into a decidable judgment and makes scope-creep failures self-diagnosable by the agent at runtime. See `agents/spec-reviewer.md` and `agents/implementer.md` for the pattern.
 
 ### 4. Drop compensation phrases.
 
