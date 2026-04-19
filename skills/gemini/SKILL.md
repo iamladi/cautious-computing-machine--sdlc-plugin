@@ -37,19 +37,17 @@ If the registry load fails, fall back to the table below. Treat the names as pos
 
 Approval mode is the load-bearing flag — the failure mode is silent and expensive, so the reasoning needs to be inline:
 
-- `--approval-mode yolo` for anything Claude Code runs as a tool call. The invocation happens in a non-interactive shell; `default` waits for a stdin confirmation that will never arrive and the process hangs indefinitely, burning wall-clock until something notices. This is the correct mode for every background invocation in this workspace.
+- `--approval-mode yolo` for anything Claude Code runs as a tool call. The invocation happens in a non-interactive shell; `default` waits for a stdin confirmation that will never arrive and the process hangs indefinitely, burning wall-clock until something notices. This is the correct mode for every background invocation in this workspace. `yolo` lets Gemini run any tool without confirmation within its sandbox, so it's a blast-radius mode — name it to the user before using.
 - `--approval-mode default` only in an interactive human terminal where a person can actually type `y`. If you're unsure whether the shell is interactive, assume it isn't.
-- `--approval-mode auto_edit` when the user explicitly wants Gemini to apply edits without per-change confirmation. Treat as a blast-radius change — name it to the user before using.
+- `--approval-mode auto_edit` when the user explicitly wants Gemini to apply edits without per-change confirmation. Also a blast-radius change (it writes files) — name it to the user before using.
 
-Wrap with `timeout 300 gemini ...` as a safety net when the task has any chance of hanging on network, rate-limit, or a pathological input. The timeout is cheap insurance; a hung Gemini process can sit at 0% CPU for hours.
+Wrap with `timeout 300 gemini ...` as a safety net when the task has any chance of hanging on network, rate-limit, or a pathological input. The timeout is cheap insurance; a hung Gemini process can sit at 0% CPU for hours. If one slips past the timeout anyway (long runtime, 0% CPU, no network), load `references/gemini-cli-reference.md` for the detection/diagnosis/kill pattern rather than guessing — surface the exit code and stderr instead of silently retrying.
 
 Use `--include-directories <DIR>` (repeatable) when the analysis needs files outside the current working directory. Don't rely on Gemini discovering them.
 
-## Operating notes
+## After the run
 
-- `yolo` and `auto_edit` are the two modes that change blast radius materially. `yolo` lets Gemini run any tool without confirmation within its sandbox; `auto_edit` lets it write files. Don't add either to a command without naming it to the user first.
-- After Gemini completes, tell the user once: "Gemini sessions don't persist — start a new one for follow-up analysis." This is the discoverability hook; the CLI doesn't surface it.
-- If a Gemini process appears hung (long runtime, 0% CPU, no network), reference `references/gemini-cli-reference.md` for the detection/diagnosis/kill pattern — don't guess. Surface the exit code and any stderr rather than silently retrying.
+Tell the user once: "Gemini sessions don't persist — start a new one for follow-up analysis." The CLI is stateless between invocations and doesn't surface that fact, so the one-line hook is what prevents the user from expecting continuity that doesn't exist.
 
 ## References
 

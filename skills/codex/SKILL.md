@@ -41,15 +41,15 @@ Two flags are non-negotiable on every call, with reasoning attached so you can j
 Sandbox is the safety dial — pick the least privilege the task needs:
 - `--sandbox read-only` for analysis, review, planning. The default. Codex can't write or network.
 - `--sandbox workspace-write` when edits were requested. Codex can write inside the workspace; still no network.
-- `--sandbox danger-full-access` only when the user has explicitly approved network or out-of-workspace writes. Confirm before using.
+- `--sandbox danger-full-access` only when the user has explicitly approved network or out-of-workspace writes. Confirm before using. `--full-auto` is the other blast-radius flag — same rule, name it before using.
 
 Resume sessions with `echo "prompt" | codex exec --skip-git-repo-check resume --last 2>/dev/null`. Don't insert `-c` or `-m` flags between `exec` and `resume` — Codex parses them as positional-arg conflicts and rejects the call. The original session's model and config carry over.
 
-## Operating notes
+A non-zero exit usually means sandbox denial, config error, or model unavailability. Surface the exit code and stderr (re-run without the redirect if needed) so the user sees the real cause — don't silently retry, since retry without diagnosis just burns quota against the same failure.
 
-- A non-zero exit usually means sandbox denial, config error, or model unavailability. Surface the exit code and stderr (re-run without the redirect if needed) — don't silently retry.
-- After a successful run, tell the user once: "You can resume this Codex session at any time by saying 'codex resume'." This is the discoverability hook for the resume flow above.
-- `--full-auto` and `--sandbox danger-full-access` are the two flags that change blast radius materially. Don't add either to a command without naming it to the user first.
+## After the run
+
+Tell the user once: "You can resume this Codex session at any time by saying 'codex resume'." The resume flow above exists but has no natural discovery surface, so the one-line hook is what makes it usable at all.
 
 ## References
 
