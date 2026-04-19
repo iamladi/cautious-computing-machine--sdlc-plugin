@@ -58,7 +58,7 @@ Remove "think step by step", "take your time", "be thorough", "carefully conside
 
 "Step 1 do X. Step 2 do Y. Step 3 do Z." invites over-triggering — the model follows the literal sequence even when a step doesn't apply. State the goal and the invariants; let the model pick the path.
 
-**Keep step-numbering only where sequence correctness is load-bearing** — e.g., team-cleanup ordering where skipping a step leaks resources. In that case, explain the invariant too ("the team must be deleted before returning control, regardless of success/failure — skipping leaks slots").
+**Keep step-numbering only where sequence correctness is load-bearing** — e.g., team-cleanup ordering where skipping a step leaks resources. In that case, explain the invariant too ("the team must be deleted before returning control, regardless of success/failure — skipping leaks slots"). See §13 for the related contract-preservation exception for rigid output formats and reference files.
 
 ### 7. Separate find from filter in review and audit prompts.
 
@@ -113,6 +113,29 @@ For long commands that mix instructions, context, examples, and constraints (`im
 ```
 
 Short prompts don't need this — prose sections are fine. Reach for tags when the same file contains more than three distinct instruction types.
+
+### 13. Pin downstream contracts.
+
+Anti-templating (§6) and anti-rule-list (§1) pressure is about removing *decorative* scaffolding, not *load-bearing* shapes. Two exceptions recur often enough to name, because both superficially look like the anti-patterns above and tend to get trimmed during migrations.
+
+**Rigid output formats are contracts when something parses them.** If a specific output shape is consumed downstream — by a tool, a paired skill, or a reviewer who needs a predictable field to scan — the template is load-bearing. Preserve it, and name the consumer inline so future editors don't trim it on the grounds that it "looks prescriptive."
+
+Examples from this workspace:
+- `skills/agent-change-walkthrough/` — `CHANGED` / `UNCHANGED` markers and `file:line` shape consumed by a reviewer diffing against the repo.
+- `skills/tdd/` — the horizontal-slicing diagram encodes a load-bearing invariant; phrasing it as prose loses the visual-invariant.
+- `skills/judgment-eval/` — scenario-report layout is a contract with `system-prompt-clinic`.
+- `skills/system-prompt-clinic/` — closing handoff line is a contract with `constitution-compliance-review`.
+- `skills/constitution-compliance-review/` — dimension-rubric labels are consumed by `system-prompt-clinic` and graders.
+
+**Reference files are contracts when a skill delegates to them.** When a SKILL.md points at `references/*.md` (or a sibling `FORMAT.md`) and says "model after this — don't paraphrase", the reference is the source of truth. Paraphrasing it back into SKILL.md prose is how outdated styles leak back in during migrations — the why is that the reference file typically carries nuance (examples, anti-examples, edge cases) that compresses poorly into a single paragraph.
+
+Examples:
+- `skills/test/references/test-patterns.md`
+- `skills/system-prompt-clinic/references/transformation-patterns.md`
+- `skills/constitution-compliance-review/references/{scoring-rubric.md,baseline-scores.md}`
+- `skills/domain-model/{CONTEXT-FORMAT.md,ADR-FORMAT.md}`
+
+**How to apply:** when editing a prompt, ask of every rigid shape and every reference pointer "what consumes this?" If the answer names a downstream parser, skill, or reader — that's a contract; preserve it and label the consumer. If nothing depends on the shape, it's decorative scaffolding — trim it per §6.
 
 ## Breaking changes to scrub from older prompts
 
