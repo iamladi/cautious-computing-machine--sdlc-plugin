@@ -51,6 +51,8 @@ Six family topologies appear in this workspace, each with a characteristic bound
 - **Cross-platform research** (web-search-researcher + `x-search` skill) — boundary runs between data-source domains.
 - **Merge gate** (`research-synthesizer` consuming N collectors) — fan-in shape; boundary runs between gather and merge concerns, and the merge-gate owns thematic consolidation while collectors own gather/refine.
 
+**Symmetry obligation.** Family-boundary framing imposes a symmetry requirement: if one sibling cites the other's scope, the other must mirror the citation back. Asymmetric framing (A names B's scope but B doesn't name A's) leaves cross-routing decisions unreasoned on the silent side — the agent without the mirror can't judge "should I hand this off to sibling X?" because from its vantage point sibling X has no named boundary. This surfaces most often when migrating one side of a pair first and treating the second side as done by association; it isn't, because the sibling citation only works in the direction it's written. When migrating family members, migrate the set — or if staged, record the mirror obligation as a follow-up so the asymmetry doesn't calcify.
+
 ### 4. Drop compensation phrases.
 
 Remove "think step by step", "take your time", "be thorough", "carefully consider." These compensated for pre-4.x reasoning gaps that `effort` now closes at the API level. Leaving them in adds noise and token waste.
