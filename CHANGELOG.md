@@ -5,6 +5,14 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.31.1] - 2026-04-19
+
+### Added
+- `skills/tdd/SKILL.md` — "why this skill exists" preamble naming *Goal-Driven Execution* (the `karpathy-principles` skill in primitives-plugin, principle 4). Six lines, surgical insertion above the Priorities section. Cross-plugin half of FR-4 in `plans/karpathy-skills-improvements.md`. Originally landed in branch as v1.30.1 + v1.30.2; collapsed into a single v1.31.1 entry on rebase past v1.31.0.
+
+### Fixed
+- `skills/tdd/SKILL.md` preamble — uses prose name reference (`the` `karpathy-principles` `skill (primitives-plugin)`) rather than an absolute GitHub `main` URL. The URL would have pointed at a generated repo name on a mutating branch and rotted under upstream rename or re-org. Review finding (Gemini P2 in adversarial review of v1.30.1).
+
 ## [1.31.0] - 2026-04-19
 
 ### Changed

@@ -5,6 +5,12 @@ description: TDD enforcement during implementation. Reads `tdd:` setting from CL
 
 # TDD Enforcement Skill
 
+> **Why this skill exists.** This skill enforces *Goal-Driven Execution*
+> — principle 4 of the `karpathy-principles` skill (primitives-plugin) —
+> at the procedural level. A failing test is the verifiable definition of
+> "not done"; a passing test is the verifiable definition of "done for
+> this slice." Without it, "done" drifts.
+
 ## Priorities
 
 Correctness > Test Coverage > Implementation Speed
