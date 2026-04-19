@@ -14,7 +14,7 @@ Completeness (root cause addressed) > Minimality (surgical changes) > Clarity (r
 
 ## Workflow
 
-The flow is five checkpoints. Each exists because skipping it reliably produces worse plans: scope challenge stops duplicate work, interview surfaces ambiguity before it becomes rework, codebase research prevents designs that ignore what already exists, multi-LLM review catches blind spots one model misses, finalization creates the paper trail that lets implementation start.
+The flow is six checkpoints. Each exists because skipping it reliably produces worse plans: scope challenge stops duplicate work, interview surfaces ambiguity before it becomes rework, codebase research prevents designs that ignore what already exists, domain-model alignment keeps language and architecture consistent with documented decisions, multi-LLM review catches blind spots one model misses, finalization creates the paper trail that lets implementation start.
 
 ### 1. Scope challenge
 
@@ -49,6 +49,20 @@ After exploration, produce a **"What Already Exists"** summary before authoring 
 - For each: REUSE, EXTEND, or REPLACE, with a one-line justification.
 
 This prevents designing solutions that duplicate or conflict with existing code.
+
+### 3.5. Domain-model interview
+
+Find and read the domain-model protocol:
+- `Glob(pattern: "**/sdlc/**/skills/domain-model/SKILL.md", path: "~/.claude/plugins")`
+
+Run it with the user's task plus the "What Already Exists" summary from step 3 as context. The skill grills the plan's language against the target repo's `CONTEXT.md` (creating one lazily if absent), surfaces conflicts between the plan's vocabulary and documented terms, and offers ADRs when architectural decisions meet the 3-criteria bar (hard to reverse, surprising without context, real trade-off).
+
+Behaviour:
+- Writes to `CONTEXT.md` and `docs/adr/NNNN-slug.md` inline as terms resolve and ADRs are confirmed. Files are **staged, not committed** — step 6 batches them into the plan commit.
+- **Blocking:** if any term in the plan contradicts `CONTEXT.md`, the skill does not return control until the conflict is resolved (term redefined with rationale, plan restated in canonical vocabulary, or ambiguity recorded under "Flagged ambiguities" with a deferral note).
+- Returns a summary of resolved terms, conflicts closed, ADRs created, and any deferred ambiguities. Step 4 reads this summary into the plan's Notes & Context section before drafting.
+
+Language drift is cheap to catch here, expensive to reverse after implementation.
 
 ### 4. Draft plan
 
@@ -86,7 +100,7 @@ Run Codex and Gemini plan critics in parallel per the protocol. They catch diffe
 
 ### 6. Finalization
 
-Update frontmatter: `reviewed: true`, `reviewers: ["codex", "gemini"]`, `status: Ready for Implementation`. Commit on branch `plan/feature-name` for audit trail, then `/github:create-issue-from-plan plans/<name>.md` to make the work trackable.
+Update frontmatter: `reviewed: true`, `reviewers: ["codex", "gemini"]`, `status: Ready for Implementation`. Commit on branch `plan/feature-name` for audit trail — include the plan file plus any `CONTEXT.md` and `docs/adr/NNNN-*.md` files staged by step 3.5 so the language/architecture decisions ship with the plan. Then `/github:create-issue-from-plan plans/<name>.md` to make the work trackable.
 
 Append deferred items from the plan's "Out of Scope / Future Considerations" to `TODOS.md` in the project root (create if absent). Each entry:
 ```
