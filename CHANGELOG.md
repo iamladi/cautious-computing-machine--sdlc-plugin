@@ -5,6 +5,14 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.30.0] - 2026-04-19
+
+### Added
+- `skills/domain-model/` — new skill that grills a plan's language against the target repo's `CONTEXT.md` and offers ADRs when architectural decisions meet the hard-to-reverse / surprising / real-trade-off bar. Includes `SKILL.md`, `CONTEXT-FORMAT.md`, and `ADR-FORMAT.md`. Writes files inline as decisions crystallise; stages without committing so `/sdlc:plan` step 6 can batch the commit.
+
+### Changed
+- `commands/plan.md` — added step 3.5 (domain-model interview) between research and draft. Intro now lists six checkpoints; step 6 commit list includes `CONTEXT.md` and `docs/adr/NNNN-*.md` produced during the interview. Plan draft blocks on unresolved terminology conflicts until addressed.
+
 ## [1.29.0] - 2026-04-18
 
 ### Added
