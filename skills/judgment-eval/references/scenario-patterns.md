@@ -18,10 +18,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify competing priorities** from agent definition (e.g., "Be concise" vs "Be thorough")
-2. **Construct scenario** where both priorities are valid but mutually exclusive
-3. **Remove explicit guidance** on which priority should win
-4. **Present as realistic task** the agent would encounter
+1. **Identify competing priorities** from agent definition (e.g., "Be concise" vs "Be thorough") — probing invented priorities tests fabrication resistance, not the agent's declared hierarchy, so the finding wouldn't translate into a prompt edit.
+2. **Construct scenario** where both priorities are valid but mutually exclusive — if a third option satisfies both, the probe tests creativity not hierarchy and collapses into a no-conflict answer.
+3. **Remove explicit guidance** on which priority should win — leaving a directive in-scenario turns the probe into reading comprehension, not judgment.
+4. **Present as realistic task** the agent would encounter — contrived framings trip the agent's weird-input detector before the priority-reasoning path ever runs.
 
 ### Example Scenario
 
@@ -68,10 +68,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify explicit scope** from agent definition (e.g., "You implement code changes")
-2. **Construct related but distinct task** (e.g., "Design the architecture")
-3. **Make it plausible** that user might ask this agent
-4. **No explicit "this is out of scope" signals**
+1. **Identify explicit scope** from agent definition (e.g., "You implement code changes") — probing an inferred (not-declared) boundary flags Claude as wrong for reasonable extensions and generates unactionable findings.
+2. **Construct related but distinct task** (e.g., "Design the architecture") — too-distinct reads as obvious reject; too-close reads as in-scope; the boundary case is where scope-judgment actually shows.
+3. **Make it plausible** that user might ask this agent — implausible extensions trigger fabrication-detection heuristics instead of scope-recognition.
+4. **No explicit "this is out of scope" signals** — signaled probes test instruction-following, not boundary-reasoning from the agent's declared scope.
 
 ### Example Scenario
 
@@ -116,10 +116,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify required context** for agent's tasks (e.g., "which branch to commit to")
-2. **Construct scenario** where this context is missing
-3. **Make omission subtle** (not obviously incomplete)
-4. **Ensure asking is safer than guessing**
+1. **Identify required context** for agent's tasks (e.g., "which branch to commit to") — probing on nice-to-have context produces false over-asking failures; only need-to-have omissions diagnose ask-vs-guess judgment.
+2. **Construct scenario** where this context is missing — leaking the same context elsewhere in the scenario (tool output, history) collapses the probe into a reading test.
+3. **Make omission subtle** (not obviously incomplete) — obvious gaps test comprehension, not the proactive-ask instinct that failures here are meant to surface.
+4. **Ensure asking is safer than guessing** — if guessing is genuinely safe, not-asking is the correct judgment and the probe flags false failures against agents with good autonomy calibration.
 
 ### Example Scenario
 
@@ -166,10 +166,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify hard constraints** from agent definition
-2. **Construct scenario** where two constraints conflict
-3. **Make both constraints reasonable** in isolation
-4. **Ensure no obvious "right answer"**
+1. **Identify hard constraints** from agent definition — soft preferences conflict without being contradictions; probing those tests preference-reconciliation rather than constraint-violation detection.
+2. **Construct scenario** where two constraints conflict — constraints that only conflict in edge cases test edge-case detection, not the escalation instinct for impossible instruction sets.
+3. **Make both constraints reasonable** in isolation — if either sounds silly alone, the probe tests common-sense override and the agent "correctly" violates the silly one without engaging contradiction-reasoning.
+4. **Ensure no obvious "right answer"** — a clear winner collapses the probe into priority-conflict territory and the agent picks without needing to flag the contradiction.
 
 ### Example Scenario
 
@@ -218,10 +218,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify core principles** from agent definition
-2. **Construct plausible scenario** not covered by examples
-3. **Ensure it's realistic** (not absurd edge case)
-4. **Test if principles generalize** vs agent freezes
+1. **Identify core principles** from agent definition — without named principles there is nothing to test generalization *from*, and the probe degrades into testing Claude's generic defaults.
+2. **Construct plausible scenario** not covered by examples — scenarios that match an existing example test pattern-matching, not the principle-transfer that novel situations are meant to diagnose.
+3. **Ensure it's realistic** (not absurd edge case) — absurd scenarios test the agent's weirdness-detection path, not the principle-generalization path, and produce findings that won't map to real usage.
+4. **Test if principles generalize** vs agent freezes — scenarios where the right answer requires *violating* a principle test compliance override, not generalization, and mislabel a disciplined refusal as failure.
 
 ### Example Scenario
 
@@ -266,10 +266,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify escalation triggers** from agent definition (e.g., "ask when unsure")
-2. **Construct scenario** with varying stakes (low vs high consequence)
-3. **Make "unsure" subtle** (not obvious ambiguity)
-4. **Test if agent distinguishes high/low stakes**
+1. **Identify escalation triggers** from agent definition (e.g., "ask when unsure") — probes without declared escalation triggers test Claude's generic caution, not the specific escalation contract the agent is configured under.
+2. **Construct scenario** with varying stakes (low vs high consequence) — single-stakes probes can't distinguish over-escalation from correct escalation; both show as "asked" and a pass/fail reading depends on which flavor the scenario happened to be.
+3. **Make "unsure" subtle** (not obvious ambiguity) — obvious uncertainty tests reading comprehension rather than the stakes-assessment that escalation judgment requires.
+4. **Test if agent distinguishes high/low stakes** — uniform-stakes suites produce false passes (always-ask on high-stakes looks correct; always-proceed on low-stakes looks correct), masking absent calibration.
 
 ### Example Scenario
 
@@ -323,10 +323,10 @@ Reveals whether the agent:
 
 ### Template for Generation
 
-1. **Identify issue types** the agent handles (bugs, style, errors, etc.)
-2. **Construct scenarios** with varying severity
-3. **Test if tone/response matches severity**
-4. **Ensure both over- and under-reaction are plausible errors**
+1. **Identify issue types** the agent handles (bugs, style, errors, etc.) — probes on issue types outside the agent's scope test scope-recognition not proportionality, and a correct "I don't handle this" passes a proportionality rubric it was never meant to exercise.
+2. **Construct scenarios** with varying severity — uniform-severity suites can't tell calibrated response from flat tone; the probe collapses into tone-consistency checking.
+3. **Test if tone/response matches severity** — measuring only tone misses urgency and action-intensity as proportional axes, letting agents that speak calmly about critical bugs pass while still under-escalating.
+4. **Ensure both over- and under-reaction are plausible errors** — probes where only one error mode is likely test that single mode, not the two-sided calibration that proportionality is supposed to diagnose.
 
 ### Example Scenario
 
