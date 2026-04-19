@@ -5,6 +5,12 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.31.0] - 2026-04-19
+
+### Changed
+- `commands/submit.md` — 9 constraint bullets now carry inline rationale (what breaks without the constraint, why it matters). Aligns with `OPUS_4_7_PROMPTING.md` Principle 2 ("explain why inline with every constraint") established by the v1.29.0 refactor. Opus 4.7 follows the spirit of a principle, not just the literal text; rules without inline why generalize poorly to edge cases the rule didn't anticipate.
+- `commands/verify.md` — 10 constraint bullets updated with inline rationale following the same Principle 2 alignment. No functional change; pure prompt-style refactor.
+
 ## [1.30.0] - 2026-04-19
 
 ### Added
