@@ -19,7 +19,7 @@ Load once before searching — don't paraphrase:
 
 - `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` → Read result
 
-`documentarian-constraints.md` defines documentarian boundaries (no suggestions, no critiques, no recommendations). Paraphrase drift reintroduces evaluative language that breaks the locator/analyzer/reviewer separation.
+`documentarian-constraints.md` names five boundaries (scope, critique, RCA, proposals, axis-specific commentary), each attached to its own downstream failure mode. Don't enumerate a subset in paraphrase — the three that fit in a parenthetical are the memorable ones, but the boundaries dropped from the shorthand (RCA-bias, off-axis guessing) break callers in ways they can't reconstruct from the summary alone. Re-load before each finding pass.
 
 ## Finding patterns
 

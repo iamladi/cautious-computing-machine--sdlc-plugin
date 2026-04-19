@@ -156,7 +156,7 @@ research/.deep-research-[timestamp]/
 
 ## Scope
 
-This command documents the codebase as it is. Don't propose improvements or critique implementation unless the user explicitly asks — that's what `/review` is for. Load the canonical constraints via `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` and read the result; if the file isn't found, apply the rule inline: document what is, not what should be.
+This command documents the codebase as it is — the categorical rule is "what exists, not what should exist"; `/review` owns the "should" pass. Load the canonical constraints via `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` and read the result — the file names five specific boundaries (scope, critique, RCA, proposals, axis-specific commentary), each with its own downstream failure mode. Don't paraphrase by enumerating a subset; if the file isn't found, fall back to the categorical rule only ("what exists, not what should exist"), which is safer than a partial enumeration that silently drops boundaries.
 
 ## Topic
 
