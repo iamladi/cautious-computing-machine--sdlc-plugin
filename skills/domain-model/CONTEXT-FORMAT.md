@@ -38,13 +38,13 @@ _Avoid_: Client, buyer, account
 
 ## Rules
 
-- **Be opinionated.** When multiple words exist for the same concept, pick the best one and list the others as aliases to avoid.
-- **Flag conflicts explicitly.** If a term is used ambiguously, call it out in "Flagged ambiguities" with a clear resolution.
-- **Keep definitions tight.** One sentence max. Define what it IS, not what it does.
-- **Show relationships.** Use bold term names and express cardinality where obvious.
-- **Only include terms specific to this project's context.** General programming concepts (timeouts, error types, utility patterns) don't belong even if the project uses them extensively. Before adding a term, ask: is this a concept unique to this context, or a general programming concept? Only the former belongs.
-- **Group terms under subheadings** when natural clusters emerge. If all terms belong to a single cohesive area, a flat list is fine.
-- **Write an example dialogue.** A conversation between a dev and a domain expert that demonstrates how the terms interact naturally and clarifies boundaries between related concepts.
+- **Be opinionated.** When multiple words exist for the same concept, pick the best one and list the others as aliases to avoid. Without a pick, readers choose arbitrarily from the aliases and prose fragments into parallel vocabularies — the glossary's job is to make the canonical term unambiguous so the codebase stabilizes around it.
+- **Flag conflicts explicitly.** If a term is used ambiguously, call it out in "Flagged ambiguities" with a clear resolution. Silent ambiguity compounds — two meanings of "account" that never collide on a page still ship to prod as bugs (auth checks run on one notion, billing on the other).
+- **Keep definitions tight.** One sentence max. Define what it IS, not what it does — behavior descriptions track implementation and rot as code evolves, while identity definitions survive refactoring and correctly anchor new code against the same concept.
+- **Show relationships.** Use bold term names and express cardinality where obvious. A term in isolation is trivia; terms with cardinality ("produces one or more", "belongs to exactly one") carry the invariants that catch off-by-one and multi-tenant confusion at modeling time instead of in production.
+- **Only include terms specific to this project's context.** General programming concepts (timeouts, error types, utility patterns) don't belong even if the project uses them extensively. Before adding a term, ask: is this a concept unique to this context, or a general programming concept? Only the former belongs — diluting the glossary with generics drowns the project-specific terms the glossary exists to preserve.
+- **Group terms under subheadings** when natural clusters emerge. If all terms belong to a single cohesive area, a flat list is fine. A flat list of 40 terms reads as a reference nobody scans; clustering lets readers find related terms by neighborhood and surfaces coherence gaps (a term that doesn't belong to any cluster is probably in the wrong glossary).
+- **Write an example dialogue.** A conversation between a dev and a domain expert demonstrates how terms interact naturally and clarifies boundaries between related concepts — reading definitions in isolation misses the relational grammar that dialogue surfaces (who initiates what, what depends on what).
 
 ## Single vs multi-context repos
 
