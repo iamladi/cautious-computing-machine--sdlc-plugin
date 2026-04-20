@@ -5,6 +5,22 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.32.0] - 2026-04-20
+
+40-iteration guardian (`gnhf`) quality pass across skills, agents, commands, and references. Drove rule-list / step-numbered prompt forms toward Opus-4.7 onboarding-doc style with why-inline reasoning on constraints. 38 files, +1264 / -968.
+
+### Changed
+- **Skills migrated to Opus-4.7 onboarding-doc style** — `finish-branch`, `test`, `agent-change-walkthrough`, `codex`, `gemini`, `tdd`, `judgment-eval`, `system-prompt-clinic`, `constitution-compliance-review`, `domain-model`, `x-search`, `update-models`.
+- **Agents migrated** — documentarian trio (`codebase-locator`, `codebase-analyzer`, `codebase-pattern-finder`), reviewer-pair (`spec-reviewer`, `code-quality-reviewer`), `implementer`, `test-writer`, `web-search-researcher`, `research-synthesizer`.
+- **Commands migrated** — `verify.md` and `submit.md` from Constraints rule-list to onboarding-doc form.
+- **Why-inline applied to bare rules** — `references/documentarian-constraints.md` (5 Boundaries bullets), `references/production-failure-patterns.md`, `do-*` skills, `skills/judgment-eval/references/scenario-patterns.md` (all 7 Template-for-Generation blocks, 28 step-edits).
+- **Cross-consumer paraphrase-drift fixes** — synced swarm-teammate briefs in `commands/implement.md`, `commands/research.md`, `commands/research-deep.md` against dedicated agent canonical checklists (one-way pointer pattern); reframed `documentarian-constraints` shorthand in 5 consumers from 3-of-5 enumeration to categorical + full-count framing.
+- **`references/README.md`** rebuilt as accurate 14-file index; stale line counts refreshed.
+
+### Added
+- **`OPUS_4_7_PROMPTING.md` codifications** — §3 merge-gate family topology + anti-fabrication; §13 pin-downstream-contracts pattern; partial-registry as 4th anti-fabrication class; symmetry obligation as §3 sub-rule; portable-Glob reference-path convention as 3rd rule.
+- **Normalized 3 absolute dev-path Glob references** in `agents/codebase-*.md` to portable form.
+
 ## [1.31.1] - 2026-04-19
 
 ### Added
