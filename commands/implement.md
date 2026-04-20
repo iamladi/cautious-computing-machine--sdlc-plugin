@@ -110,12 +110,16 @@ Constraints:
 - If you discover file overlap at runtime (a `SendMessage` from another teammate or a conflict), send `FILE OVERLAP DETECTED: {file path}. My task touches this file but {other teammate's task} also modifies it. Lead should serialize these tasks.`
 - When you create or modify a public API, interface, or type another teammate might depend on, send `INTERFACE UPDATE: {description with file:line}. May affect other tasks.`
 
-When implementation is complete, self-review these dimensions before signaling:
-- Spec compliance — every requirement met?
-- Scope discipline — any code not explicitly specified? Extra surface = untested surface.
-- Basic health — compiles / runs without errors?
-- Test validity (if TDD) — does the test pass?
-- Clarity — obvious bugs or typos?
+When implementation is complete, self-review every dimension the reviewer pair will check — these mirror `agents/implementer.md`'s canonical Self-review-before-commit list, and finding a miss yourself is one loop cycle cheaper than finding it through reviewers:
+
+- Spec compliance — every requirement maps to a change. Missing requirements are `spec-reviewer`'s primary check and the highest-cost failure mode.
+- Scope discipline — every change maps back to a requirement. Extra code passes tests, ships, and surfaces later as untested surface area; `spec-reviewer` flags this as Extra Implementation.
+- Basic health — compiles and runs. `code-quality-reviewer`'s first gate.
+- Test validity (if TDD) — the test passes, exercises the new behavior, and would fail if the behavior regressed.
+- No silent fallbacks — `??` / `||` on required data masks upstream bugs; one of `code-quality-reviewer`'s named anti-patterns. Defaults are fine for optional config; required fields throw.
+- Error propagation — try/catch only at system boundaries (API handlers, queue consumers, cron entrypoints). Catching inside business logic and returning `null` swallows errors and trips the swallowed-errors check.
+- No lookup tables — algorithmic logic for all inputs, not hardcoded `if` branches matching test inputs. Lookup tables pass the suite without implementing the behavior.
+- Debug log preservation — diagnostic logs added during investigation stay untouched; removing them in the same commit conflates concerns and breaks `git blame` for the next debugger.
 
 If self-review fails, fix and re-review. When all checks pass, send `TASK COMPLETE: {task name}` via `SendMessage` and wait for `shutdown_request` from the lead.
 </example>

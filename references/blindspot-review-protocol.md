@@ -7,11 +7,12 @@ After creating the draft plan, run it through Codex and Gemini in parallel to un
 
 Spawn both review agents in a single message so they run concurrently — serial review roughly doubles wall-clock time for no signal gain.
 
+Model resolution: Codex defaults from `~/.codex/config.toml` (kept synced with `config/model-registry.md` by `/update-models`), so no `-m` flag is passed. Gemini requires `-m`; the snippet pins the current `gemini-flagship` ID — refresh when the registry resolves a newer one.
+
 ### Codex Plan Critic
 
 ```bash
 codex exec --skip-git-repo-check \
-  -m gpt-5.4 \
   -c model_reasoning_effort="xhigh" \
   --sandbox read-only \
   --full-auto \
@@ -127,7 +128,7 @@ Add a new section to the plan after `## Notes & Context`:
 ```markdown
 ## Blindspot Review
 
-**Reviewers**: GPT-5.4 (xhigh), Gemini 3 Pro
+**Reviewers**: Codex at `xhigh` reasoning (`codex-flagship`), Gemini (`gemini-flagship`) — models resolved from `config/model-registry.md`
 **Date**: [timestamp]
 
 ### Addressed Concerns

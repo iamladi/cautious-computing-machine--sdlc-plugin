@@ -1,6 +1,6 @@
 <!-- Codex CLI Reference - Extracted from skills/codex/SKILL.md -->
 <!-- Used by: /codex skill -->
-<!-- NOTE: Model IDs in examples may be outdated. Check config/model-registry.md for current assignments. -->
+<!-- Model selection is sourced from ~/.codex/config.toml (kept fresh by /update-models). Invocations below omit `-m` to defer to that config — re-pinning in a snippet bypasses the registry-resolution path the skill relies on. -->
 
 ## Quick Reference
 
@@ -12,13 +12,17 @@
 | Resume recent session | Inherited from original | `echo "prompt" \| codex exec --skip-git-repo-check resume --last 2>/dev/null` (no flags allowed) |
 | Run from another directory | Match task needs | `-C <DIR>` plus other flags `2>/dev/null` |
 
-## Model Options (fallback reference — check model-registry.md)
+## Model roles (resolve via config/model-registry.md)
 
-| Model | Best for | Context window | Key features |
+The codex skill resolves registry roles at invocation time — these role names are the stable surface; the model IDs below are fallback snapshots that drift. Treat the IDs as hints, not as the contract.
+
+| Role | Current ID (may be stale) | Best for | Context window |
 | --- | --- | --- | --- |
-| `gpt-5.4` ⭐⭐ | **Flagship model**: Software engineering, code review, agentic coding | 400K input / 128K output | Latest frontier model |
-| `gpt-5.4-mini` | Cost-efficient coding | 400K input / 128K output | Smaller frontier model |
-| `gpt-5.3-codex` | Previous flagship | 400K input / 128K output | 25% faster than 5.1, $1.75/$14.00 |
+| `codex-flagship` ⭐⭐ | `gpt-5.4` | Software engineering, code review, agentic coding | 400K / 128K |
+| `codex-fast` | `gpt-5.4-mini` | Cost-efficient coding | 400K / 128K |
+| `codex-previous` | `gpt-5.3-codex` | Previous flagship — fallback if flagship unavailable | 400K / 128K |
+
+Run `/update-models` if the current IDs feel stale or a newer frontier model has shipped.
 
 **Reasoning Effort Levels**:
 - `xhigh` - Maximum quality (code review, security analysis, architecture review)
@@ -28,17 +32,18 @@
 
 ## Code Review Mode
 
-For automated code reviews with maximum quality, use the flagship model with `xhigh` reasoning:
+For automated code reviews with maximum quality, pair the flagship role (resolved from `~/.codex/config.toml`) with `xhigh` reasoning:
 
 ### Review Command Pattern
 ```bash
 codex exec --skip-git-repo-check \
-  -m gpt-5.4 \
   -c model_reasoning_effort="xhigh" \
   --sandbox read-only \
   --full-auto \
   "[review prompt with diff]" 2>/dev/null
 ```
+
+Model selection is deliberately omitted — Codex reads the active model from `~/.codex/config.toml`, which `/update-models` keeps synced with the `codex-flagship` registry role. Pinning `-m` here would silently bypass that path and refreeze the reference against a specific ID.
 
 ### Review Output Format
 Structure findings with priority levels:

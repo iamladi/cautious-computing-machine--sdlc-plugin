@@ -5,46 +5,54 @@ description: Use when the user asks to run Gemini CLI for code review, plan revi
 
 # Gemini Skill
 
-## Priorities
+## Role
 
-Approval mode correctness > Model selection > Background execution safety
+Run Gemini CLI as a delegated reasoning engine for code review, plan review, and large-context analysis (>200k tokens). Gemini has its own model selection and its own approval model — your job is to invoke it correctly for the execution context, surface its results, and keep the user in control of any side-effecting operation.
 
-## Model Registry
+## Success looks like
 
-Load current models before executing — this overrides any model names in the tables below:
-- `Glob(pattern: "**/sdlc/**/config/model-registry.md", path: "~/.claude/plugins")` → Read result
-- Use `gemini-flagship` as the default model. Offer user `gemini-fast` for speed-critical tasks.
-- If registry load fails, fall back to the tables below.
+- Approval mode matches the execution context: `yolo` when Claude Code invokes Gemini as a background tool call, `default` only in an interactive human terminal, `auto_edit` when the user explicitly wants Gemini to apply edits without confirmation.
+- Model matches task shape — flagship for review and analysis, fast for speed-critical or high-volume work. The user picked it; you didn't pick silently.
+- The output you return to the user is Gemini's output, not a paraphrase. Trust the tool.
+- The user knows they can start a fresh Gemini session to follow up, since the CLI is stateless between invocations.
 
-## Goal
+## Model selection
 
-Execute Gemini CLI for comprehensive code review, plan analysis, or large-context processing tasks. Ask user for model selection via AskUserQuestion. Choose approval mode based on execution context (yolo for background, default for interactive terminal only). Load CLI reference for detailed command patterns, troubleshooting, and use cases.
+Resolve the registry first, since model IDs shift:
+- `Glob(pattern: "**/sdlc/**/config/model-registry.md", path: "~/.claude/plugins")` then Read
+- Default to `gemini-flagship`. Offer `gemini-fast` when the user flags speed or cost as the constraint.
+- Ask via `AskUserQuestion` before invoking — don't pick silently, since flagship and fast have very different cost/quality tradeoffs and the user owns that call.
 
-## Operating notes
+If the registry load fails, fall back to the table below. Treat the names as possibly stale and say so when reporting.
 
-- In background or non-interactive shells (Claude Code tool calls), don't use `--approval-mode default` — it hangs indefinitely waiting for user input. Use `--approval-mode yolo` for automated/background tasks, or wrap the call with `timeout 300 gemini ...` as a safety net.
-- Ask the user for model selection via `AskUserQuestion` before running commands.
-- After Gemini completes, tell the user they can start a new session for follow-up analysis.
-
-## Model Selection (fallback — prefer registry)
-
-Ask user which model to use via AskUserQuestion:
-
-| Model | Best for | Context window | Key features |
+| Model | Best for | Context | Notes |
 | --- | --- | --- | --- |
-| `gemini-3-pro-preview` | Flagship: Complex reasoning, coding, agentic tasks | 1M input / 64k output | Vibe coding, 76.2% SWE-bench, $2-4/M input |
-| `gemini-3-flash` | Sub-second latency, speed-critical applications | 1M input / 64k output | Distilled from 3 Pro, TPU-optimized |
-| `gemini-2.5-pro` | Legacy: Strong all-around performance | 1M input / 65k output | Thinking mode, mature stability |
-| `gemini-2.5-flash` | Legacy: Cost-efficient, high-volume tasks | 1M input / 65k output | Best price ($0.15/M), thinking mode |
-| `gemini-2.5-flash-lite` | Legacy: Fastest processing, high throughput | 1M input / 65k output | Maximum speed, minimal latency |
+| `gemini-3-pro-preview` | Flagship — complex reasoning, coding, agentic tasks | 1M / 64k | 76.2% SWE-bench |
+| `gemini-3-flash` | Sub-second latency, speed-critical | 1M / 64k | Distilled from 3 Pro |
+| `gemini-2.5-pro` | Legacy — strong all-around | 1M / 65k | Thinking mode |
+| `gemini-2.5-flash` | Legacy — cost-efficient, high-volume | 1M / 65k | Cheapest tier |
+| `gemini-2.5-flash-lite` | Legacy — fastest, high throughput | 1M / 65k | Minimal latency |
 
-These model names may be outdated. Always prefer model-registry.md values when available.
+## Invocation shape
+
+Approval mode is the load-bearing flag — the failure mode is silent and expensive, so the reasoning needs to be inline:
+
+- `--approval-mode yolo` for anything Claude Code runs as a tool call. The invocation happens in a non-interactive shell; `default` waits for a stdin confirmation that will never arrive and the process hangs indefinitely, burning wall-clock until something notices. This is the correct mode for every background invocation in this workspace. `yolo` lets Gemini run any tool without confirmation within its sandbox, so it's a blast-radius mode — name it to the user before using.
+- `--approval-mode default` only in an interactive human terminal where a person can actually type `y`. If you're unsure whether the shell is interactive, assume it isn't.
+- `--approval-mode auto_edit` when the user explicitly wants Gemini to apply edits without per-change confirmation. Also a blast-radius change (it writes files) — name it to the user before using.
+
+Wrap with `timeout 300 gemini ...` as a safety net when the task has any chance of hanging on network, rate-limit, or a pathological input. The timeout is cheap insurance; a hung Gemini process can sit at 0% CPU for hours. If one slips past the timeout anyway (long runtime, 0% CPU, no network), load `references/gemini-cli-reference.md` for the detection/diagnosis/kill pattern rather than guessing — surface the exit code and stderr instead of silently retrying.
+
+Use `--include-directories <DIR>` (repeatable) when the analysis needs files outside the current working directory. Don't rely on Gemini discovering them.
+
+## After the run
+
+Tell the user once: "Gemini sessions don't persist — start a new one for follow-up analysis." The CLI is stateless between invocations and doesn't surface that fact, so the one-line hook is what prevents the user from expecting continuity that doesn't exist.
 
 ## References
 
-Load CLI reference for detailed command patterns, troubleshooting hung processes, and common use cases:
-
-- `Glob(pattern: "**/sdlc/**/skills/gemini/references/gemini-cli-reference.md", path: "~/.claude/plugins")` → Read result
+CLI flag reference, approval-mode matrix, and troubleshooting for hung processes live in `references/gemini-cli-reference.md`. Load when you need flag details — don't paraphrase, the examples are the contract:
+- `Glob(pattern: "**/sdlc/**/skills/gemini/references/gemini-cli-reference.md", path: "~/.claude/plugins")` → Read
 
 ## Arguments
 

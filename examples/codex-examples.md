@@ -12,7 +12,7 @@
 - Reasoning effort? (high, medium, low)
 
 **Default configuration:**
-- Model: gpt-5.4 (automatic default)
+- Model: `codex-flagship` (resolved at runtime from `config/model-registry.md`)
 - Effort: high
 - Sandbox: read-only (default for analysis)
 
@@ -24,8 +24,10 @@
 
 **HAL will run:**
 ```bash
-codex exec --skip-git-repo-check -m gpt-5.4 --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
+codex exec --skip-git-repo-check --config model_reasoning_effort="high" --sandbox workspace-write --full-auto "Refactor the API client..." 2>/dev/null
 ```
+
+(Model defaults to whatever the user's `~/.codex/config.toml` has pinned; the codex skill resolves `codex-flagship` from the registry when a non-default ID is needed.)
 
 ## Reasoning Effort Levels
 
@@ -242,7 +244,9 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 ## Model Selection Guide
 
-### gpt-5.4 ⭐⭐ (Default)
+Roles are resolved at runtime from `config/model-registry.md`. The IDs below are illustrative of what the registry currently resolves to — re-run `/update-models` if you need today's exact mapping.
+
+### `codex-flagship` (Default)
 
 **Best for:**
 - Software engineering and code review
@@ -255,10 +259,7 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 - Best agentic coding capabilities
 - Optimized for code
 
-**Specs:**
-- Context: 400K input / 128K output
-
-### gpt-5.4-mini
+### `codex-fast`
 
 **Best for:**
 - Cost-sensitive projects
@@ -268,9 +269,6 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 **Characteristics:**
 - Smaller frontier model
 - Near state-of-the-art performance
-
-**Specs:**
-- Context: 400K input / 128K output
 
 ## Tips for Effective Codex Usage
 
@@ -290,13 +288,13 @@ echo "now add type definitions to the identified modules" | codex exec --skip-gi
 
 | Task Type | Model | Reasoning | Sandbox |
 |-----------|-------|-----------|---------|
-| Code review | gpt-5.4 | xhigh | read-only |
-| Security audit | gpt-5.4 | high | read-only |
-| Simple refactor | gpt-5.4 | medium | workspace-write |
-| Complex migration | gpt-5.4 | high | workspace-write |
-| Add types | gpt-5.4 | low | workspace-write |
-| Install deps | gpt-5.4 | medium | danger-full-access |
-| High-volume tasks | gpt-5.4-mini | medium | workspace-write |
+| Code review | `codex-flagship` | xhigh | read-only |
+| Security audit | `codex-flagship` | high | read-only |
+| Simple refactor | `codex-flagship` | medium | workspace-write |
+| Complex migration | `codex-flagship` | high | workspace-write |
+| Add types | `codex-flagship` | low | workspace-write |
+| Install deps | `codex-flagship` | medium | danger-full-access |
+| High-volume tasks | `codex-fast` | medium | workspace-write |
 
 ### Use Session Continuity
 

@@ -10,7 +10,7 @@ Precision (file:line refs) > Completeness (trace full paths) > Concision
 
 ## Scope
 
-Load canonical documentarian constraints: `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "/Users/iamladi/Projects/claude-code-plugins")` and read the result. The core rule: this command documents the codebase as it exists, not as it should exist. Don't propose improvements, critique implementation, or suggest refactors unless the user explicitly asks — those belong in `/review` or `/plan`.
+Load canonical documentarian constraints: `Glob(pattern: "**/sdlc/**/references/documentarian-constraints.md", path: "~/.claude/plugins")` and read the result. The categorical rule: document what exists, not what should exist — `/review` and `/plan` own the "should" pass. The loaded file names five specific boundaries (scope, critique, RCA, proposals, axis-specific commentary), each with its own downstream failure mode; don't paraphrase by enumerating a subset, since the boundaries dropped from the shorthand are the ones callers can't reconstruct from memory.
 
 ## Session setup
 
@@ -54,23 +54,23 @@ Spawn three teammates via `Task` with `team_name` and `subagent_type: "general-p
 ### Teammate briefs
 
 <example name="Locator">
-Your role is to find all files, directories, and components relevant to "{topic}". Success means the team knows where to look — not some places, everywhere this topic touches the codebase.
+Your role is to find all files, directories, and components relevant to "{topic}" — mirror agents/codebase-locator.md's canonical boundaries. Success means the team knows where to look — not some places, everywhere this topic touches the codebase.
 
-Use multiple search strategies; don't rely on a single grep pattern. Try different naming conventions, file extensions, and related concepts. Categorize what you find (implementation, tests, config, types, docs) so teammates know what matters most. Share discoveries via `SendMessage` when teammates should examine what you've surfaced. All findings include full file paths. When coverage is comprehensive, `TaskUpdate` to mark complete and send `RESEARCH COMPLETE`.
+Use multiple search strategies; don't rely on a single grep pattern — components routinely live under aliases (renamed dirs, index re-exports, multiple extensions) and a single-pattern search silently misses them. Categorize findings using the downstream contract: Implementation Files, Test Files, Configuration, Type Definitions, Related Directories (with `Contains X files` counts so the caller can gauge scope before dispatching follow-ups). Don't read file contents — content analysis is the Analyzer's job, and reading here wastes tokens and leaks into the output as uninvited analysis. Share discoveries via `SendMessage` when teammates should examine what you've surfaced. All findings include full file paths. When coverage is comprehensive, `TaskUpdate` to mark complete and send `RESEARCH COMPLETE`.
 </example>
 
 <example name="Analyzer">
-Your role is to understand how "{topic}" works — trace the actual execution paths, data flow, and component interactions. Success means the team understands the implementation mechanics, not just the surface API.
+Your role is to understand how "{topic}" works — trace actual execution paths, data flow, and component interactions. Mirror agents/codebase-analyzer.md's canonical boundaries. Success means the team understands implementation mechanics, not just the surface API.
 
-Read files thoroughly before making statements. Follow the code paths to see what actually happens. Every claim cites `file:line`. Focus on: Where are the entry points? What's the core logic? How does data flow through? What error handling exists? How do components interact?
+Read files end-to-end before describing them — spot-reading around a grep match writes the right sentence for the wrong function. Every claim cites `file:line` — a claim without a cite is a guess, and an unsourced sentence propagates as "confirmed" once it leaves you. Focus on mechanism — "how", not "what" or "why": the function name says what, the design doc says why, answering "should" is the reviewer's job; drifting into those leaks opinion into what should be a factual trace. For data transformations, note before/after shape exactly — renaming, filtering, and type coercion are load-bearing details consumers need to judge correctness. Cover: entry points, core logic, data flow, error handling, component interactions.
 
 Share patterns worth documenting or missing files via `SendMessage`. When you can explain the implementation, `TaskUpdate` to mark complete and send `RESEARCH COMPLETE`.
 </example>
 
 <example name="Pattern Finder">
-Your role is to find similar implementations, usage examples, and existing patterns that illuminate "{topic}". Success means the team sees how this topic fits into broader codebase conventions and where to find working examples.
+Your role is to find similar implementations, usage examples, and existing patterns that illuminate "{topic}" — mirror agents/codebase-pattern-finder.md's canonical boundaries. Success means the team sees how this topic fits into broader codebase conventions and where to find working examples.
 
-Show actual working code with `file:line` references, not just snippets. When multiple variations exist, show them — the differences often reveal context. Categorize: API, data, component, testing patterns. Share leads with the Analyzer and Locator via `SendMessage`. When breadth is sufficient, `TaskUpdate` to mark complete and send `RESEARCH COMPLETE`.
+Show working code with surrounding context (callers, imports, error handling), not isolated snippets — a pattern copied without its context breaks the moment it's reused. Include `file:line` for every example. Show multiple variations when they exist — a single example hides the choice and forces callers to rediscover variants; three examples reveal the dimensions that actually vary (auth shape, validation placement, error shape). Pair each implementation pattern with its test pattern; a feature-with-no-test-pattern is itself a signal — flag the absence explicitly so the caller knows they'll be inventing testing convention rather than following one. Don't evaluate which pattern is better — ranking without the caller's context picks the wrong winner; show what exists and let the caller choose. Categorize: API, data, component, testing patterns. Share leads with the Analyzer and Locator via `SendMessage`. When breadth is sufficient, `TaskUpdate` to mark complete and send `RESEARCH COMPLETE`.
 </example>
 
 ### Convergence

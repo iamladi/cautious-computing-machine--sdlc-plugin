@@ -4,10 +4,11 @@ This is the workspace reference for writing prompts (commands, agents, skills) t
 
 Canonical reference files — when in doubt, model after these:
 - `sdlc-plugin/skills/interview/SKILL.md` — onboarding-doc structure, `<thinking>` example
-- `sdlc-plugin/commands/review.md` — evidence-backed protocol, find-then-filter split
-- `sdlc-plugin/agents/implementer.md` — lean role + success criteria
+- `sdlc-plugin/commands/review.md` — evidence-backed protocol, find-then-filter split (§7)
+- `sdlc-plugin/agents/implementer.md` — multi-surface worker: scope-boundaries, family-boundary framing, rigid-output contract (§13)
+- `sdlc-plugin/agents/spec-reviewer.md` + `sdlc-plugin/agents/code-quality-reviewer.md` — sibling reviewers citing each other's scope so scope-leaks are self-diagnosable
 - `primitives-plugin/skills/prompt-as-onboarding/SKILL.md` — canonical onboarding-doc skill
-- `primitives-plugin/skills/de-slop/SKILL.md` — tool-delegation pattern
+- `primitives-plugin/skills/de-slop/SKILL.md` — tool-delegation pattern (§9)
 
 ## Why this document exists
 
@@ -39,6 +40,19 @@ Compare:
 
 4.7 will not generalize "apply this formatting" to every section unless you say so. If you want a rule applied to a list, say "for every item" or "across all sections." If you want the model to fan out, say "for each." Assume nothing carries implicitly.
 
+**Family-boundary framing.** When an agent has siblings that share a controller, state scope by *naming what each sibling owns*, not just what the current agent does. Rule-list form can express "don't do X" but can't express "don't do X because sibling Y owns it"; the sibling citation converts a directive into a decidable judgment and makes scope-creep failures self-diagnosable by the agent at runtime. See `agents/spec-reviewer.md` and `agents/implementer.md` for the pattern.
+
+Six family topologies appear in this workspace, each with a characteristic boundary:
+
+- **Documentarian trio** (locator/analyzer/pattern-finder dispatched by `/research`) — peer siblings split by question-type (where / how / prior-art).
+- **Reviewer pair** (spec-reviewer + code-quality-reviewer dispatched by `/implement`) — peer siblings split by check-class (spec-match / code-sanity).
+- **Implement triad** (implementer + spec-reviewer + code-quality-reviewer) — worker + peer reviewers; worker cites reviewer check-classes to pre-empt misses one loop cycle earlier.
+- **Skill-agent pair** (`test` skill + `test-writer` agent sharing `test-patterns.md`) — same reference contract, different invocation paths.
+- **Cross-platform research** (web-search-researcher + `x-search` skill) — boundary runs between data-source domains.
+- **Merge gate** (`research-synthesizer` consuming N collectors) — fan-in shape; boundary runs between gather and merge concerns, and the merge-gate owns thematic consolidation while collectors own gather/refine.
+
+**Symmetry obligation.** Family-boundary framing imposes a symmetry requirement: if one sibling cites the other's scope, the other must mirror the citation back. Asymmetric framing (A names B's scope but B doesn't name A's) leaves cross-routing decisions unreasoned on the silent side — the agent without the mirror can't judge "should I hand this off to sibling X?" because from its vantage point sibling X has no named boundary. This surfaces most often when migrating one side of a pair first and treating the second side as done by association; it isn't, because the sibling citation only works in the direction it's written. When migrating family members, migrate the set — or if staged, record the mirror obligation as a follow-up so the asymmetry doesn't calcify.
+
 ### 4. Drop compensation phrases.
 
 Remove "think step by step", "take your time", "be thorough", "carefully consider." These compensated for pre-4.x reasoning gaps that `effort` now closes at the API level. Leaving them in adds noise and token waste.
@@ -58,7 +72,7 @@ Remove "think step by step", "take your time", "be thorough", "carefully conside
 
 "Step 1 do X. Step 2 do Y. Step 3 do Z." invites over-triggering — the model follows the literal sequence even when a step doesn't apply. State the goal and the invariants; let the model pick the path.
 
-**Keep step-numbering only where sequence correctness is load-bearing** — e.g., team-cleanup ordering where skipping a step leaks resources. In that case, explain the invariant too ("the team must be deleted before returning control, regardless of success/failure — skipping leaks slots").
+**Keep step-numbering only where sequence correctness is load-bearing** — e.g., team-cleanup ordering where skipping a step leaks resources. In that case, explain the invariant too ("the team must be deleted before returning control, regardless of success/failure — skipping leaks slots"). See §13 for the related contract-preservation exception for rigid output formats and reference files.
 
 ### 7. Separate find from filter in review and audit prompts.
 
@@ -113,6 +127,52 @@ For long commands that mix instructions, context, examples, and constraints (`im
 ```
 
 Short prompts don't need this — prose sections are fine. Reach for tags when the same file contains more than three distinct instruction types.
+
+### 13. Pin downstream contracts.
+
+Anti-templating (§6) and anti-rule-list (§1) pressure is about removing *decorative* scaffolding, not *load-bearing* shapes. Two exceptions recur often enough to name, because both superficially look like the anti-patterns above and tend to get trimmed during migrations.
+
+**Rigid output formats are contracts when something parses them.** If a specific output shape is consumed downstream — by a tool, a paired skill, or a reviewer who needs a predictable field to scan — the template is load-bearing. Preserve it, and name the consumer inline so future editors don't trim it on the grounds that it "looks prescriptive."
+
+Examples from this workspace:
+- `skills/agent-change-walkthrough/` — `CHANGED` / `UNCHANGED` markers and `file:line` shape consumed by a reviewer diffing against the repo.
+- `skills/tdd/` — the horizontal-slicing diagram encodes a load-bearing invariant; phrasing it as prose loses the visual-invariant.
+- `skills/judgment-eval/` — scenario-report layout is a contract with `system-prompt-clinic`.
+- `skills/system-prompt-clinic/` — closing handoff line is a contract with `constitution-compliance-review`.
+- `skills/constitution-compliance-review/` — dimension-rubric labels are consumed by `system-prompt-clinic` and graders.
+
+**Reference files are contracts when a skill delegates to them.** When a SKILL.md points at `references/*.md` (or a sibling `FORMAT.md`) and says "model after this — don't paraphrase", the reference is the source of truth. Paraphrasing it back into SKILL.md prose is how outdated styles leak back in during migrations — the why is that the reference file typically carries nuance (examples, anti-examples, edge cases) that compresses poorly into a single paragraph.
+
+Examples:
+- `skills/test/references/test-patterns.md`
+- `skills/system-prompt-clinic/references/transformation-patterns.md`
+- `skills/constitution-compliance-review/references/{scoring-rubric.md,baseline-scores.md}`
+- `skills/domain-model/{CONTEXT-FORMAT.md,ADR-FORMAT.md}`
+
+**Reference pointers must use the portable Glob form, not absolute dev paths.** Plugins install to a versioned cache (`~/.claude/plugins/cache/<plugin>/sdlc/<VERSION>/`) where the version segment changes each install, so any hard-coded `/Users/<dev>/Projects/...` path resolves only on the author's laptop. Downstream consumers then load an empty result and silently fabricate around the missing contract — indistinguishable from paraphrase drift, but worse because the reference file still exists on disk. Use this exact shape:
+
+```
+Glob(pattern: "**/sdlc/**/references/<filename>.md", path: "~/.claude/plugins") → Read result
+```
+
+The `**/sdlc/**/` prefix survives the version segment; `~/.claude/plugins` resolves on any machine. See `references/README.md` for the full convention and the files currently under contract.
+
+**How to apply:** when editing a prompt, ask of every rigid shape and every reference pointer "what consumes this?" If the answer names a downstream parser, skill, or reader — that's a contract; preserve it and label the consumer. If nothing depends on the shape, it's decorative scaffolding — trim it per §6. For reference pointers specifically, also verify the path is portable before committing — an absolute dev path is the same class of contract violation as paraphrasing the reference, just harder to spot in review.
+
+### 14. Name the fabrication failure the agent's output invites.
+
+§13 pins the *shape* of downstream handoffs; this principle pins the *content*. When an agent's return value or a skill's written artifact lands in a consumer (controller, synthesis layer, or downstream tool reading a persisted registry) that cannot re-verify every claim, plausible-but-wrong output is indistinguishable from correct output — so the agent or skill must know which fabrication pattern its role structurally invites and be told to resist that specific pattern. Rule-list form cannot express this ("don't fabricate" is too broad to operationalize); reasoned prose names the failure mode, which lets the author catch itself at the moment of temptation.
+
+Four fabrication classes recur across migrations, each tied to a surface:
+
+- **Reverse-AHA** (test-writer). When writing tests against real source, the temptation is to invent edge-cases the source can't actually produce, padding coverage with fictional inputs. The downstream reader can't distinguish a real edge-case from a fabricated one without re-reading the source themselves. Frame: "if the source can't produce it, the test is fiction."
+- **Citation discipline** (web-search-researcher, x-search). When searching, empty or thin results tempt the agent to backfill from training memory and present it as researched. The synthesis layer then attributes a fabricated claim to a real search surface. Frame: "a finding without a citation is indistinguishable from fabrication once it lands in synthesis."
+- **False consensus** (research-synthesizer). When merging N collector reports, genuine disagreement tempts the merger to paraphrase both sides into a consensus that neither actually held. The downstream reader loses dissent signal and treats the false consensus as settled. Frame: "preserve the disagreement verbatim; naming who disagreed is the finding."
+- **Partial registry** (update-models). When a skill writes a fan-in artifact aggregating N external sources, partial success tempts the skill to commit whichever sources resolved and leave the rest at stale values. Downstream consumers (codex, gemini) read a registry that looks fresh and resolve aliases to frozen IDs for the failed providers. Frame: "partial is worse than stale — commit all sources or none, and surface the failure."
+
+This class is distinct from the first three because the fabrication surface is a written artifact rather than a returned response; the temptation lives in the write step (skip-the-failed-source, keep-going) rather than the generation step. Skills or agents that aggregate across external sources into a persisted file should treat atomicity as the anti-fabrication discipline.
+
+**How to apply:** for every agent or skill whose output is consumed without independent verification, ask "what would plausibly-wrong output look like here?" Name that pattern inline with the framing the agent needs to self-diagnose — not a bare prohibition. New fabrication classes should be added to this taxonomy as they surface, since the set is open-ended across surfaces (a planning agent invites phantom-requirement fabrication, a refactor agent invites ghost-callsite fabrication, etc.).
 
 ## Breaking changes to scrub from older prompts
 
