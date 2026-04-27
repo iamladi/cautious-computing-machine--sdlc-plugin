@@ -5,6 +5,14 @@ All notable changes to the SDLC Plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.33.0] - 2026-04-27
+
+### Added
+- **`skills/improve-codebase-architecture/`** — new skill for surfacing **deepening opportunities** (Ousterhout's deep-modules + Feathers' seams). Three-stage process: Explore (read `CONTEXT.md` + `docs/adr/`, walk via `Explore` sub-agent, apply the deletion test) → Present numbered candidates with files/problem/solution/benefits → Grilling loop on the chosen candidate, with side-effects-as-you-go (extend `CONTEXT.md` when naming, offer ADR on rejection). Couples to existing `domain-model` skill via `CONTEXT-FORMAT.md` / `ADR-FORMAT.md` cross-references.
+- **`LANGUAGE.md`** — load-bearing glossary (module / interface / implementation / depth / seam / adapter / leverage / locality) with explicit rejected framings ("boundary," "component," "service," depth-as-line-ratio). Consistent vocabulary is the point — drift dilutes the suggestions.
+- **`DEEPENING.md`** — dependency-category playbook (in-process / local-substitutable / remote-but-owned / true-external) determining how the deepened module is tested across its seam. Codifies the "one adapter = hypothetical seam, two adapters = real one" rule and replace-don't-layer test discipline.
+- **`INTERFACE-DESIGN.md`** — parallel sub-agent pattern ("Design It Twice," Ousterhout): frame the problem space, spawn 3+ agents with divergent constraints (minimize / maximise-flex / optimise-default-case / ports-and-adapters), present sequentially, then give an opinionated recommendation.
+
 ## [1.32.0] - 2026-04-20
 
 40-iteration guardian (`gnhf`) quality pass across skills, agents, commands, and references. Drove rule-list / step-numbered prompt forms toward Opus-4.7 onboarding-doc style with why-inline reasoning on constraints. 38 files, +1264 / -968.
